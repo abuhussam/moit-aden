@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
     :root {
@@ -7253,18 +7254,68 @@ ${ctx}`;
       document.getElementById('closeGasOcrModalBtn')?.addEventListener('click', closeOcr);
       document.getElementById('cancelGasOcrBtn')?.addEventListener('click', closeOcr);
 
+      /* v35: OPS DIGITAL PDF GAS OCR ENHANCEMENT */
+      window.__OPS_GAS_OCR_DIGITAL_TEXT = '';
       document.getElementById('gasOcrFileInput')?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        window.__OPS_GAS_OCR_DIGITAL_TEXT = '';
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
         try {
-          const res = await compressImageForOcr(file);
-          _gasOcrCompressedB64 = res.base64;
-          const img = document.getElementById('gasOcrPreviewImg');
-          if (img) { img.src = res.dataUrl; img.classList.remove('hidden'); }
-          document.getElementById('gasOcrPreviewPlaceholder')?.classList.add('hidden');
-          document.getElementById('gasOcrStatusText').textContent = '✅ الصورة جاهزة — اضغط «✨ قراءة وتحليل الصورة عبر Gemini AI».';
+          if (isPdf && window.pdfjsLib) {
+            if (window.pdfjsLib.GlobalWorkerOptions) {
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            const buf = await file.arrayBuffer();
+            const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+            const totalPgs = Math.min(pdf.numPages, 20);
+            const chunks = [];
+            let firstDataUrl = '';
+            for (let p = 1; p <= totalPgs; p++) {
+              const page = await pdf.getPage(p);
+              try {
+                const tc = await page.getTextContent();
+                const rowsMap = new Map();
+                (tc.items || []).forEach(it => {
+                  const s = String(it.str || '').trim();
+                  if (!s) return;
+                  const yKey = Math.round((it.transform ? it.transform[5] : 0) / 5) * 5;
+                  if (!rowsMap.has(yKey)) rowsMap.set(yKey, []);
+                  rowsMap.get(yKey).push({ x: it.transform ? it.transform[4] : 0, s });
+                });
+                const txt = Array.from(rowsMap.keys()).sort((a, b) => b - a)
+                  .map(y => rowsMap.get(y).sort((a, b) => b.x - a.x).map(it => it.s).join(' | ')).join('\n');
+                if (txt.trim().length > 20) chunks.push(`--- صفحة ${p} ---\n${txt.trim()}`);
+              } catch (_te) {}
+              if (p === 1) {
+                const vp1 = page.getViewport({ scale: 1 });
+                const sc = Math.min(1.8, 1350 / Math.max(vp1.width, vp1.height));
+                const vp = page.getViewport({ scale: sc });
+                const cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+                await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+                firstDataUrl = cv.toDataURL('image/jpeg', 0.82);
+              }
+            }
+            if (chunks.join('\n').length >= 80) window.__OPS_GAS_OCR_DIGITAL_TEXT = chunks.join('\n\n');
+            _gasOcrCompressedB64 = firstDataUrl ? firstDataUrl.split(',')[1] : '';
+            _gasOcrMimeType = 'image/jpeg';
+            const img = document.getElementById('gasOcrPreviewImg');
+            if (img && firstDataUrl) { img.src = firstDataUrl; img.classList.remove('hidden'); }
+            document.getElementById('gasOcrPreviewPlaceholder')?.classList.add('hidden');
+            document.getElementById('gasOcrStatusText').textContent = window.__OPS_GAS_OCR_DIGITAL_TEXT
+              ? `⚡ ملف PDF رقمي (${totalPgs} صفحات) — استخراج نصي فائق السرعة جاهز!`
+              : `✅ تم تحويل ملف PDF (${totalPgs} صفحة) — اضغط التحليل.`;
+          } else {
+            const res = await compressImageForOcr(file);
+            _gasOcrCompressedB64 = res.base64;
+            _gasOcrMimeType = res.mimeType || 'image/jpeg';
+            const img = document.getElementById('gasOcrPreviewImg');
+            if (img) { img.src = res.dataUrl; img.classList.remove('hidden'); }
+            document.getElementById('gasOcrPreviewPlaceholder')?.classList.add('hidden');
+            document.getElementById('gasOcrStatusText').textContent = '✅ الصورة جاهزة — اضغط «✨ قراءة وتحليل الصورة عبر Gemini AI».';
+          }
         } catch (err) {
-          showToast('تعذر قراءة ملف الصورة', '⚠️');
+          showToast('تعذر قراءة الملف: ' + explainOpsErrorSmart(err, 'تأكد أنه صورة أو PDF سليم'), '⚠️');
         }
       });
 
@@ -7279,7 +7330,9 @@ ${ctx}`;
 {"directorate":"اسم المديرية من القائمة (صيرة (كريتر) أو خور مكسر أو المعلا أو التواهي أو الشيخ عثمان أو المنصورة أو دار سعد أو البريقة)","visitDate":"YYYY-MM-DD","station":"اسم المحطة مثل منشأة البريقة أو جعولة أو العريش أو بئر أحمد","rows":[{"agent":"اسم المسوق أو المعرض","loc":"العنوان","phone":"رقم الجوال بأرقام إنجليزية فقط","qty":100,"status":"صرف طبيعي أو موقف أو تغطية مربع وكيل أو معرض الشركة","notes":"الملاحظات إن وجدت"}]}`;
 
         try {
-          const vTxt = await callAppsScriptGemini({ action: 'gemini_vision', prompt: ocrPrompt, imageBase64: _gasOcrCompressedB64, mimeType: _gasOcrMimeType || 'image/jpeg' });
+          const vTxt = window.__OPS_GAS_OCR_DIGITAL_TEXT
+            ? await callAppsScriptGemini({ action: 'gemini_brief', fastJson: true, prompt: ocrPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + window.__OPS_GAS_OCR_DIGITAL_TEXT.slice(0, 48000) })
+            : await callAppsScriptGemini({ action: 'gemini_vision', prompt: ocrPrompt, imageBase64: _gasOcrCompressedB64, mimeType: _gasOcrMimeType || 'image/jpeg' });
           const rawJson = vTxt.replace(/```json/gi, '').replace(/```/g, '').trim();
           const parsed = JSON.parse(rawJson);
           const dir = cleanDirName(parsed.directorate || 'المنصورة');

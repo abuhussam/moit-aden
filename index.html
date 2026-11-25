@@ -8239,11 +8239,11 @@
             }
             const buf = await file.arrayBuffer();
             const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
-            const totalPages = Math.min(pdf.numPages, 10);
+            const totalPages = Math.min(pdf.numPages, 30);
             const pagesOut = [];
             for (let p = 1; p <= totalPages; p++) {
               const page = await pdf.getPage(p);
-              // v33: Extract selectable digital text grouped by visual table row (Y-coordinate)
+              // v34: Extract ALL up to 30 pages of selectable digital text grouped by visual table row (Y-coordinate)
               let pageText = '';
               try {
                 const tc = await page.getTextContent();
@@ -8262,15 +8262,17 @@
                 ).join('\n');
               } catch (_te) { pageText = ''; }
 
+              // If digital text exists on a large PDF (>8 pages), render compact preview canvas so 19+ pages prepare in <1.5 seconds!
+              const isBigDigital = (totalPages > 8 && pageText.trim().length > 25);
               const vp1 = page.getViewport({ scale: 1 });
-              const maxD = 1350;
-              const scale = Math.min(2.0, maxD / Math.max(vp1.width, vp1.height));
+              const maxD = isBigDigital ? 520 : 1350;
+              const scale = Math.min(isBigDigital ? 0.9 : 2.0, maxD / Math.max(vp1.width, vp1.height));
               const vp = page.getViewport({ scale });
               const canvas = document.createElement('canvas');
               canvas.width = Math.round(vp.width);
               canvas.height = Math.round(vp.height);
               await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-              const dUrl = canvas.toDataURL('image/jpeg', 0.78);
+              const dUrl = canvas.toDataURL('image/jpeg', isBigDigital ? 0.65 : 0.78);
               const b64 = dUrl.split(',')[1];
               pagesOut.push({
                 isPdf: false,
@@ -8512,7 +8514,7 @@
         _priceOcrDigitalText = isPureDigitalPdf ? allDigitalChunks.join('\n\n') : '';
         if (countEl) {
           countEl.textContent = isPureDigitalPdf
-            ? `⚡ ملف PDF رقمي (${_priceOcrPreparedFiles.length} صفحات) — استخراج نصي فائق السرعة (3–8 ثوانٍ!)`
+            ? `⚡ ملف PDF رقمي (${_priceOcrPreparedFiles.length} صفحات) — استخراج نصي فائق السرعة (6–14 ثانية بدقة كاملة!)`
             : `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) صفحة مضغوطة (~${totalKb} KB)`;
         }
         if ((window.location.protocol === 'content:' || window.location.protocol === 'file:') && typeof showToast === 'function') {
@@ -8544,6 +8546,10 @@
 2) ممنوع التخمين نهائياً! إذا كان السعر مشطوباً أو باهتاً أو غير واضح أو متردداً فيه، أعد "price": null و "conf": "unclear" مع توضيح السبب في "note".
 3) إذا كانت خانة الصنف فارغة في الورقة، لا تضفها في القائمة (تجاهل الخانات الفارغة تماماً).
 4) حوّل جميع الأرقام الهندية/العربية (٠١٢٣٤٥٦٧٨٩) إلى أرقام صحيحة إنجليزية بدون فواصل.
+4أ) قاعدة تحويل الوحدات الذكي (إلزامية): تعرّف تلقائياً على الوحدات المكافئة (مثلاً: «2.5 ك» أو «2.5 كيلو» أو «2.5 ك جرام» = «2500 جرام»؛ و«1.8 ك» أو «1.80» = «1800 جرام»؛ و«10 ك» = «10 كجم»؛ و«25 ك» = «25 كجم»؛ و«50 ك» = «50 كجم»).
+4ب) قاعدة عمود السعر الحالي فقط: إذا وجد عمودان «السابق» و«الحالي»، خذ «السعر الحالي» فقط؛ وإذا كان السعر الحالي شرطة (-) أو فارغاً فتجاهل الصنف ولا تأخذ السعر السابق.
+4ج) قاعدة منع الخلط بين العلامات التجارية: ممنوع منعاً باتاً نسخ سعر علامة تجارية إلى علامة أخرى (مثلاً: «بر مطحون أسترالي 50 ك» يطابق «قمح أسترالي 50 كجم» فقط ولا يُنسخ أبداً إلى «بر السنابل 50 كجم»).
+4د) قاعدة الشمول الكامل للأوزان: راجع جميع الصفحات والصفوف ولا تُسقط أي وزن مطابق للكتالوج (خاصة جميع أوزان الدجاج المجمد: 700، 800، 900، 1000، 1100، 1300 جرام).
 5) طابق كل سطر مكتوب في الورقة مع الكود (id) المطابق له تماماً من القائمة الرسمية أدناه (حسب القسم والاسم والوزن/العبوة بدقة!).
 6) أعد JSON صالحاً فقط بدون أي شرح خارجه بهذا الشكل:
 {"fx":{"usdSell":null,"usdBuy":null,"sarSell":null,"sarBuy":null},"items":[{"id":"f1","price":34000,"conf":"high أو medium أو unclear","note":""}]}
@@ -8639,7 +8645,7 @@ ${catalogText}`;
               statusEl.textContent = `⚡ وضع التوربو النصي: تحليل جميع صفحات الـ PDF الرقمي (${_priceOcrPreparedFiles.length} صفحات) في طلب واحد...`;
               statusEl.classList.remove('hidden');
             }
-            const digitalPrompt = prompt + '\n\n=== النص الرقمي المستخرج حرفياً من جدول ملف PDF (كل سطر يمثل صفاً في الجدول) ===\n' + _priceOcrDigitalText.slice(0, 28000);
+            const digitalPrompt = prompt + '\n\n=== النص الرقمي المستخرج حرفياً من جدول ملف PDF (كل سطر يمثل صفاً في الجدول) ===\n' + _priceOcrDigitalText.slice(0, 48000);
             const digRes = await postGeminiWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digitalPrompt }, 'التحليل الرقمي', 55000);
             mergeChunkResult(digRes);
           } else {
@@ -9084,6 +9090,348 @@ ${catalogText}`;
       } else if (!navigator.onLine) {
         showNetState(false);
       }
+    })();
+
+  
+
+    /* ===== v35: DIR SMART HYBRID TURBO GAS OCR ENGINE (DIGITAL PDF + PARALLEL VISION + ZERO-DUPLICATE UPSERT) ===== */
+    (function initDirV35GasOcrEngine() {
+      let _gasPreparedPages = [];
+      let _gasDigitalText = '';
+      let _gasExtractedRows = [];
+      let _gasDetectedStation = '';
+
+      const normArGasName = (s) => String(s || '')
+        .replace(/[\u064B-\u065F\u0670]/g, '')
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+
+      const bind = () => {
+        const openBtn = document.getElementById('dirOpenGasOcrBtn');
+        const modal = document.getElementById('dirGasOcrModal');
+        if (!openBtn || !modal || openBtn.dataset.v35GasBound === '1') return;
+        openBtn.dataset.v35GasBound = '1';
+
+        const closeBtn = document.getElementById('dirCloseGasOcrBtn');
+        const cancelBtn = document.getElementById('dirCancelGasOcrBtn');
+        const fileInp = document.getElementById('dirGasOcrFileInput');
+        const runBtn = document.getElementById('dirRunGasOcrBtn');
+        const commitBtn = document.getElementById('dirCommitGasOcrBtn');
+        const statusEl = document.getElementById('dirGasOcrStatus');
+        const prevImg = document.getElementById('dirGasOcrPreviewImg');
+        const pdfBadge = document.getElementById('dirGasOcrPdfBadge');
+        const pdfName = document.getElementById('dirGasOcrPdfName');
+        const placeholder = document.getElementById('dirGasOcrPlaceholder');
+        const resWrap = document.getElementById('dirGasOcrResultWrap');
+        const matchSummary = document.getElementById('dirGasOcrMatchSummary');
+        const totalPill = document.getElementById('dirGasOcrTotalPill');
+        const tbody = document.getElementById('dirGasOcrBody');
+
+        if (fileInp) fileInp.setAttribute('multiple', 'multiple');
+
+        const closeModal = () => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        };
+
+        openBtn.addEventListener('click', () => {
+          _gasPreparedPages = [];
+          _gasDigitalText = '';
+          _gasExtractedRows = [];
+          _gasDetectedStation = '';
+          if (fileInp) fileInp.value = '';
+          if (prevImg) { prevImg.src = ''; prevImg.classList.add('hidden'); }
+          if (pdfBadge) pdfBadge.classList.add('hidden');
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (resWrap) resWrap.classList.add('hidden');
+          if (tbody) tbody.innerHTML = '';
+          if (commitBtn) commitBtn.disabled = true;
+          if (statusEl) statusEl.textContent = 'اختر صورة أو عدة صور أو ملف PDF لكشف الشركة اليمنية للغاز ثم اضغط التحليل.';
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          // Silent Apps Script warmup ping
+          try {
+            const wu = typeof getDirPinGsUrl === 'function' ? getDirPinGsUrl() : '';
+            if (wu) fetch(wu + (wu.includes('?') ? '&' : '?') + 'warmup=' + Date.now(), { mode: 'no-cors' }).catch(() => {});
+          } catch (_e) {}
+        });
+
+        closeBtn?.addEventListener('click', closeModal);
+        cancelBtn?.addEventListener('click', closeModal);
+        modal.addEventListener('click', (ev) => { if (ev.target === modal) closeModal(); });
+
+        fileInp?.addEventListener('change', async (e) => {
+          const files = Array.from(e.target.files || []);
+          _gasPreparedPages = [];
+          _gasDigitalText = '';
+          if (!files.length) return;
+          if (statusEl) statusEl.textContent = `⏳ جارٍ تجهيز (${files.length}) ملف...`;
+          for (let i = 0; i < files.length; i++) {
+            try {
+              const prepArr = await preparePriceOcrFile(files[i]);
+              (Array.isArray(prepArr) ? prepArr : [prepArr]).forEach(p => {
+                _gasPreparedPages.push({ ...p, name: p.name || files[i].name });
+              });
+            } catch (err) {
+              if (typeof showToast === 'function') showToast('تعذر تجهيز ملف الغاز: ' + explainDirErrorSmart(err, 'تأكد من سلامة الملف'), '⚠️');
+            }
+          }
+          if (!_gasPreparedPages.length) {
+            if (statusEl) statusEl.textContent = '⚠️ لم يتم تجهيز أي ملف صالح.';
+            return;
+          }
+
+          const digitalChunks = _gasPreparedPages
+            .filter(f => f.fromPdf && f.extractedText && f.extractedText.trim().length > 25)
+            .map(f => `--- صفحة ${f.pageNum} ---\n${f.extractedText.trim()}`);
+          const isPureDigital = _gasPreparedPages.every(f => f.fromPdf) &&
+            digitalChunks.length >= Math.ceil(_gasPreparedPages.length * 0.6) &&
+            digitalChunks.join('\n').length >= 80;
+          _gasDigitalText = isPureDigital ? digitalChunks.join('\n\n') : '';
+
+          const first = _gasPreparedPages[0];
+          if (placeholder) placeholder.classList.add('hidden');
+          if (first && !first.isPdf && first.dataUrl && prevImg) {
+            prevImg.src = first.dataUrl;
+            prevImg.classList.remove('hidden');
+            if (pdfBadge) pdfBadge.classList.add('hidden');
+          } else if (pdfBadge) {
+            pdfBadge.classList.remove('hidden');
+            if (pdfName) pdfName.textContent = `${files[0].name} (${_gasPreparedPages.length} صفحة)`;
+            if (prevImg) prevImg.classList.add('hidden');
+          }
+
+          const totalKb = _gasPreparedPages.reduce((s, f) => s + (f.kb || 0), 0);
+          if (statusEl) {
+            statusEl.textContent = isPureDigital
+              ? `⚡ ملف PDF رقمي (${_gasPreparedPages.length} صفحات) — استخراج فائق السرعة جاهز! اضغط التحليل.`
+              : `✅ جاهز للتحليل: (${_gasPreparedPages.length}) صفحة مضغوطة (~${totalKb} KB) — اضغط التحليل.`;
+          }
+        });
+
+        runBtn?.addEventListener('click', async () => {
+          if (!_gasPreparedPages.length) {
+            if (typeof showToast === 'function') showToast('اختر صورة أو ملف PDF لكشف الغاز أولاً', '⚠️');
+            return;
+          }
+          const url = typeof getDirPinGsUrl === 'function'
+            ? getDirPinGsUrl()
+            : (document.getElementById('gsWebhookUrlInput')?.value || document.getElementById('bakedGsUrlMeta')?.getAttribute('content') || '').trim();
+          if (!url) {
+            if (typeof showToast === 'function') showToast('رابط Apps Script غير مضبوط', '⚠️');
+            return;
+          }
+
+          const curDir = document.getElementById('directorateSelect')?.value || '';
+          const origHtml = runBtn.innerHTML;
+          runBtn.disabled = true;
+          let sec = 0;
+          const timerId = setInterval(() => {
+            sec++;
+            runBtn.textContent = `⏳ جارٍ تحليل كشف الغاز (${sec} ث)...`;
+          }, 1000);
+          runBtn.textContent = '⏳ جارٍ تحليل كشف الغاز...';
+
+          const gasPrompt = `أنت نظام استخراج بيانات فائق الدقة لكشوفات توزيع الغاز المنزلي (الشركة اليمنية للغاز - العاصمة عدن).
+القواعد الصارمة:
+1) استخرج جميع أسماء الوكلاء/المسوقين والمعارض والكميات (عدد الأسطوانات) والعناوين وأرقام الجوالات والحالات والملاحظات بدقة تامة.
+2) حوّل جميع الأرقام الهندية/العربية (٠١٢٣٤٥٦٧٨٩) إلى أرقام إنجليزية صحيحة بدون فواصل.
+3) صنّف حقل "status" بدقة إلى إحدى القيم: "صرف طبيعي" أو "موقف" أو "تغطية مربع وكيل" أو "معرض الشركة".
+4) لا تخمّن أي كمية غير واضحة؛ إذا كان الوكيل موقفاً أو بدون كمية اجعل qty: 0.
+5) أعد JSON صالحاً فقط بدون أي نص إضافي أو علامات markdown بهذا الشكل بالضبط:
+{"station":"منشأة البريقة أو جعولة أو العريش أو بئر أحمد","rows":[{"agent":"اسم المسوق أو المعرض","loc":"العنوان أو المربع","phone":"77xxxxxxx","qty":100,"status":"صرف طبيعي","notes":""}]}`;
+
+          const postGasWithRetry = async (payload, timeoutMs = 60000) => {
+            let lastErr = null;
+            for (let t = 1; t <= 2; t++) {
+              const ctrl = new AbortController();
+              const tm = setTimeout(() => ctrl.abort(), timeoutMs);
+              try {
+                const res = await fetch(url, {
+                  method: 'POST', redirect: 'follow', credentials: 'omit', signal: ctrl.signal,
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify(payload)
+                });
+                const raw = await res.text();
+                if (!raw || raw.trim().startsWith('<')) throw new Error('تأكد من نشر Code.gs v17 بصلاحية «أي شخص»');
+                const j = JSON.parse(raw);
+                if (!j || j.status !== 'success' || !j.text) throw new Error(j?.error || 'لم يُرجع Gemini نتائج');
+                return extractJsonFromGeminiText(j.text);
+              } catch (fe) {
+                lastErr = fe;
+                if (t === 1) await new Promise(r => setTimeout(r, 900));
+              } finally { clearTimeout(tm); }
+            }
+            throw lastErr || new Error('تعذر الاتصال بالخادم');
+          };
+
+          try {
+            const allRowsMap = new Map();
+            let stationOut = '';
+
+            const mergeGasParsed = (pObj) => {
+              if (!pObj) return;
+              if (pObj.station && !stationOut) stationOut = String(pObj.station).trim();
+              const rows = Array.isArray(pObj.rows) ? pObj.rows : (Array.isArray(pObj.items) ? pObj.items : []);
+              rows.forEach(r => {
+                const nm = String(r.agent || r.name || '').trim();
+                if (!nm) return;
+                const key = normArGasName(nm);
+                const qty = Math.max(0, Math.round(parseNum(r.qty)));
+                const prev = allRowsMap.get(key);
+                if (!prev || (prev.qty === 0 && qty > 0)) {
+                  allRowsMap.set(key, {
+                    agent: nm,
+                    loc: String(r.loc || r.address || '').trim(),
+                    phone: String(r.phone || '').replace(/[^0-9+]/g, '').trim(),
+                    qty,
+                    status: String(r.status || (qty === 0 ? 'موقف' : 'صرف طبيعي')).trim(),
+                    notes: String(r.notes || '').trim()
+                  });
+                }
+              });
+            };
+
+            if (_gasDigitalText && _gasDigitalText.length >= 80) {
+              if (statusEl) statusEl.textContent = `⚡ وضع التوربو النصي: قراءة كشف الغاز الرقمي (${_gasPreparedPages.length} صفحات) في طلب واحد...`;
+              const digPrompt = gasPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + _gasDigitalText.slice(0, 48000);
+              const parsed = await postGasWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digPrompt }, 55000);
+              mergeGasParsed(parsed);
+            } else {
+              const batches = [];
+              for (let i = 0; i < _gasPreparedPages.length; i += 3) batches.push(_gasPreparedPages.slice(i, i + 3));
+              if (statusEl) statusEl.textContent = `🧠 تحليل متوازٍ لـ ${_gasPreparedPages.length} صفحات عبر Gemini Turbo...`;
+              const results = await Promise.all(batches.map(batch => {
+                const payload = batch.length === 1
+                  ? { action: 'gemini_vision', prompt: gasPrompt, imageBase64: batch[0].base64, mimeType: batch[0].mime }
+                  : { action: 'gemini_vision', prompt: gasPrompt, files: batch.map(f => ({ base64: f.base64, mimeType: f.mime })) };
+                return postGasWithRetry(payload, 65000);
+              }));
+              results.forEach(mergeGasParsed);
+            }
+
+            _gasDetectedStation = stationOut;
+            // Cross-match with existing rows in #gasTbody and saved directorate DB
+            const existingInTable = new Set();
+            document.querySelectorAll('#gasTbody tr .gas-agent').forEach(inp => {
+              const v = normArGasName(inp.value);
+              if (v) existingInTable.add(v);
+            });
+            const knownDb = (typeof getGasAgentsForDirectorate === 'function' && curDir) ? (getGasAgentsForDirectorate(curDir) || []) : [];
+
+            _gasExtractedRows = Array.from(allRowsMap.values()).map(r => {
+              const nk = normArGasName(r.agent);
+              const dbMatch = knownDb.find(k => normArGasName(k.name) === nk);
+              return {
+                ...r,
+                loc: r.loc || (dbMatch?.loc || ''),
+                phone: r.phone || (dbMatch?.phone || ''),
+                isUpdate: existingInTable.has(nk)
+              };
+            });
+
+            if (!_gasExtractedRows.length) {
+              if (statusEl) statusEl.textContent = '⚠️ لم يتم العثور على صفوف وكلاء غاز واضحة في الملف — تأكد من وضوح الكشف.';
+              return;
+            }
+
+            const totalQty = _gasExtractedRows.reduce((s, r) => s + r.qty, 0);
+            const updCnt = _gasExtractedRows.filter(r => r.isUpdate).length;
+            const newCnt = _gasExtractedRows.length - updCnt;
+
+            if (matchSummary) {
+              matchSummary.textContent = `✅ تم استخراج ${_gasExtractedRows.length} سجل (${updCnt} تحديث بدون تكرار • ${newCnt} جديد)` + (stationOut ? ` — المحطة: ${stationOut}` : '');
+            }
+            if (totalPill) totalPill.textContent = `${totalQty.toLocaleString('en-US')} أسطوانة`;
+            if (tbody) {
+              tbody.innerHTML = _gasExtractedRows.map((r, i) => `
+                <tr class="${r.isUpdate ? 'bg-amber-50/60' : 'bg-white'}">
+                  <td class="p-1.5 text-center font-bold text-slate-500">${i + 1}</td>
+                  <td class="p-1.5"><span class="px-2 py-0.5 rounded-full text-[10px] font-black ${r.isUpdate ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}">${r.isUpdate ? '🔄 تحديث' : '✨ جديد'}</span></td>
+                  <td class="p-1.5 font-extrabold text-[#0f2942]">${r.agent}</td>
+                  <td class="p-1.5 text-slate-600">${r.loc || '-'}</td>
+                  <td class="p-1.5 text-center font-mono" dir="ltr">${r.phone || '-'}</td>
+                  <td class="p-1.5 text-center font-black text-amber-800">${r.qty.toLocaleString('en-US')}</td>
+                  <td class="p-1.5 font-bold">${r.status}</td>
+                  <td class="p-1.5 text-slate-600">${r.notes || '-'}</td>
+                </tr>`).join('');
+            }
+            if (resWrap) resWrap.classList.remove('hidden');
+            if (commitBtn) commitBtn.disabled = false;
+            if (statusEl) statusEl.textContent = `✅ اكتمل التحليل بنجاح خلال ${sec || 1} ثانية — راجع الجدول ثم اضغط «دمج وتحديث كشف الغاز».`;
+          } catch (err) {
+            if (statusEl) statusEl.textContent = '⚠️ ' + explainDirErrorSmart(err, 'تعذر قراءة كشف الغاز — جرّب صورة أوضح أو تأكد من الإنترنت');
+          } finally {
+            clearInterval(timerId);
+            runBtn.disabled = false;
+            runBtn.innerHTML = origHtml;
+          }
+        });
+
+        commitBtn?.addEventListener('click', () => {
+          if (!_gasExtractedRows.length) return;
+          const gasTbody = document.getElementById('gasTbody');
+          if (!gasTbody) return;
+
+          if (_gasDetectedStation) {
+            const stSel = document.getElementById('gasStationSelect');
+            if (stSel) {
+              const opt = Array.from(stSel.options).find(o => o.value.includes(_gasDetectedStation) || _gasDetectedStation.includes(o.value));
+              if (opt) stSel.value = opt.value;
+            }
+          }
+
+          let updated = 0, inserted = 0;
+          _gasExtractedRows.forEach(item => {
+            const nk = normArGasName(item.agent);
+            const rows = Array.from(gasTbody.querySelectorAll('tr'));
+            let targetTr = rows.find(tr => normArGasName(tr.querySelector('.gas-agent')?.value) === nk);
+            if (!targetTr) {
+              targetTr = rows.find(tr => !tr.querySelector('.gas-agent')?.value?.trim() && parseNum(tr.querySelector('.gas-qty')?.value) === 0);
+              if (!targetTr && typeof appendGasRow === 'function') {
+                appendGasRow(rows.length + 1);
+                targetTr = gasTbody.lastElementChild;
+              }
+              inserted++;
+            } else {
+              updated++;
+            }
+            if (targetTr) {
+              const agEl = targetTr.querySelector('.gas-agent');
+              const locEl = targetTr.querySelector('.gas-loc');
+              const phEl = targetTr.querySelector('.gas-phone');
+              const qtyEl = targetTr.querySelector('.gas-qty');
+              const stEl = targetTr.querySelector('.gas-status');
+              const ntEl = targetTr.querySelector('.gas-notes');
+              if (agEl) agEl.value = item.agent;
+              if (locEl && item.loc) locEl.value = item.loc;
+              if (phEl && item.phone) phEl.value = item.phone;
+              if (qtyEl) qtyEl.value = item.qty > 0 ? item.qty : '';
+              if (stEl && item.status) {
+                const matchOpt = Array.from(stEl.options || []).find(o => o.value.includes(item.status) || item.status.includes(o.value));
+                if (matchOpt) stEl.value = matchOpt.value;
+              }
+              if (ntEl && item.notes) ntEl.value = item.notes;
+            }
+          });
+
+          document.querySelectorAll('#gasTbody tr').forEach(tr => { if (typeof applyGasRowVisualStyle === 'function') applyGasRowVisualStyle(tr); });
+          if (typeof updateGasStatusSummaries === 'function') updateGasStatusSummaries();
+          if (typeof recalculateKPIs === 'function') recalculateKPIs();
+          if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
+          if (typeof showToast === 'function') {
+            showToast(`✅ تم دمج كشف الغاز بنجاح (${updated} تحديث • ${inserted} جديد بدون تكرار)`, '🔥');
+          }
+          closeModal();
+        });
+      };
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+      else setTimeout(bind, 60);
     })();
 
   </script>
