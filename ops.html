@@ -7927,6 +7927,7 @@ ${ctx}`;
         document.getElementById('opsAdminGateView')?.classList.add('hidden');
         document.getElementById('opsPinsUnlockedView')?.classList.remove('hidden');
         renderOpsPinsTable();
+        if (typeof loadOpsGeminiKeysPool === 'function') loadOpsGeminiKeysPool();
         if (statusEl) statusEl.textContent = '✅ تم فتح لوحة الأقفال بنجاح — السرية الكاملة مفعّلة.';
       } catch (err) {
         if (errEl) { errEl.textContent = '❌ ' + explainOpsErrorSmart(err, 'الرمز الإداري غير صحيح أو تعذر الاتصال بالخادم'); errEl.classList.remove('hidden'); }
@@ -9103,7 +9104,10 @@ ${ctx}`;
       if ((err && err.name === 'AbortError') || low.includes('aborted') || low.includes('timeout')) {
         return 'استغرق الخادم وقتاً أطول من المعتاد — أعد المحاولة الآن أو اختر نطاق «آخر 30 يوم» لسرعة أعلى';
       }
-      if (low.includes('quotaexceeded') || low.includes('quota')) {
+      if (low.includes('resource_exhausted') || low.includes('429') || low.includes('rate limit') || (low.includes('quota') && !low.includes('quotaexceeded') && !(err && err.name === 'QuotaExceededError'))) {
+        return '⏳ تم بلوغ حد الطلبات المؤقت في مفتاح Gemini المجاني — انتظر 60 ثانية ثم أعد المحاولة';
+      }
+      if ((err && err.name === 'QuotaExceededError') || low.includes('quotaexceeded')) {
         return 'ذاكرة المتصفح ممتلئة — يمكنك مواصلة العمل السحابي دون التأثير على البيانات في Google Sheets';
       }
       if (low.includes('unexpected token') || low.includes('json')) {
@@ -9224,6 +9228,132 @@ ${ctx}`;
       }
     })();
 
+  
+
+    /* ===== v38: OPS ADMIN GEMINI MULTI-KEY POOL MANAGER ===== */
+    function renderOpsGeminiKeysList(keys, count, pools, activeModel) {
+      const badge = document.getElementById('opsGeminiKeysBadge');
+      const listEl = document.getElementById('opsGeminiKeysList');
+      if (badge) badge.textContent = `🔑 ${count || 0} مفتاح • ${pools || 0} حصة مستقلة`;
+      if (!listEl) return;
+      if (!Array.isArray(keys) || !keys.length) {
+        listEl.innerHTML = '<div class="text-slate-500 font-bold bg-white/80 rounded-xl p-2.5 border border-dashed border-slate-300">لا توجد مفاتيح مسجلة بعد — أضف أول مفتاح Gemini أدناه.</div>';
+        return;
+      }
+      listEl.innerHTML = keys.map(k => `
+        <div class="flex items-center justify-between gap-2 bg-white rounded-xl px-3 py-2 border border-indigo-200/80 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-black text-[10px]">مفتاح #${k.idx + 1}</span>
+            <span class="font-mono font-bold text-slate-800" dir="ltr">${escHtml(k.masked)}</span>
+          </div>
+          <button type="button" onclick="removeOpsGeminiKey(${k.idx})" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-black transition">🗑️ حذف</button>
+        </div>`).join('') + (activeModel ? `<div class="text-[10.5px] text-slate-600 font-bold pt-0.5">🤖 النموذج النشط حالياً: <span class="font-mono text-indigo-800">${escHtml(activeModel)}</span></div>` : '');
+    }
+
+    async function loadOpsGeminiKeysPool() {
+      if (!opsSessionAdminPin) return;
+      const st = document.getElementById('opsGeminiKeysStatus');
+      if (st) st.textContent = '⏳ جارٍ تحميل مجمّع المفاتيح من الخادم...';
+      try {
+        const res = await fetch(getBakedUrl(), {
+          method: 'POST', redirect: 'follow', credentials: 'omit',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'admin_get_gemini_keys', adminPin: opsSessionAdminPin })
+        });
+        const raw = await res.text();
+        if (!raw || raw.trim().startsWith('<')) throw new Error('حدّث Code.gs إلى الإصدار v20 لتفعيل إدارة المفاتيح من اللوحة');
+        const j = JSON.parse(raw);
+        if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر جلب المفاتيح');
+        renderOpsGeminiKeysList(j.keys, j.count, j.pools, j.activeModel);
+        if (st) st.textContent = j.count >= 2 ? `✅ مجمّع المفاتيح يعمل بكفاءة (${j.count} مفاتيح = ${j.pools} حصص مستقلة).` : '💡 يمكنك إضافة مفتاح ثانٍ وثالث من حسابات Gmail أخرى لمضاعفة السعة إلى 9 حصص.';
+      } catch (err) {
+        if (st) st.textContent = '⚠️ ' + explainOpsErrorSmart(err, 'تعذر تحميل المفاتيح — تأكد من نشر Code.gs v20');
+      }
+    }
+
+    window.removeOpsGeminiKey = async function removeOpsGeminiKey(idx) {
+      if (!opsSessionAdminPin) return;
+      const st = document.getElementById('opsGeminiKeysStatus');
+      if (st) st.textContent = '⏳ جارٍ حذف المفتاح...';
+      try {
+        const res = await fetch(getBakedUrl(), {
+          method: 'POST', redirect: 'follow', credentials: 'omit',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'admin_remove_gemini_key', adminPin: opsSessionAdminPin, idx })
+        });
+        const j = await res.json();
+        if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر حذف المفتاح');
+        renderOpsGeminiKeysList(j.keys, j.count, j.pools);
+        if (st) st.textContent = '✅ تم حذف المفتاح وتحديث المجمّع سحابياً.';
+        showToast('تم حذف المفتاح بنجاح', '🗑️');
+      } catch (err) {
+        if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر حذف المفتاح');
+      }
+    };
+
+    (function bindOpsV38GeminiKeysUi() {
+      const init = () => {
+        const addBtn = document.getElementById('opsAddGeminiKeyBtn');
+        const testBtn = document.getElementById('opsTestGeminiKeysBtn');
+        const inp = document.getElementById('opsNewGeminiKeyInput');
+        const st = document.getElementById('opsGeminiKeysStatus');
+
+        if (addBtn && addBtn.dataset.v38Bound !== '1') {
+          addBtn.dataset.v38Bound = '1';
+          addBtn.addEventListener('click', async () => {
+            const val = (inp?.value || '').trim();
+            if (!val || !val.startsWith('AIza') || val.length < 20) {
+              if (st) st.textContent = '⚠️ الصق مفتاح Gemini صحيح يبدأ بـ AIzaSy...';
+              return;
+            }
+            addBtn.disabled = true; addBtn.textContent = '⏳ جارٍ الحفظ...';
+            try {
+              const res = await fetch(getBakedUrl(), {
+                method: 'POST', redirect: 'follow', credentials: 'omit',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'admin_add_gemini_key', adminPin: opsSessionAdminPin, apiKey: val })
+              });
+              const j = await res.json();
+              if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر حفظ المفتاح');
+              if (inp) inp.value = '';
+              renderOpsGeminiKeysList(j.keys, j.count, j.pools);
+              if (st) st.textContent = `✅ تمت إضافة المفتاح بنجاح! المجمّع الآن: ${j.count} مفاتيح (${j.pools} حصص مستقلة).`;
+              showToast(`تمت إضافة مفتاح Gemini #${j.count} سحابياً!`, '🔑');
+            } catch (err) {
+              if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر حفظ المفتاح');
+            } finally {
+              addBtn.disabled = false; addBtn.textContent = '➕ إضافة وحفظ سحابياً';
+            }
+          });
+        }
+
+        if (testBtn && testBtn.dataset.v38Bound !== '1') {
+          testBtn.dataset.v38Bound = '1';
+          testBtn.addEventListener('click', async () => {
+            testBtn.disabled = true; testBtn.textContent = '⏳ جارٍ الفحص...';
+            if (st) st.textContent = '⏳ جارٍ اختبار الاتصال الفعلي مع خوادم Gemini...';
+            try {
+              const res = await fetch(getBakedUrl(), {
+                method: 'POST', redirect: 'follow', credentials: 'omit',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'admin_test_gemini_keys', adminPin: opsSessionAdminPin })
+              });
+              const j = await res.json();
+              if (!j || j.status !== 'success') throw new Error(j?.error || 'فشل الاتصال');
+              if (st) st.textContent = `✅ الاتصال سليم 100%! النموذج النشط: ${j.model} (${j.count} مفاتيح = ${j.pools} حصص مستقلة).`;
+              showToast('مجمّع مفاتيح Gemini متصل ويعمل بكفاءة ✅', '⚡');
+            } catch (err) {
+              if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر الاتصال بـ Gemini');
+            } finally {
+              testBtn.disabled = false; testBtn.textContent = '⚡ فحص الاتصال';
+            }
+          });
+        }
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else setTimeout(init, 80);
+    })();
+
   </script>
 
   <!-- ==================== OPS DIRECTORATE PIN MANAGER MODAL (ADMIN PIN PROTECTED) ==================== -->
@@ -9252,6 +9382,27 @@ ${ctx}`;
 
       <!-- Unlocked PIN Manager View -->
       <div id="opsPinsUnlockedView" class="hidden p-4 overflow-y-auto space-y-3 text-xs">
+
+        <!-- v38: إدارة مجمّع مفاتيح Gemini AI المتعددة -->
+        <div class="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3.5 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 class="font-black text-[#102a4e] text-xs sm:text-sm">🔑 مجمّع مفاتيح Gemini AI المتعددة (للمديريات الثمان)</h4>
+              <p class="text-[11px] text-slate-600 font-semibold">أضف 2–3 مفاتيح مجانية من حسابات Gmail مختلفة لمضاعفة السعة إلى 9 حصص تلقائياً دون توقف.</p>
+            </div>
+            <span id="opsGeminiKeysBadge" class="px-2.5 py-1 rounded-full bg-indigo-900 text-amber-300 text-[11px] font-black">0 مفتاح • 0 حصة</span>
+          </div>
+
+          <div id="opsGeminiKeysList" class="space-y-1.5 text-xs"></div>
+
+          <div class="flex flex-col sm:flex-row gap-2 pt-1">
+            <input id="opsNewGeminiKeyInput" type="password" dir="ltr" autocomplete="off" placeholder="الصق مفتاح Gemini الجديد هنا (AIzaSy...)" class="flex-1 bg-white border border-indigo-300 rounded-xl px-3 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-indigo-400" />
+            <button id="opsAddGeminiKeyBtn" type="button" class="px-3.5 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-black shadow shrink-0 transition">➕ إضافة وحفظ سحابياً</button>
+            <button id="opsTestGeminiKeysBtn" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow shrink-0 transition">⚡ فحص الاتصال</button>
+          </div>
+          <div id="opsGeminiKeysStatus" class="text-[11px] font-bold text-indigo-900"></div>
+        </div>
+
         <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
           <button id="opsPinsTabManage" type="button" class="px-3 py-1.5 rounded-xl bg-[#102a4e] text-white font-black text-xs">🔐 رموز المديريات (8)</button>
           <button id="opsPinsTabAudit" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs">🛡️ سجل التدقيق الأمني المباشر</button>
