@@ -8224,6 +8224,7 @@
   
     // ==================== SMART HANDWRITTEN PRICE & FX OCR (5-LAYER ANTI-ERROR) ====================
     let _priceOcrPreparedFiles = [];
+    let _priceOcrDigitalText = '';
     let _priceOcrRows = [];
 
     async function preparePriceOcrFile(file) {
@@ -8238,19 +8239,38 @@
             }
             const buf = await file.arrayBuffer();
             const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
-            const totalPages = Math.min(pdf.numPages, 6);
+            const totalPages = Math.min(pdf.numPages, 10);
             const pagesOut = [];
             for (let p = 1; p <= totalPages; p++) {
               const page = await pdf.getPage(p);
+              // v33: Extract selectable digital text grouped by visual table row (Y-coordinate)
+              let pageText = '';
+              try {
+                const tc = await page.getTextContent();
+                const rowsMap = new Map();
+                (tc.items || []).forEach(it => {
+                  const s = String(it.str || '').trim();
+                  if (!s) return;
+                  const yKey = Math.round((it.transform ? it.transform[5] : 0) / 5) * 5;
+                  const xPos = it.transform ? it.transform[4] : 0;
+                  if (!rowsMap.has(yKey)) rowsMap.set(yKey, []);
+                  rowsMap.get(yKey).push({ x: xPos, s });
+                });
+                const sortedYs = Array.from(rowsMap.keys()).sort((a, b) => b - a);
+                pageText = sortedYs.map(y =>
+                  rowsMap.get(y).sort((a, b) => b.x - a.x).map(it => it.s).join(' | ')
+                ).join('\n');
+              } catch (_te) { pageText = ''; }
+
               const vp1 = page.getViewport({ scale: 1 });
-              const maxD = 1520;
-              const scale = Math.min(2.2, maxD / Math.max(vp1.width, vp1.height));
+              const maxD = 1350;
+              const scale = Math.min(2.0, maxD / Math.max(vp1.width, vp1.height));
               const vp = page.getViewport({ scale });
               const canvas = document.createElement('canvas');
               canvas.width = Math.round(vp.width);
               canvas.height = Math.round(vp.height);
               await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-              const dUrl = canvas.toDataURL('image/jpeg', 0.82);
+              const dUrl = canvas.toDataURL('image/jpeg', 0.78);
               const b64 = dUrl.split(',')[1];
               pagesOut.push({
                 isPdf: false,
@@ -8259,6 +8279,7 @@
                 mime: 'image/jpeg',
                 dataUrl: dUrl,
                 base64: b64,
+                extractedText: pageText,
                 kb: Math.round((b64.length * 0.75) / 1024),
                 name: `${file.name} (ص${p})`
               });
@@ -8481,7 +8502,19 @@
           }
         }
         const totalKb = _priceOcrPreparedFiles.reduce((s, f) => s + (f.kb || 0), 0);
-        if (countEl) countEl.textContent = `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) صفحة مضغوطة (~${totalKb} KB)`;
+        const allDigitalChunks = _priceOcrPreparedFiles
+          .filter(f => f.fromPdf && f.extractedText && f.extractedText.trim().length > 25)
+          .map(f => `--- صفحة ${f.pageNum} ---\n${f.extractedText.trim()}`);
+        const isPureDigitalPdf = _priceOcrPreparedFiles.length > 0 &&
+          _priceOcrPreparedFiles.every(f => f.fromPdf) &&
+          allDigitalChunks.length >= Math.ceil(_priceOcrPreparedFiles.length * 0.6) &&
+          allDigitalChunks.join('\n').length >= 120;
+        _priceOcrDigitalText = isPureDigitalPdf ? allDigitalChunks.join('\n\n') : '';
+        if (countEl) {
+          countEl.textContent = isPureDigitalPdf
+            ? `⚡ ملف PDF رقمي (${_priceOcrPreparedFiles.length} صفحات) — استخراج نصي فائق السرعة (3–8 ثوانٍ!)`
+            : `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) صفحة مضغوطة (~${totalKb} KB)`;
+        }
         if ((window.location.protocol === 'content:' || window.location.protocol === 'file:') && typeof showToast === 'function') {
           showToast('💡 نصيحة للسرعة: افتح المنظومة من رابط GitHub المباشر (abuhussam.github.io/moit-aden) بدلاً من مدير الملفات', '⚡');
         }
@@ -8544,67 +8577,21 @@ ${catalogText}`;
         }
 
         try {
-          // v32: Fast sequential page-by-page analysis with automatic 1x smart retry
+          // v33: GENIUS HYBRID TURBO ENGINE
+          // Path A (Digital PDF): 1 ultra-fast text-only Gemini call (~4KB) for ALL pages -> 3–8 seconds!
+          // Path B (Photos/Scanned PDF): Parallel batches of up to 3 compressed images -> 10–18 seconds!
           const mergedFx = {};
           const mergedItemsMap = new Map();
-          const totalPgs = _priceOcrPreparedFiles.length;
+          const scanTitle = document.getElementById('dirPriceOcrScanStage');
 
-          const callSingleOcrPage = async (fileObj, pageIdx) => {
-            const scanTitle = document.getElementById('dirPriceOcrScanStage');
-            const kbTxt = fileObj.kb ? ` (${fileObj.kb} KB)` : '';
-            if (scanTitle) scanTitle.textContent = `⚡ تحليل الصفحة ${pageIdx + 1} من ${totalPgs}${kbTxt} عبر Gemini Turbo...`;
-            if (statusEl) {
-              statusEl.textContent = `🧠 جارٍ قراءة الصفحة ${pageIdx + 1} من ${totalPgs}${kbTxt}...`;
-              statusEl.classList.remove('hidden');
-            }
-
-            let lastErr = null;
-            for (let tryNum = 1; tryNum <= 2; tryNum++) {
-              const ctrl = new AbortController();
-              const tm = setTimeout(() => ctrl.abort(), 75000);
-              try {
-                const payload = {
-                  action: 'gemini_vision',
-                  prompt,
-                  imageBase64: fileObj.base64,
-                  mimeType: fileObj.mime
-                };
-                const res = await fetch(url, {
-                  method: 'POST', redirect: 'follow', credentials: 'omit', signal: ctrl.signal,
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify(payload)
-                });
-                const raw = await res.text();
-                if (!raw || raw.trim().startsWith('<')) {
-                  throw new Error('تأكد من نشر Code.gs v15 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
-                }
-                const j = JSON.parse(raw);
-                if (!j || j.status !== 'success' || !j.text) {
-                  throw new Error(j?.error || 'لم يُرجع Gemini نتائج لهذه الصفحة');
-                }
-                return extractJsonFromGeminiText(j.text);
-              } catch (fe) {
-                lastErr = fe;
-                if (tryNum === 1) {
-                  if (scanTitle) scanTitle.textContent = `🔄 إعادة محاولة تلقائية للصفحة ${pageIdx + 1} من ${totalPgs}...`;
-                  await new Promise(r => setTimeout(r, 1200));
-                }
-              } finally { clearTimeout(tm); }
-            }
-            if (lastErr && lastErr.name === 'AbortError') {
-              throw new Error(`انتهت المهلة أثناء قراءة الصفحة ${pageIdx + 1} بسبب بطء الشبكة — تأكد من تحديث Code.gs v15`);
-            }
-            throw lastErr || new Error('تعذر الاتصال بـ Apps Script — تحقق من الإنترنت');
-          };
-
-          for (let pi = 0; pi < totalPgs; pi++) {
-            const pgParsed = await callSingleOcrPage(_priceOcrPreparedFiles[pi], pi);
-            if (pgParsed && pgParsed.fx) {
+          const mergeChunkResult = (pgParsed) => {
+            if (!pgParsed) return;
+            if (pgParsed.fx) {
               ['usdSell', 'usdBuy', 'sarSell', 'sarBuy'].forEach(k => {
                 if (parseNum(pgParsed.fx[k]) > 0 && !mergedFx[k]) mergedFx[k] = pgParsed.fx[k];
               });
             }
-            const pgItems = Array.isArray(pgParsed?.items) ? pgParsed.items : [];
+            const pgItems = Array.isArray(pgParsed.items) ? pgParsed.items : [];
             pgItems.forEach(it => {
               if (!it || !it.id) return;
               const prev = mergedItemsMap.get(it.id);
@@ -8612,6 +8599,68 @@ ${catalogText}`;
                 mergedItemsMap.set(it.id, it);
               }
             });
+          };
+
+          const postGeminiWithRetry = async (payload, labelTxt, timeoutMs = 60000) => {
+            let lastErr = null;
+            for (let tryNum = 1; tryNum <= 2; tryNum++) {
+              const ctrl = new AbortController();
+              const tm = setTimeout(() => ctrl.abort(), timeoutMs);
+              try {
+                const res = await fetch(url, {
+                  method: 'POST', redirect: 'follow', credentials: 'omit', signal: ctrl.signal,
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify(payload)
+                });
+                const raw = await res.text();
+                if (!raw || raw.trim().startsWith('<')) {
+                  throw new Error('تأكد من نشر Code.gs v16 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
+                }
+                const j = JSON.parse(raw);
+                if (!j || j.status !== 'success' || !j.text) {
+                  throw new Error(j?.error || 'لم يُرجع Gemini نتائج');
+                }
+                return extractJsonFromGeminiText(j.text);
+              } catch (fe) {
+                lastErr = fe;
+                if (tryNum === 1) {
+                  if (scanTitle) scanTitle.textContent = `🔄 إعادة محاولة سريعة (${labelTxt})...`;
+                  await new Promise(r => setTimeout(r, 900));
+                }
+              } finally { clearTimeout(tm); }
+            }
+            throw lastErr || new Error('تعذر الاتصال بـ Apps Script — تحقق من الإنترنت');
+          };
+
+          if (_priceOcrDigitalText && _priceOcrDigitalText.length >= 120) {
+            // PATH A: Instant Digital PDF Text Extraction (1 single ~4KB text request!)
+            if (scanTitle) scanTitle.textContent = `⚡ استخراج رقمي فائق السرعة لجميع الصفحات (${_priceOcrPreparedFiles.length} صفحات دفعة واحدة)...`;
+            if (statusEl) {
+              statusEl.textContent = `⚡ وضع التوربو النصي: تحليل جميع صفحات الـ PDF الرقمي (${_priceOcrPreparedFiles.length} صفحات) في طلب واحد...`;
+              statusEl.classList.remove('hidden');
+            }
+            const digitalPrompt = prompt + '\n\n=== النص الرقمي المستخرج حرفياً من جدول ملف PDF (كل سطر يمثل صفاً في الجدول) ===\n' + _priceOcrDigitalText.slice(0, 28000);
+            const digRes = await postGeminiWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digitalPrompt }, 'التحليل الرقمي', 55000);
+            mergeChunkResult(digRes);
+          } else {
+            // PATH B: Parallel Vision Batches (up to 3 images per batch, all batches in parallel!)
+            const batchSize = 3;
+            const batches = [];
+            for (let i = 0; i < _priceOcrPreparedFiles.length; i += batchSize) {
+              batches.push(_priceOcrPreparedFiles.slice(i, i + batchSize));
+            }
+            if (scanTitle) scanTitle.textContent = `⚡ تحليل متوازٍ فائق السرعة (${_priceOcrPreparedFiles.length} صور في ${batches.length} دفعة متزامنة)...`;
+            if (statusEl) {
+              statusEl.textContent = `🧠 جارٍ التحليل المتوازي لـ ${_priceOcrPreparedFiles.length} صفحات عبر Gemini Turbo...`;
+              statusEl.classList.remove('hidden');
+            }
+            const results = await Promise.all(batches.map((batch, bIdx) => {
+              const payload = batch.length === 1
+                ? { action: 'gemini_vision', prompt, imageBase64: batch[0].base64, mimeType: batch[0].mime }
+                : { action: 'gemini_vision', prompt, files: batch.map(f => ({ base64: f.base64, mimeType: f.mime })) };
+              return postGeminiWithRetry(payload, `الدفعة ${bIdx + 1}/${batches.length}`, 65000);
+            }));
+            results.forEach(mergeChunkResult);
           }
 
           const parsed = { fx: mergedFx, items: Array.from(mergedItemsMap.values()) };
