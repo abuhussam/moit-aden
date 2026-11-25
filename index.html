@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -691,6 +692,99 @@
     body.dark-mode #dirPriceOcrModal .bg-slate-50 { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
     body.dark-mode #dirPriceOcrModal input { background-color: #1e293b !important; color: #f8fafc !important; border-color: #475569 !important; }
 
+  
+    /* ==================== EXECUTIVE LUXURY VISUAL FX (v27) ==================== */
+    @keyframes moitLaserScan {
+      0% { top: 4%; opacity: 0.95; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 4%; opacity: 0.95; }
+    }
+    @keyframes moitRadarPulse {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      70% { transform: scale(1.9); opacity: 0; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    @keyframes moitShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes moitAiWave {
+      0%, 100% { transform: scaleY(0.35); opacity: 0.65; }
+      50% { transform: scaleY(1.15); opacity: 1; }
+    }
+    @keyframes moitCheckDraw {
+      0% { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes moitCardReveal {
+      0% { opacity: 0; transform: translateY(14px) scale(0.99); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes moitGoldSheen {
+      0% { transform: translateX(140%) skewX(-24deg); }
+      100% { transform: translateX(-220%) skewX(-24deg); }
+    }
+
+    /* Laser Scanner Box */
+    .moit-scanner-box {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0b1c36 0%, #14325c 60%, #0d4a58 100%);
+      border: 1.5px solid rgba(245, 198, 92, 0.65);
+      box-shadow: 0 12px 32px rgba(11, 28, 54, 0.35), inset 0 0 24px rgba(245, 198, 92, 0.12);
+    }
+    .moit-laser-beam {
+      position: absolute;
+      left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #fbbf24 25%, #38bdf8 50%, #fbbf24 75%, transparent 100%);
+      box-shadow: 0 0 14px 3px rgba(251, 191, 36, 0.75), 0 0 26px 5px rgba(56, 189, 248, 0.45);
+      animation: moitLaserScan 2.1s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Live Radar Pulse Dot */
+    .moit-live-dot { position: relative; display: inline-flex; width: 9px; height: 9px; }
+    .moit-live-dot::before {
+      content: ''; position: absolute; inset: 0; border-radius: 9999px;
+      background: #10b981; animation: moitRadarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .moit-live-dot::after {
+      content: ''; position: relative; width: 9px; height: 9px; border-radius: 9999px; background: #34d399;
+    }
+
+    /* AI Neural Waves & Shimmer */
+    .moit-ai-bar {
+      width: 4px; height: 22px; border-radius: 9999px;
+      background: linear-gradient(180deg, #fbbf24, #38bdf8);
+      animation: moitAiWave 1.05s ease-in-out infinite;
+    }
+    .moit-shimmer-line {
+      background: linear-gradient(90deg, rgba(148,163,184,0.16) 25%, rgba(251,191,36,0.28) 50%, rgba(148,163,184,0.16) 75%);
+      background-size: 200% 100%;
+      animation: moitShimmer 1.55s linear infinite;
+    }
+
+    /* Executive Gold Sheen on CTA Buttons */
+    .moit-sheen-btn { position: relative; overflow: hidden; }
+    .moit-sheen-btn::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 38%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.34), transparent);
+      animation: moitGoldSheen 3.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Smooth Card Lift & Reveal */
+    .moit-reveal { animation: moitCardReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .section-card, .ai-gen-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    @media (hover: hover) {
+      .ai-gen-card:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(15, 41, 66, 0.14); }
+    }
+    .moit-check-path {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: moitCheckDraw 0.55s ease-out 0.1s forwards;
+    }
+
   </style>
   <meta name="theme-color" content="#0f2942" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1228,7 +1322,7 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-        <button id="openDirPriceOcrBtn" type="button" class="no-print inline-flex items-center gap-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0f2942] px-3 py-1.5 text-xs font-black shadow-md transition">
+        <button id="openDirPriceOcrBtn" type="button" class="moit-sheen-btn no-print inline-flex items-center gap-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0f2942] px-3 py-1.5 text-xs font-black shadow-md transition">
           <span>📷</span><span>استيراد الأسعار (صورة / PDF)</span>
         </button>
           <button id="loadYesterdayPricesBtn" type="button" class="no-print rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0f2942] px-3 py-1 text-xs font-extrabold shadow transition">🔄 تحميل أسعار الأمس تلقائياً</button>
@@ -2879,6 +2973,7 @@
       document.getElementById('summaryActionsMirror').textContent = actSum.toLocaleString('en-US');
       if (typeof updatePriceChangeRadar === 'function') updatePriceChangeRadar();
       if (typeof updateModernReadinessProgress === 'function') updateModernReadinessProgress();
+      if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
     }
 
     function initApp() {
@@ -2994,6 +3089,7 @@
       document.getElementById('directorateSelect').addEventListener('change', () => {
         refreshDirectorateDropdowns();
         loadBaselinePrices(false);
+        if (typeof initDirHudTelemetryTabs === 'function') initDirHudTelemetryTabs();
         const dir = document.getElementById('directorateSelect').value;
         if (dir) showToast(`تم تحميل وكلاء الغاز ومناطق وأسعار مديرية ${dir} تلقائياً`, '📍');
       });
@@ -3444,6 +3540,21 @@
         }
 
         try {
+          const _upFx = document.getElementById('dirCloudUploadFxModal');
+          const _upSpin = document.getElementById('dirUpFxSpinnerWrap');
+          const _upChk = document.getElementById('dirUpFxCheckWrap');
+          const _upTitle = document.getElementById('dirUpFxTitle');
+          const _upSub = document.getElementById('dirUpFxSub');
+          const _upBar = document.getElementById('dirUpFxBar');
+          if (_upFx) {
+            _upSpin?.classList.remove('hidden');
+            _upChk?.classList.add('hidden');
+            if (_upTitle) _upTitle.textContent = `جاري توثيق ورفع تقرير «${directorate}»...`;
+            if (_upSub) _upSub.textContent = 'تأمين الاتصال وتحديث قاعدة بيانات غرفة العمليات المركزية';
+            if (_upBar) _upBar.style.width = '68%';
+            _upFx.classList.remove('hidden');
+            _upFx.classList.add('flex');
+          }
           let serverVerified = false;
           try {
             const ctrl = new AbortController();
@@ -3463,12 +3574,15 @@
             if (rawResp && !rawResp.trim().startsWith('<')) {
               const jr = JSON.parse(rawResp);
               if (jr && jr.status === 'error') {
-                throw new Error(jr.error || 'رفض السيرفر استلام التقرير — تحقق من رمز القفل');
+                const srvErr = new Error(jr.error || 'رفض السيرفر استلام التقرير — تحقق من رمز القفل');
+                srvErr._fromServer = true;
+                srvErr._code = jr.code || 'SERVER_ERROR';
+                throw srvErr;
               }
               serverVerified = true;
             }
           } catch (submitErr) {
-            if (submitErr && (String(submitErr.message || '').includes('رمز القفل') || String(submitErr.message || '').includes('رفض السيرفر'))) {
+            if (submitErr && (submitErr._fromServer || submitErr.name === 'AbortError' || !navigator.onLine)) {
               throw submitErr;
             }
             if (!serverVerified) {
@@ -3479,6 +3593,16 @@
                 body: JSON.stringify(payload)
               });
             }
+          }
+          if (_upFx) {
+            _upSpin?.classList.add('hidden');
+            _upChk?.classList.remove('hidden');
+            if (_upTitle) _upTitle.textContent = 'تم توثيق التقرير بنجاح في غرفة العمليات!';
+            if (_upSub) _upSub.textContent = `مديرية ${directorate} — محمي بسجل التدقيق الأمني`;
+            if (_upBar) _upBar.style.width = '100%';
+            await new Promise(r => setTimeout(r, 850));
+            _upFx.classList.add('hidden');
+            _upFx.classList.remove('flex');
           }
           if (typeof markReportSyncedLocal === 'function') markReportSyncedLocal(directorate, visitDate);
           if (typeof removeFromOfflineOutbox === 'function') removeFromOfflineOutbox(directorate, visitDate);
@@ -3498,9 +3622,19 @@
           }
           showToast('تم إرسال تقرير مديرية ' + directorate + ' إلى Google Sheets بنجاح!', '✅');
         } catch (err) {
-          if (typeof enqueueOfflineReport === 'function') enqueueOfflineReport(payload, webhookUrl);
-          showToast('📶 تعذر الاتصال بالشبكة — تم حفظ التقرير في صندوق الانتظار وسيتم رفعه تلقائياً عند عودة الإنترنت', '⏳');
+          const errCode = err && err._code ? String(err._code) : '';
+          if (errCode === 'INVALID_PIN' || errCode === 'LOCKED_OUT') {
+            showToast('🔐 ' + explainDirErrorSmart(err, 'رمز قفل المديرية غير صحيح — تحقق من الرمز وأعد المحاولة'), '🔐');
+          } else if (errCode === 'SERVER_BUSY') {
+            if (typeof enqueueOfflineReport === 'function') enqueueOfflineReport(payload, webhookUrl);
+            showToast('⏳ الخادم مشغول بحفظ تقارير أخرى — تم حفظ تقريرك في صندوق الانتظار وسيُرفع تلقائياً خلال ثوانٍ', '⏳');
+          } else {
+            if (typeof enqueueOfflineReport === 'function') enqueueOfflineReport(payload, webhookUrl);
+            showToast('📶 ' + explainDirErrorSmart(err, 'تعذر الاتصال بالشبكة') + ' — تم حفظ التقرير في صندوق الانتظار وسيُرفع تلقائياً عند استقرار الإنترنت', '⏳');
+          }
         } finally {
+          const _upHide = document.getElementById('dirCloudUploadFxModal');
+          if (_upHide) { _upHide.classList.add('hidden'); _upHide.classList.remove('flex'); }
           btn.innerHTML = origHtml;
           btn.disabled = false;
         }
@@ -5952,7 +6086,212 @@
               tfoot td { background:#fef3c7; font-weight:900; color:#0f2942; }
               .no-print { text-align:center; margin:10px 0; }
               @media print { .no-print { display:none; } }
-            </style></head><body>
+            
+    /* ===== v28: FUTURISTIC DATA-DRIVEN TELEMETRY TABS (HUD) ===== */
+    .hud-tab-track {
+      position: relative;
+      isolation: isolate;
+    }
+    .hud-liquid-pill {
+      position: absolute;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 0.78rem;
+      background: linear-gradient(135deg, rgba(16, 42, 78, 0.96), rgba(15, 76, 92, 0.94));
+      box-shadow: 0 6px 18px -4px rgba(16, 42, 78, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(212, 175, 55, 0.35);
+      transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), width 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+      opacity: 0;
+      top: 0;
+      left: 0;
+      will-change: transform, width;
+    }
+    .hud-tab-track .tab-btn,
+    .hud-tab-track .subtab-btn {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      padding-bottom: 10px !important;
+      transition: color 0.22s ease, border-color 0.22s ease, box-shadow 0.25s ease, transform 0.2s ease, background-color 0.22s ease;
+    }
+    .hud-tab-track.hud-pill-ready .tab-btn.active,
+    .hud-tab-track.hud-pill-ready .subtab-btn.active {
+      background: transparent !important;
+      border-color: rgba(212, 175, 55, 0.45) !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+    }
+    .hud-tab-bar-bottom {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 2px;
+      height: 2.5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.22);
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .hud-tab-track .tab-btn.active .hud-tab-bar-bottom,
+    .hud-tab-track .subtab-btn.active .hud-tab-bar-bottom {
+      background: rgba(255, 255, 255, 0.16);
+    }
+    .hud-tab-bar-fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      transition: width 0.48s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+    }
+    .hud-bar-gold { background: linear-gradient(90deg, #d4af37, #fde047) !important; }
+    .hud-bar-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+    .hud-bar-rose { background: linear-gradient(90deg, #e11d48, #fb7185) !important; }
+    .hud-bar-cyan { background: linear-gradient(90deg, #06b6d4, #38bdf8) !important; }
+    .hud-bar-emerald { background: linear-gradient(90deg, #059669, #34d399) !important; }
+
+    .hud-micro-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1.5px 6px;
+      border-radius: 999px;
+      line-height: 1.3;
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .tab-btn.active .hud-micro-pill,
+    .subtab-btn.active .hud-micro-pill {
+      background: rgba(255, 255, 255, 0.16) !important;
+      color: #f8fafc !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+    .hud-pill-ok { background: rgba(16, 185, 129, 0.14); color: #065f46; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .hud-pill-warn { background: rgba(245, 158, 11, 0.16); color: #92400e; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .hud-pill-crit { background: rgba(225, 29, 72, 0.14); color: #9f1239; border: 1px solid rgba(225, 29, 72, 0.35); }
+    .hud-pill-ai { background: rgba(79, 70, 229, 0.14); color: #3730a3; border: 1px solid rgba(99, 102, 241, 0.3); }
+
+    .hud-ring-svg {
+      width: 18px;
+      height: 18px;
+      transform: rotate(-90deg);
+      flex-shrink: 0;
+    }
+    .hud-ring-bg {
+      fill: none;
+      stroke: rgba(148, 163, 184, 0.32);
+      stroke-width: 2.6;
+    }
+    .tab-btn.active .hud-ring-bg {
+      stroke: rgba(255, 255, 255, 0.22);
+    }
+    .hud-ring-fg {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.45s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.25s ease;
+    }
+
+    @keyframes hudBeaconPulse {
+      0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+      55% { transform: scale(1.15); opacity: 0.92; box-shadow: 0 0 0 5px transparent; }
+    }
+    .hud-live-beacon {
+      display: inline-block;
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 999px;
+      animation: hudBeaconPulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    .hud-beacon-emerald { background: #10b981; color: rgba(16, 185, 129, 0.55); }
+    .hud-beacon-amber { background: #f59e0b; color: rgba(245, 158, 11, 0.6); }
+    .hud-beacon-rose { background: #f43f5e; color: rgba(244, 63, 94, 0.6); }
+
+    .hud-ready-glow {
+      box-shadow: 0 0 0 1.5px rgba(212, 175, 55, 0.65), 0 4px 14px -2px rgba(16, 185, 129, 0.32) !important;
+    }
+
+    .hud-dot-matrix {
+      display: inline-grid;
+      grid-template-columns: repeat(4, 5.5px);
+      gap: 2px;
+      padding: 2.5px 4px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.08);
+      align-items: center;
+    }
+    .tab-btn.active .hud-dot-matrix {
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .hud-dir-dot {
+      width: 5.5px;
+      height: 5.5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.45);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hud-dir-dot.lit {
+      background: #10b981;
+      box-shadow: 0 0 5px rgba(16, 185, 129, 0.85);
+    }
+
+    .hud-sparkline {
+      width: 34px;
+      height: 14px;
+      overflow: visible;
+      flex-shrink: 0;
+    }
+
+    .hud-heat-track {
+      display: inline-block;
+      width: 28px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.25);
+      overflow: hidden;
+      vertical-align: middle;
+    }
+    .hud-heat-fill {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.45s ease, background 0.3s ease;
+    }
+
+    /* Desktop HUD Quick-Peek Popover */
+    #opsHudQuickPeek {
+      position: fixed;
+      z-index: 95;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px) scale(0.97);
+      transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      min-width: 230px;
+      max-width: 300px;
+      background: linear-gradient(155deg, rgba(11, 27, 52, 0.96), rgba(15, 42, 68, 0.95));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 175, 55, 0.42);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: #f8fafc;
+      box-shadow: 0 18px 40px -10px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      direction: rtl;
+    }
+    #opsHudQuickPeek.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @media (hover: none), (max-width: 768px) {
+      #opsHudQuickPeek { display: none !important; }
+    }
+
+  </style></head><body>
             <div class="no-print"><button onclick="window.print()" style="background:#0f2942;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;">🖨️ طباعة / حفظ PDF</button></div>
             <div class="hdr">
               <div>
@@ -6041,7 +6380,7 @@
 
         let data = null;
         try {
-          const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'GET' });
+          const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'days=30&t=' + Date.now(), { method: 'GET' });
           if (!res.ok) throw new Error('HTTP');
           data = await res.json();
         } catch (e) {
@@ -6438,7 +6777,7 @@
 
         let data = null;
         try {
-          const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'GET' });
+          const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'days=60&t=' + Date.now(), { method: 'GET' });
           if (!res.ok) throw new Error('HTTP');
           data = await res.json();
         } catch (e1) {
@@ -6529,6 +6868,7 @@
       setChip('chkFx', fxOk, 'الصرف');
       setChip('chkPrices', priced >= 20, `السلع (${priced}/81)`);
       setChip('chkSummary', sumOk, 'المعد والملخص');
+      /* v28-readiness-sync */ if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
 
       if (badge) {
         if (score >= 85 && dirOk) {
@@ -7259,7 +7599,7 @@
       try {
         const map = JSON.parse(localStorage.getItem(SYNCED_KEYS_LS) || '{}') || {};
         map[getReportSyncKey(dir, dt)] = new Date().toISOString();
-        localStorage.setItem(SYNCED_KEYS_LS, JSON.stringify(map));
+        try { localStorage.setItem(SYNCED_KEYS_LS, JSON.stringify(map)); } catch (_e) { /* quota safe */ }
       } catch (e) {}
     }
     function enqueueOfflineReport(payload, webhookUrl) {
@@ -7310,7 +7650,7 @@
 
     async function fetchCloudExistingKeys(webhookUrl) {
       try {
-        const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'GET' });
+        const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'days=30&t=' + Date.now(), { method: 'GET' });
         if (!res.ok) return null;
         const json = await res.json();
         const reps = Array.isArray(json?.reports) ? json.reports : [];
@@ -7360,14 +7700,28 @@
             continue;
           }
           try {
-            await fetch(url, {
+            const postRes = await fetch(url, {
               method: 'POST',
-              mode: 'no-cors',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(item.payload)
             });
-            markReportSyncedLocal(item.directorate, item.visitDate);
-            uploadedCount++;
+            let resJson = null;
+            try { resJson = await postRes.json(); } catch (_e) { resJson = null; }
+            if (resJson && resJson.status === 'success') {
+              markReportSyncedLocal(item.directorate, item.visitDate);
+              uploadedCount++;
+            } else if (resJson && (resJson.code === 'INVALID_PIN' || resJson.code === 'LOCKED_OUT')) {
+              remaining.push(item);
+              if (isManual) showToast(resJson.error || 'تعذر رفع التقرير المعلّق — تحقق من رمز قفل المديرية', '🔐');
+            } else if (resJson && resJson.code === 'SERVER_BUSY') {
+              remaining.push(item);
+              if (isManual) showToast('الخادم مشغول لحظياً — سيتم إعادة المحاولة تلقائياً', '⏳');
+            } else if (postRes.ok) {
+              markReportSyncedLocal(item.directorate, item.visitDate);
+              uploadedCount++;
+            } else {
+              remaining.push(item);
+            }
           } catch (err) {
             remaining.push(item);
           }
@@ -7614,7 +7968,7 @@
       try {
         const all = JSON.parse(localStorage.getItem(DIR_PIN_LOCKOUT_KEY) || '{}') || {};
         all[dir] = st;
-        localStorage.setItem(DIR_PIN_LOCKOUT_KEY, JSON.stringify(all));
+        try { localStorage.setItem(DIR_PIN_LOCKOUT_KEY, JSON.stringify(all)); } catch (_e) { /* quota safe */ }
       } catch (_) {}
     }
 
@@ -7767,7 +8121,7 @@
               inp.select();
             }
           } catch (err) {
-            errEl.textContent = '⚠️ ' + (err.message || 'تعذر التحقق من الرمز');
+            errEl.textContent = '⚠️ ' + explainDirErrorSmart(err, 'تعذر التحقق من الرمز — تأكد من الإنترنت وأعد المحاولة');
             errEl.classList.remove('hidden');
             btnOk.disabled = false; btnOk.textContent = '✅ تحقق وإرسال';
           }
@@ -7872,33 +8226,78 @@
     let _priceOcrPreparedFiles = [];
     let _priceOcrRows = [];
 
-    function preparePriceOcrFile(file) {
-      return new Promise((resolve, reject) => {
-        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-          if (file.size > 12 * 1024 * 1024) { reject(new Error('حجم ملف PDF أكبر من 12 ميجابايت')); return; }
-          const r = new FileReader();
-          r.onload = (ev) => resolve({ isPdf: true, mime: 'application/pdf', dataUrl: ev.target.result, base64: String(ev.target.result).split(',')[1] });
-          r.onerror = reject;
-          r.readAsDataURL(file);
-        } else {
+    async function preparePriceOcrFile(file) {
+      const isPdf = (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
+      if (isPdf) {
+        if (file.size > 14 * 1024 * 1024) throw new Error('حجم ملف PDF أكبر من 14 ميجابايت');
+        // v32: Convert PDF pages directly on device into crisp compressed JPEGs (~150KB/page) for 10x faster mobile upload & OCR!
+        if (window.pdfjsLib) {
+          try {
+            if (window.pdfjsLib.GlobalWorkerOptions) {
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            const buf = await file.arrayBuffer();
+            const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+            const totalPages = Math.min(pdf.numPages, 6);
+            const pagesOut = [];
+            for (let p = 1; p <= totalPages; p++) {
+              const page = await pdf.getPage(p);
+              const vp1 = page.getViewport({ scale: 1 });
+              const maxD = 1520;
+              const scale = Math.min(2.2, maxD / Math.max(vp1.width, vp1.height));
+              const vp = page.getViewport({ scale });
+              const canvas = document.createElement('canvas');
+              canvas.width = Math.round(vp.width);
+              canvas.height = Math.round(vp.height);
+              await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+              const dUrl = canvas.toDataURL('image/jpeg', 0.82);
+              const b64 = dUrl.split(',')[1];
+              pagesOut.push({
+                isPdf: false,
+                fromPdf: true,
+                pageNum: p,
+                mime: 'image/jpeg',
+                dataUrl: dUrl,
+                base64: b64,
+                kb: Math.round((b64.length * 0.75) / 1024),
+                name: `${file.name} (ص${p})`
+              });
+            }
+            if (pagesOut.length) return pagesOut;
+          } catch (_pdfErr) {
+            // Fallback cleanly to raw PDF if worker blocked
+          }
+        }
+        return new Promise((resolve, reject) => {
           const r = new FileReader();
           r.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-              const maxD = 1650;
-              let w = img.width, h = img.height;
-              if (w > maxD || h > maxD) { const sc = maxD / Math.max(w, h); w = Math.round(w * sc); h = Math.round(h * sc); }
-              const c = document.createElement('canvas'); c.width = w; c.height = h;
-              c.getContext('2d').drawImage(img, 0, 0, w, h);
-              const dUrl = c.toDataURL('image/jpeg', 0.9);
-              resolve({ isPdf: false, mime: 'image/jpeg', dataUrl: dUrl, base64: dUrl.split(',')[1] });
-            };
-            img.onerror = reject;
-            img.src = ev.target.result;
+            const b64 = String(ev.target.result).split(',')[1];
+            resolve([{ isPdf: true, mime: 'application/pdf', dataUrl: ev.target.result, base64: b64, kb: Math.round((b64.length * 0.75) / 1024), name: file.name }]);
           };
           r.onerror = reject;
           r.readAsDataURL(file);
-        }
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxD = 1520;
+            let w = img.width, h = img.height;
+            if (w > maxD || h > maxD) { const sc = maxD / Math.max(w, h); w = Math.round(w * sc); h = Math.round(h * sc); }
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            const dUrl = c.toDataURL('image/jpeg', 0.84);
+            const b64 = dUrl.split(',')[1];
+            resolve([{ isPdf: false, mime: 'image/jpeg', dataUrl: dUrl, base64: b64, kb: Math.round((b64.length * 0.75) / 1024), name: file.name }]);
+          };
+          img.onerror = reject;
+          img.src = ev.target.result;
+        };
+        r.onerror = reject;
+        r.readAsDataURL(file);
       });
     }
 
@@ -8054,7 +8453,11 @@
       const applyBtn = document.getElementById('dirPriceOcrApplyBtn');
 
       const closeModal = () => { if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } };
-      openBtn?.addEventListener('click', () => { if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); } });
+      openBtn?.addEventListener('click', () => {
+        if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        // إيقاظ خادم Apps Script بصمت أثناء اختيار المستخدم للملف لتسريع الاستجابة الأولى
+        try { const wu = getDirPinGsUrl(); if (wu) fetch(wu + (wu.includes('?') ? '&' : '?') + 'warmup=' + Date.now(), { mode: 'no-cors' }).catch(() => {}); } catch (_) {}
+      });
       closeBtn?.addEventListener('click', closeModal);
       cancelBtn?.addEventListener('click', closeModal);
 
@@ -8069,13 +8472,19 @@
         if (countEl) countEl.textContent = `⏳ جارٍ تجهيز (${files.length}) ملف...`;
         for (let i = 0; i < files.length; i++) {
           try {
-            const prep = await preparePriceOcrFile(files[i]);
-            _priceOcrPreparedFiles.push({ ...prep, name: files[i].name });
+            const prepArr = await preparePriceOcrFile(files[i]);
+            (Array.isArray(prepArr) ? prepArr : [prepArr]).forEach(p => {
+              _priceOcrPreparedFiles.push({ ...p, name: p.name || files[i].name });
+            });
           } catch (err) {
-            showToast('تعذر تجهيز الملف: ' + (err.message || files[i].name), '⚠️');
+            showToast('تعذر تجهيز الملف (' + files[i].name + '): ' + explainDirErrorSmart(err, 'تأكد أن الملف صورة أو PDF سليم'), '⚠️');
           }
         }
-        if (countEl) countEl.textContent = `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) ملف`;
+        const totalKb = _priceOcrPreparedFiles.reduce((s, f) => s + (f.kb || 0), 0);
+        if (countEl) countEl.textContent = `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) صفحة مضغوطة (~${totalKb} KB)`;
+        if ((window.location.protocol === 'content:' || window.location.protocol === 'file:') && typeof showToast === 'function') {
+          showToast('💡 نصيحة للسرعة: افتح المنظومة من رابط GitHub المباشر (abuhussam.github.io/moit-aden) بدلاً من مدير الملفات', '⚡');
+        }
         if (thumbsEl && _priceOcrPreparedFiles.length) {
           thumbsEl.innerHTML = _priceOcrPreparedFiles.map((f, idx) => f.isPdf
             ? `<div class="px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-black text-[11px]">📄 PDF (${idx + 1}): ${f.name.slice(0, 22)}</div>`
@@ -8110,39 +8519,102 @@
 ${catalogText}`;
 
         runBtn.disabled = true;
-        runBtn.textContent = '⏳ جارٍ قراءة خط اليد وتدقيق الأرقام...';
+        let _elapsedSec = 0;
+        runBtn.textContent = '⏳ جارٍ قراءة الورقة (0 ثانية)...';
+        const _scanBox = document.getElementById('dirPriceOcrScannerFx');
+        const _stageEl = document.getElementById('dirPriceOcrStageTitle');
+        const _secBadge = document.getElementById('dirPriceOcrSecBadge');
+        if (_scanBox) _scanBox.classList.remove('hidden');
+        if (_stageEl) _stageEl.textContent = '📡 جاري تشفير وإرسال الورقة للسحابة...';
+        if (_secBadge) _secBadge.textContent = '0s';
+        const _tickTimer = setInterval(() => {
+          _elapsedSec++;
+          runBtn.textContent = `⏳ جارٍ قراءة الورقة وتدقيق الأرقام (${_elapsedSec} ث)...`;
+          if (_secBadge) _secBadge.textContent = _elapsedSec + 's';
+          if (_stageEl) {
+            if (_elapsedSec < 5) _stageEl.textContent = '📡 جاري تشفير وإرسال الورقة للسحابة...';
+            else if (_elapsedSec < 18) _stageEl.textContent = '🧠 محرك Gemini AI يقرأ الأرقام والخطوط بدقة...';
+            else _stageEl.textContent = '🛡️ تطبيق طبقات التدقيق الخمس ومنطق الأحجام والأوزان...';
+          }
+        }, 1000);
         if (statusEl) {
           statusEl.className = 'rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-2 text-xs font-extrabold text-indigo-800';
-          statusEl.textContent = '🧠 جارٍ تحليل الورقة عبر Gemini AI وتطبيق طبقات التدقيق الخمس...';
+          statusEl.textContent = '🧠 جارٍ تحليل الورقة عبر Gemini AI وتطبيق طبقات التدقيق الخمس (قد يستغرق ملف PDF متعدد الصفحات 25–60 ثانية)...';
           statusEl.classList.remove('hidden');
         }
 
         try {
-          const ctrl = new AbortController();
-          const tm = setTimeout(() => ctrl.abort(), 55000);
-          let res;
-          try {
-            const payload = _priceOcrPreparedFiles.length === 1
-              ? { action: 'gemini_vision', prompt, imageBase64: _priceOcrPreparedFiles[0].base64, mimeType: _priceOcrPreparedFiles[0].mime }
-              : { action: 'gemini_vision', prompt, files: _priceOcrPreparedFiles.map(f => ({ base64: f.base64, mimeType: f.mime })) };
-            res = await fetch(url, {
-              method: 'POST', redirect: 'follow', credentials: 'omit', signal: ctrl.signal,
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify(payload)
-            });
-          } catch (fe) {
-            if (fe && fe.name === 'AbortError') throw new Error('انتهت مهلة الانتظار (55 ثانية) — جرّب رفع صفحة واحدة في كل مرة');
-            throw new Error('تعذر الاتصال بـ Apps Script — تحقق من الإنترنت');
-          } finally { clearTimeout(tm); }
+          // v32: Fast sequential page-by-page analysis with automatic 1x smart retry
+          const mergedFx = {};
+          const mergedItemsMap = new Map();
+          const totalPgs = _priceOcrPreparedFiles.length;
 
-          const raw = await res.text();
-          if (!raw || raw.trim().startsWith('<')) throw new Error('تأكد من نشر Code.gs v12 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
-          const j = JSON.parse(raw);
-          if (!j || j.status !== 'success' || !j.text) {
-            throw new Error(j?.error || 'لم يُرجع Gemini نتائج — تأكد من نشر Code.gs v12');
+          const callSingleOcrPage = async (fileObj, pageIdx) => {
+            const scanTitle = document.getElementById('dirPriceOcrScanStage');
+            const kbTxt = fileObj.kb ? ` (${fileObj.kb} KB)` : '';
+            if (scanTitle) scanTitle.textContent = `⚡ تحليل الصفحة ${pageIdx + 1} من ${totalPgs}${kbTxt} عبر Gemini Turbo...`;
+            if (statusEl) {
+              statusEl.textContent = `🧠 جارٍ قراءة الصفحة ${pageIdx + 1} من ${totalPgs}${kbTxt}...`;
+              statusEl.classList.remove('hidden');
+            }
+
+            let lastErr = null;
+            for (let tryNum = 1; tryNum <= 2; tryNum++) {
+              const ctrl = new AbortController();
+              const tm = setTimeout(() => ctrl.abort(), 75000);
+              try {
+                const payload = {
+                  action: 'gemini_vision',
+                  prompt,
+                  imageBase64: fileObj.base64,
+                  mimeType: fileObj.mime
+                };
+                const res = await fetch(url, {
+                  method: 'POST', redirect: 'follow', credentials: 'omit', signal: ctrl.signal,
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify(payload)
+                });
+                const raw = await res.text();
+                if (!raw || raw.trim().startsWith('<')) {
+                  throw new Error('تأكد من نشر Code.gs v15 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
+                }
+                const j = JSON.parse(raw);
+                if (!j || j.status !== 'success' || !j.text) {
+                  throw new Error(j?.error || 'لم يُرجع Gemini نتائج لهذه الصفحة');
+                }
+                return extractJsonFromGeminiText(j.text);
+              } catch (fe) {
+                lastErr = fe;
+                if (tryNum === 1) {
+                  if (scanTitle) scanTitle.textContent = `🔄 إعادة محاولة تلقائية للصفحة ${pageIdx + 1} من ${totalPgs}...`;
+                  await new Promise(r => setTimeout(r, 1200));
+                }
+              } finally { clearTimeout(tm); }
+            }
+            if (lastErr && lastErr.name === 'AbortError') {
+              throw new Error(`انتهت المهلة أثناء قراءة الصفحة ${pageIdx + 1} بسبب بطء الشبكة — تأكد من تحديث Code.gs v15`);
+            }
+            throw lastErr || new Error('تعذر الاتصال بـ Apps Script — تحقق من الإنترنت');
+          };
+
+          for (let pi = 0; pi < totalPgs; pi++) {
+            const pgParsed = await callSingleOcrPage(_priceOcrPreparedFiles[pi], pi);
+            if (pgParsed && pgParsed.fx) {
+              ['usdSell', 'usdBuy', 'sarSell', 'sarBuy'].forEach(k => {
+                if (parseNum(pgParsed.fx[k]) > 0 && !mergedFx[k]) mergedFx[k] = pgParsed.fx[k];
+              });
+            }
+            const pgItems = Array.isArray(pgParsed?.items) ? pgParsed.items : [];
+            pgItems.forEach(it => {
+              if (!it || !it.id) return;
+              const prev = mergedItemsMap.get(it.id);
+              if (!prev || (!parseNum(prev.price) && parseNum(it.price) > 0)) {
+                mergedItemsMap.set(it.id, it);
+              }
+            });
           }
 
-          const parsed = extractJsonFromGeminiText(j.text);
+          const parsed = { fx: mergedFx, items: Array.from(mergedItemsMap.values()) };
           const fx = parsed.fx || {};
           const fxHasAny = ['usdSell', 'usdBuy', 'sarSell', 'sarBuy'].some(k => parseNum(fx[k]) > 0);
           const fxWrap = document.getElementById('dirPriceOcrFxWrap');
@@ -8212,10 +8684,12 @@ ${catalogText}`;
         } catch (err) {
           if (statusEl) {
             statusEl.className = 'rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-xs font-extrabold text-rose-700';
-            statusEl.textContent = '⚠️ ' + (err.message || 'تعذر قراءة الورقة');
+            statusEl.textContent = '⚠️ ' + explainDirErrorSmart(err, 'تعذر قراءة الورقة — جرّب صورة أوضح أو رفع صفحة واحدة');
             statusEl.classList.remove('hidden');
           }
         } finally {
+          clearInterval(_tickTimer);
+          document.getElementById('dirPriceOcrScannerFx')?.classList.add('hidden');
           runBtn.disabled = false;
           runBtn.textContent = '✨ قراءة وتحليل الأسعار عبر Gemini AI';
         }
@@ -8280,6 +8754,288 @@ ${catalogText}`;
         document.body.appendChild(btn);
       }
     });
+
+  
+
+    /* ===== v28: DIRECTORATE REAL-DATA TELEMETRY TABS ENGINE ===== */
+    function moveDirLiquidPill(activeBtn) {
+      const track = document.getElementById('dirTabsTrack');
+      const pill = document.getElementById('dirLiquidPill');
+      if (!track || !pill || !activeBtn || activeBtn.offsetWidth === 0) return;
+      pill.style.width = activeBtn.offsetWidth + 'px';
+      pill.style.height = activeBtn.offsetHeight + 'px';
+      pill.style.transform = `translate3d(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px, 0)`;
+      pill.style.opacity = '1';
+      track.classList.add('hud-pill-ready');
+    }
+
+    function initDirHudTelemetryTabs() {
+      const firstBtn = document.querySelector('.tab-btn[data-filter="all"]');
+      if (!firstBtn) return;
+      const track = firstBtn.parentElement;
+      if (!track || track.dataset.hudInit === '1') return;
+      track.dataset.hudInit = '1';
+      track.id = 'dirTabsTrack';
+      track.classList.add('hud-tab-track');
+
+      const pill = document.createElement('div');
+      pill.id = 'dirLiquidPill';
+      pill.className = 'hud-liquid-pill';
+      track.insertBefore(pill, track.firstChild);
+
+      const circ = 2 * Math.PI * 7;
+      const setupBtn = (filter, extraHtml) => {
+        const b = track.querySelector(`.tab-btn[data-filter="${filter}"]`);
+        if (!b) return;
+        b.classList.add('inline-flex', 'items-center', 'gap-1.5');
+        b.insertAdjacentHTML('beforeend', extraHtml + `<span class="hud-tab-bar-bottom"><span id="hudDirBar_${filter}" class="hud-tab-bar-fill"></span></span>`);
+      };
+
+      setupBtn('all', `<span id="hudDirAllPct" class="hud-micro-pill">0%</span>`);
+      setupBtn('prices', `<svg class="hud-ring-svg" viewBox="0 0 18 18"><circle class="hud-ring-bg" cx="9" cy="9" r="7"/><circle id="hudDirPricesRing" class="hud-ring-fg" cx="9" cy="9" r="7" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${circ.toFixed(1)}"/></svg><span id="hudDirPricesBadge" class="hud-micro-pill">0/81</span>`);
+      setupBtn('gas', `<span id="hudDirGasBeacon" class="hud-live-beacon hud-beacon-rose" style="display:none"></span><span id="hudDirGasBadge" class="hud-micro-pill">0</span>`);
+      setupBtn('violations', `<span id="hudDirViolBeacon" class="hud-live-beacon hud-beacon-amber" style="display:none"></span><span id="hudDirViolBadge" class="hud-micro-pill">0</span>`);
+      setupBtn('summary', `<svg class="hud-ring-svg" viewBox="0 0 18 18"><circle class="hud-ring-bg" cx="9" cy="9" r="7"/><circle id="hudDirSummaryRing" class="hud-ring-fg" cx="9" cy="9" r="7" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${circ.toFixed(1)}"/></svg><span id="hudDirSummaryBadge" class="hud-micro-pill">0%</span>`);
+
+      track.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTimeout(() => moveDirLiquidPill(btn), 15);
+        });
+      });
+      /* v28-gas-live */
+      const gasTb = document.getElementById('gasTbody');
+      if (gasTb) {
+        gasTb.addEventListener('input', () => updateDirHudTelemetry());
+        gasTb.addEventListener('change', () => updateDirHudTelemetry());
+      }
+      window.addEventListener('resize', () => {
+        const act = track.querySelector('.tab-btn.active');
+        if (act) moveDirLiquidPill(act);
+      });
+      setTimeout(() => {
+        updateDirHudTelemetry();
+        const act = track.querySelector('.tab-btn.active');
+        if (act) moveDirLiquidPill(act);
+      }, 90);
+    }
+
+    function updateDirHudTelemetry() {
+      const track = document.getElementById('dirTabsTrack');
+      if (!track) return;
+      const circ = 2 * Math.PI * 7;
+
+      // 1) Real Price & Deviation Telemetry
+      const priceInputs = Array.from(document.querySelectorAll('.price-input'));
+      const totalPrices = priceInputs.length || 81;
+      let priced = 0;
+      let sharpDev = 0;
+      priceInputs.forEach(inp => {
+        const val = parseNum(inp.value);
+        if (val > 0) {
+          priced++;
+          const baseAttr = inp.getAttribute('data-yesterday') || inp.getAttribute('data-baseline');
+          const baseVal = parseNum(baseAttr);
+          if (baseVal > 0 && Math.abs((val - baseVal) / baseVal) > 0.20) sharpDev++;
+        }
+      });
+      const pricePct = Math.min(100, Math.round((priced / totalPrices) * 100));
+      const pRing = document.getElementById('hudDirPricesRing');
+      const pBadge = document.getElementById('hudDirPricesBadge');
+      const pBar = document.getElementById('hudDirBar_prices');
+      if (pRing) {
+        pRing.style.strokeDashoffset = (circ * (1 - pricePct / 100)).toFixed(1);
+        pRing.style.stroke = sharpDev > 0 ? '#f59e0b' : (pricePct >= 75 ? '#10b981' : '#38bdf8');
+      }
+      if (pBadge) {
+        pBadge.textContent = sharpDev > 0 ? `${priced}/${totalPrices} • ⚠️${sharpDev}` : `${priced}/${totalPrices}`;
+        pBadge.className = 'hud-micro-pill ' + (sharpDev > 0 ? 'hud-pill-warn' : (pricePct >= 75 ? 'hud-pill-ok' : ''));
+      }
+      if (pBar) {
+        pBar.style.width = pricePct + '%';
+        pBar.className = 'hud-tab-bar-fill ' + (sharpDev > 0 ? 'hud-bar-amber' : (pricePct >= 75 ? 'hud-bar-emerald' : 'hud-bar-cyan'));
+      }
+
+      // 2) Real Gas Telemetry
+      let gasAgents = 0;
+      let gasQty = 0;
+      let gasAlert = false;
+      document.querySelectorAll('#gasTbody tr').forEach(tr => {
+        const ag = tr.querySelector('.gas-agent')?.value?.trim() || '';
+        const q = parseNum(tr.querySelector('.gas-qty')?.value);
+        const pr = parseNum(tr.querySelector('.gas-price')?.value);
+        if (ag || q > 0) gasAgents++;
+        gasQty += q;
+        if (pr > 8500) gasAlert = true;
+      });
+      const gBadge = document.getElementById('hudDirGasBadge');
+      const gBeacon = document.getElementById('hudDirGasBeacon');
+      const gBar = document.getElementById('hudDirBar_gas');
+      if (gBadge) {
+        gBadge.textContent = gasQty > 0 ? `${gasAgents} وكيل • ${gasQty.toLocaleString('en-US')}` : `${gasAgents} وكيل`;
+        gBadge.className = 'hud-micro-pill ' + (gasAlert ? 'hud-pill-crit' : (gasQty > 0 ? 'hud-pill-ok' : ''));
+      }
+      if (gBeacon) gBeacon.style.display = gasAlert ? 'inline-block' : 'none';
+      if (gBar) {
+        gBar.style.width = gasQty > 0 ? Math.min(100, Math.max(25, gasAgents * 20)) + '%' : '0%';
+        gBar.className = 'hud-tab-bar-fill ' + (gasAlert ? 'hud-bar-rose' : 'hud-bar-emerald');
+      }
+
+      // 3) Real Violations & Actions Telemetry
+      let violSum = 0;
+      document.querySelectorAll('.viol-input').forEach(i => { violSum += parseNum(i.value); });
+      let actSum = 0;
+      document.querySelectorAll('.act-input').forEach(i => { actSum += parseNum(i.value); });
+      const vBadge = document.getElementById('hudDirViolBadge');
+      const vBeacon = document.getElementById('hudDirViolBeacon');
+      const vBar = document.getElementById('hudDirBar_violations');
+      const hasViol = violSum > 0 || actSum > 0;
+      if (vBadge) {
+        vBadge.textContent = hasViol ? `${violSum} مخالفة • ${actSum} إجراء` : '0';
+        vBadge.className = 'hud-micro-pill ' + (violSum >= 5 ? 'hud-pill-crit' : (hasViol ? 'hud-pill-warn' : ''));
+      }
+      if (vBeacon) {
+        vBeacon.style.display = hasViol ? 'inline-block' : 'none';
+        vBeacon.className = 'hud-live-beacon ' + (violSum >= 5 ? 'hud-beacon-rose' : 'hud-beacon-amber');
+      }
+      if (vBar) {
+        vBar.style.width = hasViol ? Math.min(100, Math.max(22, (violSum + actSum) * 12)) + '%' : '0%';
+        vBar.className = 'hud-tab-bar-fill ' + (violSum >= 5 ? 'hud-bar-rose' : 'hud-bar-amber');
+      }
+
+      // 4) Real Launch Readiness (All + Summary)
+      const dirOk = Boolean(document.getElementById('directorateSelect')?.value);
+      const fxOk = Boolean(document.getElementById('usdSell')?.value || document.getElementById('sarSell')?.value);
+      const sumOk = Boolean(document.getElementById('inspectorName')?.value?.trim() || Number(document.getElementById('summaryFirmsCovered')?.value || 0) > 0);
+      const readiness = Math.round((dirOk ? 20 : 0) + (fxOk ? 15 : 0) + (Math.min(1, priced / totalPrices) * 50) + (sumOk ? 15 : 0));
+      const isReady = readiness >= 85 && dirOk;
+
+      const allPct = document.getElementById('hudDirAllPct');
+      const allBar = document.getElementById('hudDirBar_all');
+      if (allPct) {
+        allPct.textContent = readiness + '%';
+        allPct.className = 'hud-micro-pill ' + (isReady ? 'hud-pill-ok' : '');
+      }
+      if (allBar) {
+        allBar.style.width = readiness + '%';
+        allBar.className = 'hud-tab-bar-fill ' + (isReady ? 'hud-bar-gold' : 'hud-bar-cyan');
+      }
+
+      const sRing = document.getElementById('hudDirSummaryRing');
+      const sBadge = document.getElementById('hudDirSummaryBadge');
+      const sBar = document.getElementById('hudDirBar_summary');
+      const sBtn = track.querySelector('.tab-btn[data-filter="summary"]');
+      if (sRing) {
+        sRing.style.strokeDashoffset = (circ * (1 - readiness / 100)).toFixed(1);
+        sRing.style.stroke = isReady ? '#d4af37' : '#10b981';
+      }
+      if (sBadge) {
+        sBadge.textContent = isReady ? 'جاهز ✓' : (readiness + '%');
+        sBadge.className = 'hud-micro-pill ' + (isReady ? 'hud-pill-ok' : '');
+      }
+      if (sBar) {
+        sBar.style.width = readiness + '%';
+        sBar.className = 'hud-tab-bar-fill ' + (isReady ? 'hud-bar-gold' : 'hud-bar-emerald');
+      }
+      if (sBtn) sBtn.classList.toggle('hud-ready-glow', isReady);
+
+      const activeBtn = track.querySelector('.tab-btn.active');
+      if (activeBtn) moveDirLiquidPill(activeBtn);
+    }
+
+  
+    /* ===== v29: PERIODIC OFFLINE OUTBOX AUTO-FLUSH ===== */
+    (function initDirV29AutoOutbox() {
+      setInterval(() => {
+        try {
+          if (navigator.onLine && typeof getOfflineOutbox === 'function' && getOfflineOutbox().length > 0) {
+            if (typeof processOfflineOutbox === 'function') processOfflineOutbox(false);
+          }
+        } catch (_e) { /* silent retry */ }
+      }, 45000);
+    })();
+
+  
+
+    /* ===== v30: SMART ARABIC ERROR TRANSLATOR, NETWORK MONITOR & CRASH GUARD ===== */
+    function explainDirErrorSmart(err, fallbackAr) {
+      const raw = String((err && err.message) ? err.message : (err || '')).trim();
+      const low = raw.toLowerCase();
+      if (!navigator.onLine || low.includes('failed to fetch') || low.includes('load failed') || low.includes('networkerror') || low.includes('network request failed')) {
+        return 'انقطع الاتصال بالإنترنت — تأكد من الشبكة وأعد المحاولة (بياناتك محفوظة محلياً بأمان)';
+      }
+      if ((err && err.name === 'AbortError') || low.includes('aborted') || low.includes('timeout')) {
+        return 'استغرق الخادم وقتاً أطول من المعتاد — جرّب إعادة المحاولة الآن أو تقليل حجم المرفقات';
+      }
+      if (low.includes('quotaexceeded') || low.includes('quota')) {
+        return 'ذاكرة المتصفح ممتلئة — أرسل التقرير للسحابة أو خفّض عدد الصور المحفوظة محلياً';
+      }
+      if (low.includes('unexpected token') || low.includes('json')) {
+        return 'استجابة غير مكتملة من خادم Google — تحقق من استقرار الإنترنت وأعد المحاولة';
+      }
+      if (low.includes('http 4') || low.includes('http 5') || low === 'http') {
+        return 'تعذر الوصول المؤقت لخادم السحابة — أعد المحاولة بعد لحظات';
+      }
+      // If message is already clean Arabic, preserve it verbatim
+      if (/[\u0600-\u06FF]/.test(raw)) return raw;
+      return fallbackAr || 'حدث خطأ غير متوقع — يرجى إعادة المحاولة';
+    }
+
+    (function initDirV30NetworkAndSafetyGuard() {
+      const mountNetBanner = () => {
+        if (document.getElementById('dirLiveNetBanner')) return;
+        const bar = document.createElement('div');
+        bar.id = 'dirLiveNetBanner';
+        bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[90] hidden items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border transition-all duration-300';
+        document.body.appendChild(bar);
+      };
+
+      const showNetState = (isOnline) => {
+        mountNetBanner();
+        const bar = document.getElementById('dirLiveNetBanner');
+        if (!bar) return;
+        if (!isOnline) {
+          bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[90] flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border bg-amber-950/95 text-amber-100 border-amber-400/50 backdrop-blur-md';
+          bar.innerHTML = '<span>📶 انقطع الاتصال بالإنترنت — لا تقلق، عملك يُحفظ تلقائياً على جهازك ويمكنك الإرسال فور عودة الشبكة</span>';
+        } else {
+          bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[90] flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border bg-emerald-950/95 text-emerald-100 border-emerald-400/50 backdrop-blur-md';
+          bar.innerHTML = '<span>✅ عاد الاتصال بالإنترنت — جارٍ فحص وإرسال أي تقارير معلّقة تلقائياً</span>';
+          setTimeout(() => {
+            if (navigator.onLine) {
+              bar.classList.add('hidden');
+              bar.classList.remove('flex');
+            }
+          }, 4200);
+        }
+      };
+
+      window.addEventListener('offline', () => showNetState(false));
+      window.addEventListener('online', () => {
+        showNetState(true);
+        if (typeof processOfflineOutbox === 'function') setTimeout(() => processOfflineOutbox(false), 1200);
+      });
+
+      const releaseStuckOverlays = () => {
+        ['dirCloudUploadFxModal'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.classList.contains('hidden')) {
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+          }
+        });
+      };
+
+      window.addEventListener('unhandledrejection', (ev) => {
+        releaseStuckOverlays();
+        const msg = explainDirErrorSmart(ev.reason, 'تعذر إكمال العملية — يرجى إعادة المحاولة');
+        if (typeof showToast === 'function' && msg) showToast(msg, '⚠️');
+      });
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { if (!navigator.onLine) showNetState(false); });
+      } else if (!navigator.onLine) {
+        showNetState(false);
+      }
+    })();
 
   </script>
 
@@ -8369,11 +9125,29 @@ ${catalogText}`;
           <div class="flex flex-wrap items-center gap-2">
             <input id="dirPriceOcrFilesInput" type="file" accept="image/*,application/pdf" multiple
               class="flex-1 min-w-[200px] text-xs font-bold bg-white border border-slate-300 rounded-xl px-2.5 py-1.5" />
-            <button id="dirPriceOcrRunBtn" type="button" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#0f2942] font-black text-xs shadow transition">
+            <button id="dirPriceOcrRunBtn" type="button" class="moit-sheen-btn px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#0f2942] font-black text-xs shadow transition">
               ✨ قراءة وتحليل الأسعار عبر Gemini AI
             </button>
           </div>
           <div id="dirPriceOcrThumbs" class="hidden flex flex-wrap gap-2 pt-1"></div>
+                    <div id="dirPriceOcrScannerFx" class="hidden moit-scanner-box rounded-xl p-3.5 text-white">
+            <div class="moit-laser-beam"></div>
+            <div class="relative z-10 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="flex items-end gap-1 h-6">
+                  <span class="moit-ai-bar" style="animation-delay:0s"></span>
+                  <span class="moit-ai-bar" style="animation-delay:0.15s"></span>
+                  <span class="moit-ai-bar" style="animation-delay:0.3s"></span>
+                  <span class="moit-ai-bar" style="animation-delay:0.45s"></span>
+                </div>
+                <div>
+                  <div id="dirPriceOcrStageTitle" class="font-black text-xs text-amber-300">📡 جاري تشفير وإرسال الورقة للسحابة...</div>
+                  <div class="text-[10.5px] text-sky-100/90 font-semibold">محرك Gemini Vision يقرأ الأرقام المكتوبة بخط اليد ويطبق طبقات التدقيق الخمس</div>
+                </div>
+              </div>
+              <span id="dirPriceOcrSecBadge" class="shrink-0 px-2.5 py-1 rounded-lg bg-white/15 border border-amber-300/40 font-mono font-black text-xs text-amber-200" dir="ltr">0s</span>
+            </div>
+          </div>
           <div id="dirPriceOcrStatus" class="hidden rounded-lg px-3 py-2 text-xs font-extrabold"></div>
         </div>
 
@@ -8426,6 +9200,30 @@ ${catalogText}`;
   <!-- Zoom Lightbox for Handwritten Sheet Verification -->
   <div id="dirPriceOcrLightbox" class="no-print fixed inset-0 z-[105] hidden items-center justify-center bg-black/90 p-4" onclick="this.classList.add('hidden');this.classList.remove('flex');">
     <img id="dirPriceOcrLightboxImg" src="" alt="معاينة الورقة" class="max-w-full max-h-[92vh] rounded-xl shadow-2xl border-2 border-white/20" />
+  </div>
+
+
+  <!-- ==================== LUXURY CLOUD UPLIFT OVERLAY (v27) ==================== -->
+  <div id="dirCloudUploadFxModal" class="no-print fixed inset-0 z-[115] hidden items-center justify-center bg-[#081529]/85 p-4 backdrop-blur-md">
+    <div class="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[#0f2942] to-[#091a2e] border border-amber-400/45 shadow-2xl p-6 text-center text-white space-y-4 moit-reveal">
+      <div id="dirUpFxSpinnerWrap" class="relative mx-auto w-20 h-20 flex items-center justify-center">
+        <span class="absolute inset-0 rounded-full border-2 border-amber-400/60" style="animation: moitRadarPulse 1.7s ease-out infinite;"></span>
+        <span class="absolute inset-2 rounded-full border-2 border-sky-400/50" style="animation: moitRadarPulse 1.7s ease-out 0.55s infinite;"></span>
+        <div class="relative z-10 w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-[#0b1c36] flex items-center justify-center text-2xl shadow-lg">☁️</div>
+      </div>
+      <div id="dirUpFxCheckWrap" class="hidden mx-auto w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center">
+        <svg class="w-11 h-11 text-emerald-300" viewBox="0 0 52 52" fill="none">
+          <path class="moit-check-path" d="M14 27l8 8 16-18" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="space-y-1">
+        <h4 id="dirUpFxTitle" class="font-black text-base text-amber-300">جاري توثيق ورفع التقرير إلى غرفة العمليات...</h4>
+        <p id="dirUpFxSub" class="text-xs text-slate-300 font-semibold">تأمين البيانات والتحقق السحابي في Google Sheets</p>
+      </div>
+      <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+        <div id="dirUpFxBar" class="h-full rounded-full moit-shimmer-line bg-amber-400 transition-all duration-500" style="width: 68%;"></div>
+      </div>
+    </div>
   </div>
 
 </body>

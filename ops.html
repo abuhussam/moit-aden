@@ -621,6 +621,99 @@
     body.dark-mode #opsPinsAuditPane tbody tr { background-color: #0f172a !important; color: #e2e8f0 !important; }
     body.dark-mode #opsPinsAuditPane tbody tr.bg-rose-50\/40 { background-color: rgba(159, 18, 57, 0.25) !important; }
 
+  
+    /* ==================== EXECUTIVE LUXURY VISUAL FX (v27) ==================== */
+    @keyframes moitLaserScan {
+      0% { top: 4%; opacity: 0.95; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 4%; opacity: 0.95; }
+    }
+    @keyframes moitRadarPulse {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      70% { transform: scale(1.9); opacity: 0; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    @keyframes moitShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes moitAiWave {
+      0%, 100% { transform: scaleY(0.35); opacity: 0.65; }
+      50% { transform: scaleY(1.15); opacity: 1; }
+    }
+    @keyframes moitCheckDraw {
+      0% { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes moitCardReveal {
+      0% { opacity: 0; transform: translateY(14px) scale(0.99); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes moitGoldSheen {
+      0% { transform: translateX(140%) skewX(-24deg); }
+      100% { transform: translateX(-220%) skewX(-24deg); }
+    }
+
+    /* Laser Scanner Box */
+    .moit-scanner-box {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0b1c36 0%, #14325c 60%, #0d4a58 100%);
+      border: 1.5px solid rgba(245, 198, 92, 0.65);
+      box-shadow: 0 12px 32px rgba(11, 28, 54, 0.35), inset 0 0 24px rgba(245, 198, 92, 0.12);
+    }
+    .moit-laser-beam {
+      position: absolute;
+      left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #fbbf24 25%, #38bdf8 50%, #fbbf24 75%, transparent 100%);
+      box-shadow: 0 0 14px 3px rgba(251, 191, 36, 0.75), 0 0 26px 5px rgba(56, 189, 248, 0.45);
+      animation: moitLaserScan 2.1s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Live Radar Pulse Dot */
+    .moit-live-dot { position: relative; display: inline-flex; width: 9px; height: 9px; }
+    .moit-live-dot::before {
+      content: ''; position: absolute; inset: 0; border-radius: 9999px;
+      background: #10b981; animation: moitRadarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .moit-live-dot::after {
+      content: ''; position: relative; width: 9px; height: 9px; border-radius: 9999px; background: #34d399;
+    }
+
+    /* AI Neural Waves & Shimmer */
+    .moit-ai-bar {
+      width: 4px; height: 22px; border-radius: 9999px;
+      background: linear-gradient(180deg, #fbbf24, #38bdf8);
+      animation: moitAiWave 1.05s ease-in-out infinite;
+    }
+    .moit-shimmer-line {
+      background: linear-gradient(90deg, rgba(148,163,184,0.16) 25%, rgba(251,191,36,0.28) 50%, rgba(148,163,184,0.16) 75%);
+      background-size: 200% 100%;
+      animation: moitShimmer 1.55s linear infinite;
+    }
+
+    /* Executive Gold Sheen on CTA Buttons */
+    .moit-sheen-btn { position: relative; overflow: hidden; }
+    .moit-sheen-btn::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 38%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.34), transparent);
+      animation: moitGoldSheen 3.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Smooth Card Lift & Reveal */
+    .moit-reveal { animation: moitCardReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .section-card, .ai-gen-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    @media (hover: hover) {
+      .ai-gen-card:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(15, 41, 66, 0.14); }
+    }
+    .moit-check-path {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: moitCheckDraw 0.55s ease-out 0.1s forwards;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <meta name="theme-color" content="#0f2942" />
@@ -647,7 +740,13 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-          <button id="btnCloudSync" type="button" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-[#c89d3c] hover:bg-[#b58a2d] text-[#0b1c36] font-extrabold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition">
+          <select id="opsSyncDaysSelect" title="نطاق سحب البيانات من السحابة" class="bg-white/10 hover:bg-white/20 text-white border border-amber-300/40 rounded-xl px-2.5 py-2 text-xs font-extrabold outline-none cursor-pointer transition">
+            <option value="30" class="text-slate-900" selected>📅 آخر 30 يوم (سريع)</option>
+            <option value="90" class="text-slate-900">📅 آخر 90 يوم</option>
+            <option value="365" class="text-slate-900">📅 سنة كاملة</option>
+            <option value="all" class="text-slate-900">📚 كامل الأرشيف</option>
+          </select>
+          <button id="btnCloudSync" type="button" class="moit-sheen-btn flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-[#c89d3c] hover:bg-[#b58a2d] text-[#0b1c36] font-extrabold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition">
             <span>🔄</span><span>مزامنة فورية</span>
           </button>
           <button id="btnImportExcel" type="button" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/25 font-bold text-xs sm:text-sm px-3 py-2 rounded-xl transition">
@@ -741,7 +840,7 @@
     <!-- ========================================================== -->
     <!-- TAB 1: EXECUTIVE OVERVIEW & DIVERSE CHARTS                 -->
     <!-- ========================================================== -->
-    <section id="tab-overview" class="tab-panel space-y-5">
+    <section id="tab-overview" class="tab-panel moit-reveal space-y-5">
       <!-- Executive Decision Room (الإيجاز القيادي الفوري — غرفة القرار) -->
       <div id="execDecisionRoomCard" class="rounded-2xl border-2 border-[#c89d3c] bg-gradient-to-l from-[#0b1c36] via-[#102a4e] to-[#163663] text-white shadow-lg p-4 sm:p-5 space-y-3.5">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3">
@@ -1030,7 +1129,7 @@
     <!-- ========================================================== -->
     <!-- TAB: SMART 8-DIRECTORATE AGGREGATOR & ADVANCED BI (NEW)    -->
     <!-- ========================================================== -->
-    <section id="tab-aggregator" class="tab-panel hidden space-y-4">
+    <section id="tab-aggregator" class="tab-panel moit-reveal hidden space-y-4">
       <!-- Time Filter + Direct Exports Header -->
       <div class="rounded-2xl bg-gradient-to-l from-slate-900 to-[#0f2942] text-white p-3.5 sm:p-4 shadow-md border border-[#c89d3c]/50 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2.5">
@@ -1267,7 +1366,7 @@
 
     <!-- TAB 2: EXPANDED REPORTS & VISUAL ANALYTICS CENTER          -->
     <!-- ========================================================== -->
-    <section id="tab-reports" class="tab-panel hidden space-y-4">
+    <section id="tab-reports" class="tab-panel moit-reveal hidden space-y-4">
       <!-- Master Executive Package Banner -->
       <div class="bg-gradient-to-l from-[#102a4e] to-[#1b3b6f] text-white rounded-2xl p-4 shadow-md border-r-4 border-r-[#c89d3c]">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -1302,7 +1401,7 @@
       </div>
 
       <!-- SUB-REPORT 0: HYBRID AI CONSOLIDATED EXECUTIVE REPORT FOR GENERAL DIRECTOR -->
-      <div id="subrep-merged_exec" class="subrep-panel bg-white rounded-2xl border-2 border-[#c89d3c]/70 shadow-sm p-4 space-y-4">
+      <div id="subrep-merged_exec" class="subrep-panel moit-reveal bg-white rounded-2xl border-2 border-[#c89d3c]/70 shadow-sm p-4 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">📜 التقرير الميداني الشامل المدمج للرفع للمدير العام (فترة من – إلى)</h3>
@@ -1374,7 +1473,7 @@
 
       <!-- Sub-Report 0B: Gas Supervision, Stopped Agents & Official Database -->
       <!-- Sub-Report 0E: Interactive FX-to-Fair-Price Simulator (محاكي أثر الصرف على السعر العادل) -->
-      <div id="subrep-fx_simulator" class="subrep-panel hidden bg-white rounded-2xl border-2 border-teal-200 shadow-sm p-4 sm:p-5 space-y-4">
+      <div id="subrep-fx_simulator" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border-2 border-teal-200 shadow-sm p-4 sm:p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">⚖️ محاكي «أثر الصرف على السعر العادل» (أداة التخطيط والتسعير — ماذا لو؟)</h3>
@@ -1486,7 +1585,7 @@
       </div>
 
       <!-- Sub-Report 0D: Phase 2 Interactive Gemini AI Analyst & Ask Your Data (OPS ONLY) -->
-      <div id="subrep-ai_analyst" class="subrep-panel hidden bg-white rounded-2xl border-2 border-indigo-200 shadow-sm p-4 sm:p-5 space-y-4">
+      <div id="subrep-ai_analyst" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border-2 border-indigo-200 shadow-sm p-4 sm:p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">🧠 المحلل الذكي التفاعلي لغرفة العمليات — اسأل بياناتك بالعربي (Gemini AI)</h3>
@@ -1558,7 +1657,7 @@
           <label for="aiQuestionInput" class="block text-xs font-black text-[#102a4e]">💬 اسأل بياناتك بالعربي (اكتب أي سؤال حول الأسعار، الغاز، المخالفات، أو المديريات):</label>
           <div class="flex flex-col sm:flex-row gap-2">
             <input id="aiQuestionInput" type="text" placeholder="مثال: ما أكثر 5 سلع تفاوتاً هذا الأسبوع؟ أو لخّص وضع الغاز والموقفين في المنصورة..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:border-indigo-600 focus:outline-none" />
-            <button id="btnAskAiData" type="button" class="shrink-0 bg-gradient-to-l from-[#102a4e] to-indigo-800 hover:from-indigo-800 hover:to-indigo-700 text-amber-300 font-black text-xs px-5 py-2.5 rounded-xl shadow transition">✨ تحليل وإجابة عبر Gemini</button>
+            <button id="btnAskAiData" type="button" class="moit-sheen-btn shrink-0 bg-gradient-to-l from-[#102a4e] to-indigo-800 hover:from-indigo-800 hover:to-indigo-700 text-amber-300 font-black text-xs px-5 py-2.5 rounded-xl shadow transition">✨ تحليل وإجابة عبر Gemini</button>
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
             <span class="font-bold text-slate-500">أسئلة سريعة:</span>
@@ -1595,7 +1694,7 @@
       </div>
 
       <!-- Sub-Report 0C: Phase 1 Data Quality Auditor, Outlier Exclusion & Aden Family Food Basket vs FX -->
-      <div id="subrep-data_auditor" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-5">
+      <div id="subrep-data_auditor" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">🛡️ المدقق الذكي لجودة البيانات + مؤشر كلفة السلة الغذائية مقابل الصرف</h3>
@@ -1735,7 +1834,7 @@
         </div>
       </div>
 
-      <div id="subrep-gas_analytics" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+      <div id="subrep-gas_analytics" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">🔥 منظومة تقارير الإشراف على الغاز وقاعدة بيانات الوكلاء (الشركة اليمنية للغاز — عدن)</h3>
@@ -2031,7 +2130,7 @@
       </div>
 
       <!-- SUB-REPORT 1: DIRECTORATES PERFORMANCE & RADAR -->
-      <div id="subrep-perf" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+      <div id="subrep-perf" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
         <!-- FEATURE 3: WEEKLY / MONTHLY DIRECTORATE EXCELLENCE SCORECARD -->
         <div id="dirExcellenceScorecardWrap" class="rounded-2xl border-2 border-amber-300/70 bg-gradient-to-br from-amber-50/60 via-white to-indigo-50/40 p-4 space-y-3.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -2105,7 +2204,7 @@
       </div>
 
       <!-- SUB-REPORT 2: TOP PRICE DISPARITY -->
-      <div id="subrep-disparity" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+      <div id="subrep-disparity" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 class="text-sm sm:text-base font-black text-rose-900">تقرير أعلى السلع تفاوتاً سعرياً بين المديريات (مؤشر الفجوة السعرية)</h3>
@@ -2135,7 +2234,7 @@
       </div>
 
       <!-- SUB-REPORT 3: FX vs ESSENTIAL BASKET -->
-      <div id="subrep-fx_basket" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+      <div id="subrep-fx_basket" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">تقرير حركة أسعار الصرف وتأثيرها على تكلفة السلة الغذائية الأساسية</h3>
@@ -2165,7 +2264,7 @@
       </div>
 
       <!-- SUB-REPORT 4: GAS & SUPPLY STATUS -->
-      <div id="subrep-gas_supply" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+      <div id="subrep-gas_supply" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">تقرير توزيع الغاز المنزلي وتحليل الوضع التمويني بالعاصمة</h3>
@@ -2200,7 +2299,7 @@
       </div>
 
       <!-- SUB-REPORT 5: TWO-PERIOD COMPARATOR -->
-      <div id="subrep-period_cmp" class="subrep-panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+      <div id="subrep-period_cmp" class="subrep-panel moit-reveal hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">التقرير المقارن بين فترتين زمنيتين (أسبوعي / شهري / مخصص)</h3>
@@ -2253,7 +2352,7 @@
     <!-- ========================================================== -->
     <!-- TAB 3: ALL REPORTS ARCHIVE                                 -->
     <!-- ========================================================== -->
-    <section id="tab-archive" class="tab-panel hidden space-y-4">
+    <section id="tab-archive" class="tab-panel moit-reveal hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -2312,12 +2411,20 @@
           <tbody id="arcTableBody"></tbody>
         </table>
       </div>
+      <div id="arcPaginationBar" class="hidden mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-700">
+        <span id="arcPageInfoText"></span>
+        <div class="flex items-center gap-1.5">
+          <button id="arcPrevPageBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 font-extrabold transition">→ السابق</button>
+          <span id="arcPageNumPill" class="px-2.5 py-1 rounded-lg bg-[#102a4e] text-white font-black">1 / 1</span>
+          <button id="arcNextPageBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 font-extrabold transition">التالي ←</button>
+        </div>
+      </div>
     </section>
 
     <!-- ========================================================== -->
     <!-- TAB 4: ADVANCED COMMODITY COMPARATOR                       -->
     <!-- ========================================================== -->
-    <section id="tab-comparator" class="tab-panel hidden space-y-4">
+    <section id="tab-comparator" class="tab-panel moit-reveal hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3.5">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -2452,7 +2559,7 @@
     <!-- ========================================================== -->
     <!-- TAB 5: CAMPAIGNS GOVERNANCE & REPORTS                      -->
     <!-- ========================================================== -->
-    <section id="tab-campaigns" class="tab-panel hidden space-y-5">
+    <section id="tab-campaigns" class="tab-panel moit-reveal hidden space-y-5">
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -2572,7 +2679,7 @@
     <!-- ========================================================== -->
     <!-- TAB 6: VIOLATIONS & GOOGLE DRIVE EVIDENCE GALLERY          -->
     <!-- ========================================================== -->
-    <section id="tab-evidence" class="tab-panel hidden space-y-4">
+    <section id="tab-evidence" class="tab-panel moit-reveal hidden space-y-4">
       <!-- Phase 3: Repeat Offenders Radar (ملف المخالفين المتكررين والتصعيد القانوني) -->
       <div class="bg-white rounded-2xl border-2 border-rose-200 shadow-sm p-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
@@ -3068,15 +3175,28 @@ if (data.action === 'gemini_brief' && data.prompt) {
       btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>جارٍ السحب...</span>';
       setSyncStatus('loading', 'جارٍ سحب التقارير والحملات والأدلة من Google Sheets...');
 
+      const syncDays = document.getElementById('opsSyncDaysSelect')?.value || '30';
+      const reqUrl = url + (url.includes('?') ? '&' : '?') + 'days=' + encodeURIComponent(syncDays) + '&t=' + Date.now();
       let data = null;
       try {
-        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+        const ctrl = new AbortController();
+        const tm = setTimeout(() => ctrl.abort(), 20000);
+        let res;
+        try {
+          res = await fetch(reqUrl, { signal: ctrl.signal });
+        } finally { clearTimeout(tm); }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         data = await res.json();
       } catch (_) {
-        try { data = await fetchViaJsonp(url, 15000); } catch (err) {
-          setSyncStatus('error', 'تعذر الاتصال بـ Google Sheets — تحقق من الإنترنت أو استورد ملفات إكسل محلياً.');
-          showToast('تعذر الاتصال بالسحابة', '❌');
+        try { data = await fetchViaJsonp(reqUrl, 15000); } catch (err) {
+          const restored = typeof restoreOpsEmergencySnapshot === 'function' ? restoreOpsEmergencySnapshot() : null;
+          if (restored) {
+            setSyncStatus('error', `📶 وضع الطوارئ دون إنترنت — عرض آخر نسخة محفوظة (${fmtNum(restored.count)} تقرير بتاريخ ${restored.label})`);
+            showToast('📶 تعذر الاتصال — تم فتح آخر نسخة محفوظة مؤقتاً حتى عودة الإنترنت', '🛡️');
+          } else {
+            setSyncStatus('error', explainOpsErrorSmart(err, 'تعذر الاتصال بـ Google Sheets — تحقق من الإنترنت أو استورد ملفات إكسل محلياً.'));
+            showToast('📶 ' + explainOpsErrorSmart(err, 'تعذر الاتصال بالسحابة'), '❌');
+          }
           btn.disabled = false; btn.innerHTML = '<span>🔄</span><span>مزامنة فورية</span>';
           return;
         }
@@ -3088,6 +3208,11 @@ if (data.action === 'gemini_brief' && data.prompt) {
           allReports = allReports.filter(r => r._source === 'local');
           data.reports.forEach(r => upsertReport({ ...r, _source: 'cloud' }));
           allReports.sort((a, b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
+          window.__OPS_SYNC_META = data.syncMeta || null;
+          if (typeof saveOpsEmergencySnapshot === 'function') setTimeout(saveOpsEmergencySnapshot, 250);
+          if (data.syncMeta && data.syncMeta.truncated) {
+            setSyncStatus('ok', `تم سحب آخر ${data.syncMeta.days} يوماً (${fmtNum(data.syncMeta.returnedReports)} من أصل ${fmtNum(data.syncMeta.totalReportsInSheet)} تقرير)`);
+          }
         }
         if (Array.isArray(data.evidenceRows)) allEvidence = data.evidenceRows.map(e => ({ ...e, directorate: cleanDirName(e.directorate), visitDate: cleanIsoDate(e.visitDate) }));
         if (Array.isArray(data.campaignRows)) allCampaignRows = data.campaignRows.map(c => ({ ...c, directorate: cleanDirName(c.directorate), date: cleanIsoDate(c.date) }));
@@ -3159,6 +3284,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
       renderCampaignGovernance();
       renderCampaignAnalytics();
       renderEvidence();
+      if (typeof updateOpsHudTelemetry === 'function') updateOpsHudTelemetry();
     }
 
     function populateDynamicDateSelectors() {
@@ -3281,6 +3407,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
       document.getElementById('kpiFxAvg').textContent = `${usdAvg ? fmtNum(usdAvg) : '-'} / ${sarAvg ? fmtNum(sarAvg) : '-'}`;
 
       renderOverviewCharts();
+      if (typeof runOverviewKpiAnimations === 'function') runOverviewKpiAnimations();
       renderOverviewPricesTable();
     }
 
@@ -4299,7 +4426,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
     }
 
 
-    async function callAppsScriptGemini(payload, timeoutMs = 45000) {
+    async function callAppsScriptGemini(payload, timeoutMs = 120000) {
       const url = getBakedUrl();
       if (!url) throw new Error('لم يتم ضبط رابط Google Apps Script في ⚙️ الربط');
       const ctrl = new AbortController();
@@ -4316,7 +4443,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
         });
       } catch (netErr) {
         if (netErr && netErr.name === 'AbortError') {
-          throw new Error('انتهت مهلة الانتظار (45 ثانية) بسبب بطء الشبكة — أعد المحاولة الآن');
+          throw new Error('انتهت مهلة الانتظار (120 ثانية) بسبب بطء الشبكة — أعد المحاولة الآن');
         }
         throw new Error('تعذر الاتصال بـ Apps Script — تأكد من الإنترنت ومنح صلاحية UrlFetchApp ونشر «إصدار جديد» بصلاحية «أي شخص»');
       } finally {
@@ -4363,8 +4490,8 @@ if (data.action === 'gemini_brief' && data.prompt) {
         showToast('تمت الصياغة الاحترافية عبر Gemini AI بنجاح', '✨');
       } catch (err) {
         generateLocalMergedNarrative(true);
-        statusEl.textContent = '⚠️ سبب تعذر Gemini: ' + (err.message || 'خطأ غير معروف') + ' — (تم التوليد بالمحرك المحلي كبديل فوري).';
-        showToast('⚠️ ' + (err.message || 'تعذر Gemini — تم التوليد محلياً').slice(0, 90), '⚠️');
+        statusEl.textContent = '⚠️ سبب تعذر Gemini: ' + explainOpsErrorSmart(err, 'تعذر الاتصال مؤقتاً') + ' — (تم التوليد بالمحرك المحلي كبديل فوري).';
+        showToast('⚠️ ' + explainOpsErrorSmart(err, 'تعذر Gemini — تم التوليد محلياً').slice(0, 110), '⚠️');
       }
       btn.disabled = false; btn.innerHTML = '<span>✨</span><span>صياغة وتحليل متقدم عبر Gemini AI</span>';
     }
@@ -4443,12 +4570,44 @@ if (data.action === 'gemini_brief' && data.prompt) {
       });
     }
 
-    function renderArchive() {
+    let arcCurrentPage = 1;
+    const ARC_PAGE_SIZE = 50;
+
+    function renderArchive(keepPage = false) {
       const list = getFilteredArchiveReports();
-      document.getElementById('arcCountText').textContent = `النتائج المعروضة: ${fmtNum(list.length)} تقرير (من أصل ${fmtNum(allReports.length)})`;
+      const totalPages = Math.max(1, Math.ceil(list.length / ARC_PAGE_SIZE));
+      if (!keepPage) arcCurrentPage = 1;
+      if (arcCurrentPage > totalPages) arcCurrentPage = totalPages;
+      if (arcCurrentPage < 1) arcCurrentPage = 1;
+
+      const startIdx = (arcCurrentPage - 1) * ARC_PAGE_SIZE;
+      const pageSlice = list.slice(startIdx, startIdx + ARC_PAGE_SIZE);
+      const syncTotal = window.__OPS_SYNC_META?.totalReportsInSheet;
+      const syncHint = (syncTotal && syncTotal > allReports.length) ? ` • الإجمالي بالسحابة: ${fmtNum(syncTotal)}` : '';
+      document.getElementById('arcCountText').textContent = `النتائج المطابقة: ${fmtNum(list.length)} تقرير (المحمل: ${fmtNum(allReports.length)}${syncHint})`;
+
+      const pagBar = document.getElementById('arcPaginationBar');
+      if (pagBar) {
+        if (list.length > ARC_PAGE_SIZE) {
+          pagBar.classList.remove('hidden');
+          const endNum = Math.min(list.length, startIdx + pageSlice.length);
+          const infoEl = document.getElementById('arcPageInfoText');
+          const pillEl = document.getElementById('arcPageNumPill');
+          const prevEl = document.getElementById('arcPrevPageBtn');
+          const nextEl = document.getElementById('arcNextPageBtn');
+          if (infoEl) infoEl.textContent = `عرض ${fmtNum(startIdx + 1)}–${fmtNum(endNum)} من أصل ${fmtNum(list.length)} تقرير (50 صفاً/صفحة)`;
+          if (pillEl) pillEl.textContent = `صفحة ${arcCurrentPage} / ${totalPages}`;
+          if (prevEl) prevEl.disabled = arcCurrentPage <= 1;
+          if (nextEl) nextEl.disabled = arcCurrentPage >= totalPages;
+        } else {
+          pagBar.classList.add('hidden');
+        }
+      }
+
       const tbody = document.getElementById('arcTableBody');
       if (!list.length) { tbody.innerHTML = '<tr><td colspan="11" class="text-center py-8 text-slate-400 font-bold">لا توجد تقارير مطابقة للفلاتر.</td></tr>'; return; }
-      tbody.innerHTML = list.map((r, idx) => {
+      tbody.innerHTML = pageSlice.map((r, localIdx) => {
+        const idx = startIdx + localIdx;
         const keyIdx = allReports.indexOf(r);
         return `
           <tr>
@@ -5110,7 +5269,212 @@ if (data.action === 'gemini_brief' && data.prompt) {
       document.body.appendChild(iframe);
       const doc = iframe.contentWindow.document;
       doc.open();
-      doc.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>@page{size:A4;margin:12mm;}body{font-family:'Cairo',Arial,sans-serif;direction:rtl;margin:0;}table.rep{width:100%;border-collapse:collapse;margin:8px 0;}table.rep th{background:#102a4e;color:#fff;padding:6px;border:1px solid #334155;font-size:11px;}table.rep{direction:rtl;border:1.5px solid #102a4e;}table.rep td{padding:6px 7px;border:1px solid #cbd5e1;font-size:11px;text-align:center;}table.rep tr:nth-child(even) td{background:#f8fafc;}h3{color:#102a4e;font-size:13px;font-weight:900;margin:12px 0 6px;border-right:4px solid #c89d3c;padding:3px 8px 3px 0;background:#f8fafc;}.pdf-sec-title{color:#102a4e;font-size:13px;font-weight:900;margin:12px 0 6px;padding:4px 8px;border-right:4px solid #c89d3c;background:#f1f5f9;}.pdf-sec-num{background:#102a4e;color:#f3d485;padding:1px 6px;border-radius:4px;margin-left:6px;}.total-row td{background:#fef3c7 !important;font-weight:900 !important;}</style></head><body>${currentPdfHtml}</body></html>`);
+      doc.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>@page{size:A4;margin:12mm;}body{font-family:'Cairo',Arial,sans-serif;direction:rtl;margin:0;}table.rep{width:100%;border-collapse:collapse;margin:8px 0;}table.rep th{background:#102a4e;color:#fff;padding:6px;border:1px solid #334155;font-size:11px;}table.rep{direction:rtl;border:1.5px solid #102a4e;}table.rep td{padding:6px 7px;border:1px solid #cbd5e1;font-size:11px;text-align:center;}table.rep tr:nth-child(even) td{background:#f8fafc;}h3{color:#102a4e;font-size:13px;font-weight:900;margin:12px 0 6px;border-right:4px solid #c89d3c;padding:3px 8px 3px 0;background:#f8fafc;}.pdf-sec-title{color:#102a4e;font-size:13px;font-weight:900;margin:12px 0 6px;padding:4px 8px;border-right:4px solid #c89d3c;background:#f1f5f9;}.pdf-sec-num{background:#102a4e;color:#f3d485;padding:1px 6px;border-radius:4px;margin-left:6px;}.total-row td{background:#fef3c7 !important;font-weight:900 !important;}
+    /* ===== v28: FUTURISTIC DATA-DRIVEN TELEMETRY TABS (HUD) ===== */
+    .hud-tab-track {
+      position: relative;
+      isolation: isolate;
+    }
+    .hud-liquid-pill {
+      position: absolute;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 0.78rem;
+      background: linear-gradient(135deg, rgba(16, 42, 78, 0.96), rgba(15, 76, 92, 0.94));
+      box-shadow: 0 6px 18px -4px rgba(16, 42, 78, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(212, 175, 55, 0.35);
+      transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), width 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+      opacity: 0;
+      top: 0;
+      left: 0;
+      will-change: transform, width;
+    }
+    .hud-tab-track .tab-btn,
+    .hud-tab-track .subtab-btn {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      padding-bottom: 10px !important;
+      transition: color 0.22s ease, border-color 0.22s ease, box-shadow 0.25s ease, transform 0.2s ease, background-color 0.22s ease;
+    }
+    .hud-tab-track.hud-pill-ready .tab-btn.active,
+    .hud-tab-track.hud-pill-ready .subtab-btn.active {
+      background: transparent !important;
+      border-color: rgba(212, 175, 55, 0.45) !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+    }
+    .hud-tab-bar-bottom {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 2px;
+      height: 2.5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.22);
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .hud-tab-track .tab-btn.active .hud-tab-bar-bottom,
+    .hud-tab-track .subtab-btn.active .hud-tab-bar-bottom {
+      background: rgba(255, 255, 255, 0.16);
+    }
+    .hud-tab-bar-fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      transition: width 0.48s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+    }
+    .hud-bar-gold { background: linear-gradient(90deg, #d4af37, #fde047) !important; }
+    .hud-bar-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+    .hud-bar-rose { background: linear-gradient(90deg, #e11d48, #fb7185) !important; }
+    .hud-bar-cyan { background: linear-gradient(90deg, #06b6d4, #38bdf8) !important; }
+    .hud-bar-emerald { background: linear-gradient(90deg, #059669, #34d399) !important; }
+
+    .hud-micro-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1.5px 6px;
+      border-radius: 999px;
+      line-height: 1.3;
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .tab-btn.active .hud-micro-pill,
+    .subtab-btn.active .hud-micro-pill {
+      background: rgba(255, 255, 255, 0.16) !important;
+      color: #f8fafc !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+    .hud-pill-ok { background: rgba(16, 185, 129, 0.14); color: #065f46; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .hud-pill-warn { background: rgba(245, 158, 11, 0.16); color: #92400e; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .hud-pill-crit { background: rgba(225, 29, 72, 0.14); color: #9f1239; border: 1px solid rgba(225, 29, 72, 0.35); }
+    .hud-pill-ai { background: rgba(79, 70, 229, 0.14); color: #3730a3; border: 1px solid rgba(99, 102, 241, 0.3); }
+
+    .hud-ring-svg {
+      width: 18px;
+      height: 18px;
+      transform: rotate(-90deg);
+      flex-shrink: 0;
+    }
+    .hud-ring-bg {
+      fill: none;
+      stroke: rgba(148, 163, 184, 0.32);
+      stroke-width: 2.6;
+    }
+    .tab-btn.active .hud-ring-bg {
+      stroke: rgba(255, 255, 255, 0.22);
+    }
+    .hud-ring-fg {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.45s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.25s ease;
+    }
+
+    @keyframes hudBeaconPulse {
+      0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+      55% { transform: scale(1.15); opacity: 0.92; box-shadow: 0 0 0 5px transparent; }
+    }
+    .hud-live-beacon {
+      display: inline-block;
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 999px;
+      animation: hudBeaconPulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    .hud-beacon-emerald { background: #10b981; color: rgba(16, 185, 129, 0.55); }
+    .hud-beacon-amber { background: #f59e0b; color: rgba(245, 158, 11, 0.6); }
+    .hud-beacon-rose { background: #f43f5e; color: rgba(244, 63, 94, 0.6); }
+
+    .hud-ready-glow {
+      box-shadow: 0 0 0 1.5px rgba(212, 175, 55, 0.65), 0 4px 14px -2px rgba(16, 185, 129, 0.32) !important;
+    }
+
+    .hud-dot-matrix {
+      display: inline-grid;
+      grid-template-columns: repeat(4, 5.5px);
+      gap: 2px;
+      padding: 2.5px 4px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.08);
+      align-items: center;
+    }
+    .tab-btn.active .hud-dot-matrix {
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .hud-dir-dot {
+      width: 5.5px;
+      height: 5.5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.45);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hud-dir-dot.lit {
+      background: #10b981;
+      box-shadow: 0 0 5px rgba(16, 185, 129, 0.85);
+    }
+
+    .hud-sparkline {
+      width: 34px;
+      height: 14px;
+      overflow: visible;
+      flex-shrink: 0;
+    }
+
+    .hud-heat-track {
+      display: inline-block;
+      width: 28px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.25);
+      overflow: hidden;
+      vertical-align: middle;
+    }
+    .hud-heat-fill {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.45s ease, background 0.3s ease;
+    }
+
+    /* Desktop HUD Quick-Peek Popover */
+    #opsHudQuickPeek {
+      position: fixed;
+      z-index: 95;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px) scale(0.97);
+      transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      min-width: 230px;
+      max-width: 300px;
+      background: linear-gradient(155deg, rgba(11, 27, 52, 0.96), rgba(15, 42, 68, 0.95));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 175, 55, 0.42);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: #f8fafc;
+      box-shadow: 0 18px 40px -10px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      direction: rtl;
+    }
+    #opsHudQuickPeek.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @media (hover: none), (max-width: 768px) {
+      #opsHudQuickPeek { display: none !important; }
+    }
+
+  </style></head><body>${currentPdfHtml}</body></html>`);
       doc.close();
       iframe.contentWindow.focus();
       setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => iframe.remove(), 1500); }, 300);
@@ -5334,6 +5698,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
         b.classList.toggle('text-slate-800', !active);
       });
       resizeAllCharts();
+      if (typeof moveOpsLiquidPill === 'function') { const ab = document.querySelector(`#mainTabsTrack .tab-btn[data-tab="${tabId}"]`); if (ab) setTimeout(() => moveOpsLiquidPill('mainTabsTrack', 'opsMainLiquidPill', ab), 20); if (tabId === 'reports') { const sb = document.querySelector('#reportsSubtabsTrack .subtab-btn.active'); if (sb) setTimeout(() => moveOpsLiquidPill('reportsSubtabsTrack', 'opsSubLiquidPill', sb), 35); } }
     }
 
     function switchSubReport(subId) {
@@ -5349,6 +5714,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
       if (subId === 'data_auditor' && typeof renderDataAuditorAndBasket === 'function') setTimeout(renderDataAuditorAndBasket, 30);
       if (subId === 'gas_analytics' && typeof renderGasAnalyticsPanel === 'function') renderGasAnalyticsPanel();
       if (subId === 'ai_analyst' && typeof getAiScopedReports === 'function') getAiScopedReports();
+      if (typeof moveOpsLiquidPill === 'function') { const sb = document.querySelector(`#reportsSubtabsTrack .subtab-btn[data-subrep="${subId}"]`); if (sb) setTimeout(() => moveOpsLiquidPill('reportsSubtabsTrack', 'opsSubLiquidPill', sb), 20); }
       if (subId === 'fx_simulator' && typeof renderFxSimulator === 'function') renderFxSimulator(true);
       if (subId === 'merged_exec' && typeof generateLocalMergedNarrative === 'function') generateLocalMergedNarrative(!document.getElementById('mergedNarrativeEditor')?.value?.trim());
     }
@@ -5384,7 +5750,7 @@ if (data.action === 'gemini_brief' && data.prompt) {
       });
       document.getElementById('settingsCloseBtn').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
       document.getElementById('settingsResetBtn').addEventListener('click', () => { localStorage.removeItem('moit_ops_gs_url'); document.getElementById('gsUrlInput').value = getBakedUrl(); showToast('تمت استعادة الرابط الافتراضي', '✅'); });
-      document.getElementById('settingsSaveBtn').addEventListener('click', () => { const v = document.getElementById('gsUrlInput').value.trim(); if (v) localStorage.setItem('moit_ops_gs_url', v); document.getElementById('settingsModal').classList.add('hidden'); syncFromCloud(); });
+      document.getElementById('settingsSaveBtn').addEventListener('click', () => { const v = document.getElementById('gsUrlInput').value.trim(); if (v) try { localStorage.setItem('moit_ops_gs_url', v); } catch (_e) { /* quota safe */ } document.getElementById('settingsModal').classList.add('hidden'); syncFromCloud(); });
 
       // Tab 1 Overview
       document.getElementById('ovPeriodSelect').addEventListener('change', e => {
@@ -6375,7 +6741,7 @@ ${txt}`;
       const card = document.createElement('div');
       card.id = cardId;
       const isNotFound = spec.grounded_status === 'not_found';
-      card.className = `ai-gen-card rounded-2xl border-2 ${isNotFound ? 'border-amber-400 bg-amber-50/50' : 'border-[#102a4e]/25 bg-white'} shadow-md p-4 space-y-3.5 transition`;
+      card.className = `ai-gen-card moit-reveal rounded-2xl border-2 ${isNotFound ? 'border-amber-400 bg-amber-50/50' : 'border-[#102a4e]/25 bg-white'} shadow-md p-4 space-y-3.5 transition`;
 
       const toneMap = {
         indigo: 'bg-indigo-50 border-indigo-200 text-indigo-900',
@@ -6517,6 +6883,7 @@ ${txt}`;
       const askBtn = document.getElementById('btnAskAiData');
       _lastAiTitle = taskTitle;
       if (askBtn) { askBtn.disabled = true; askBtn.textContent = '⏳ جارٍ التحليل وبناء العرض...'; }
+      if (typeof showAiThinkingShimmerCard === 'function') showAiThinkingShimmerCard(userInstruction || taskTitle);
 
       try {
         const scope = getAiScopedReports();
@@ -6575,6 +6942,7 @@ ${ctx}`;
         outEl.value = `⚠️ تشخيص السبب الدقيق:\n${msg}`;
         showToast('⚠️ ' + msg.slice(0, 90), '⚠️');
       } finally {
+        if (typeof removeAiThinkingShimmerCard === 'function') removeAiThinkingShimmerCard();
         if (askBtn) { askBtn.disabled = false; askBtn.textContent = '✨ تحليل وإجابة عبر Gemini'; }
       }
     }
@@ -6946,7 +7314,7 @@ ${ctx}`;
           stEl.textContent = `✅ تم استخراج (${_gasOcrExtractedRows.length}) صف بنجاح ومطابقتها مع قاعدة البيانات! راجعها ثم اضغط اعتماد.`;
           showToast(`تم استخراج ${_gasOcrExtractedRows.length} صفاً من صورة كشف الغاز!`, '📷');
         } catch (err) {
-          stEl.textContent = `⚠️ ${err.message || 'تعذر قراءة الصورة — تأكد من تحديث Code.gs بدالة gemini_vision'}`;
+          stEl.textContent = `⚠️ ${explainOpsErrorSmart(err, 'تعذر قراءة الصورة — جرّب صورة أوضح وتأكد من اتصال الإنترنت')}`;
           showToast('تعذر قراءة الصورة عبر Gemini Vision', '⚠️');
         } finally {
           btn.disabled = false; btn.textContent = '✨ قراءة وتحليل الصورة عبر Gemini AI';
@@ -7384,7 +7752,7 @@ ${ctx}`;
           if (tag) tag.textContent = '✨ صياغة Gemini AI';
           showToast('تمت صياغة الإيجاز القيادي عبر Gemini AI بنجاح', '✨');
         } catch (err) {
-          showToast('⚠️ ' + (err.message || 'تعذر الاتصال بـ Gemini — تم الإبقاء على الإيجاز الفوري').slice(0, 85), '⚠️');
+          showToast('⚠️ ' + explainOpsErrorSmart(err, 'تعذر الاتصال بـ Gemini — تم الإبقاء على الإيجاز الفوري').slice(0, 110), '⚠️');
         } finally {
           btn.disabled = false; btn.textContent = '✨ صياغة ذكية (Gemini)';
         }
@@ -7508,7 +7876,7 @@ ${ctx}`;
         renderOpsPinsTable();
         if (statusEl) statusEl.textContent = '✅ تم فتح لوحة الأقفال بنجاح — السرية الكاملة مفعّلة.';
       } catch (err) {
-        if (errEl) { errEl.textContent = '❌ ' + (err.message || 'الرمز الإداري غير صحيح'); errEl.classList.remove('hidden'); }
+        if (errEl) { errEl.textContent = '❌ ' + explainOpsErrorSmart(err, 'الرمز الإداري غير صحيح أو تعذر الاتصال بالخادم'); errEl.classList.remove('hidden'); }
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '🔓 فتح لوحة الأقفال'; }
       }
@@ -7538,8 +7906,8 @@ ${ctx}`;
         if (statusEl) statusEl.textContent = `✅ تم تحديث رمز قفل «${dir}» وفك أي إيقاف مؤقت بنجاح!`;
         showToast(`🔐 تم تحديث رمز قفل «${dir}» سحابياً`, '✅');
       } catch (err) {
-        if (statusEl) statusEl.textContent = '❌ ' + (err.message || 'تعذر حفظ الرمز');
-        showToast('❌ ' + (err.message || 'تعذر حفظ الرمز'), '⚠️');
+        if (statusEl) statusEl.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر حفظ الرمز — أعد المحاولة');
+        showToast('❌ ' + explainOpsErrorSmart(err, 'تعذر حفظ الرمز'), '⚠️');
       }
     }
 
@@ -7600,7 +7968,7 @@ ${ctx}`;
           document.getElementById('opsNewAdminPinInput').value = '';
           showToast('✅ تم تحديث الرمز الإداري الرئيسي لغرفة العمليات بنجاح', '🔑');
         } catch (err) {
-          showToast('❌ ' + (err.message || 'تعذر تحديث الرمز الإداري'), '⚠️');
+          showToast('❌ ' + explainOpsErrorSmart(err, 'تعذر تحديث الرمز الإداري'), '⚠️');
         }
       });
     });
@@ -7930,7 +8298,7 @@ ${ctx}`;
         }
         if (statusEl) statusEl.textContent = `✅ تم تحميل آخر (${logs.length}) حدثاً أمنياً من ورقة سجل_التدقيق_الأمني.`;
       } catch (err) {
-        if (statusEl) statusEl.textContent = '⚠️ ' + (err.message || 'تعذر سحب سجل التدقيق');
+        if (statusEl) statusEl.textContent = '⚠️ ' + explainOpsErrorSmart(err, 'تعذر سحب سجل التدقيق — أعد المحاولة');
       }
     }
 
@@ -7948,7 +8316,7 @@ ${ctx}`;
         showToast('✅ تم فك الإيقاف المؤقت بنجاح!', '🔓');
         loadOpsSecurityAuditLog();
       } catch (err) {
-        showToast('❌ ' + (err.message || 'تعذر فك الإيقاف'), '⚠️');
+        showToast('❌ ' + explainOpsErrorSmart(err, 'تعذر فك الإيقاف'), '⚠️');
       }
     };
 
@@ -8057,7 +8425,7 @@ ${ctx}`;
           a.click();
           showToast('تم تنزيل النشرة المصورة عالية الدقة (PNG) بنجاح!', '🖼️');
         } catch (err) {
-          showToast('تعذر توليد الصورة: ' + (err.message || ''), '⚠️');
+          showToast('تعذر توليد الصورة: ' + explainOpsErrorSmart(err, 'أعد المحاولة بعد لحظات'), '⚠️');
         } finally {
           btn.disabled = false; btn.textContent = '📥 تنزيل كصورة PNG عالية الدقة';
         }
@@ -8124,6 +8492,684 @@ ${ctx}`;
         downloadWordDoc(`شهادة ترتيب وتميز المديريات — ${pLabel}`, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, body, `ترتيب_التميز_الرقابي_عدن_${todayIso()}.doc`);
       });
     });
+
+  
+    // ==================== LUXURY KPI COUNT-UP & NEURAL AI SHIMMER (v27) ====================
+    function animateNumericEl(el) {
+      if (!el) return;
+      const raw = String(el.textContent || '').trim();
+      const target = toNum(raw);
+      if (!(target > 0) || el.dataset.lastAnimVal === String(target)) return;
+      el.dataset.lastAnimVal = String(target);
+      const suffix = raw.replace(/[0-9,،.\s]+/g, '').trim();
+      const start = performance.now();
+      const dur = 650;
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const cur = Math.round(target * eased);
+        el.textContent = suffix ? `${fmtNum(cur)} ${suffix}` : fmtNum(cur);
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = raw;
+      };
+      requestAnimationFrame(step);
+    }
+
+    function runOverviewKpiAnimations() {
+      ['ovKpiReports', 'ovKpiDirs', 'ovKpiFirms', 'ovKpiGas', 'ovKpiViols', 'ovKpiActs', 'ovKpiUsd', 'ovKpiSar'].forEach(id => {
+        animateNumericEl(document.getElementById(id));
+      });
+    }
+
+    function showAiThinkingShimmerCard(questionText) {
+      const feed = document.getElementById('aiGenerativeFeed');
+      if (!feed) return;
+      document.getElementById('aiThinkingShimmerCard')?.remove();
+      const card = document.createElement('div');
+      card.id = 'aiThinkingShimmerCard';
+      card.className = 'moit-scanner-box moit-reveal rounded-2xl p-4 text-white space-y-3';
+      card.innerHTML = `
+        <div class="moit-laser-beam"></div>
+        <div class="relative z-10 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="flex items-end gap-1 h-6">
+              <span class="moit-ai-bar" style="animation-delay:0s"></span>
+              <span class="moit-ai-bar" style="animation-delay:0.14s"></span>
+              <span class="moit-ai-bar" style="animation-delay:0.28s"></span>
+              <span class="moit-ai-bar" style="animation-delay:0.42s"></span>
+              <span class="moit-ai-bar" style="animation-delay:0.56s"></span>
+            </div>
+            <div>
+              <div class="text-xs font-black text-amber-300">🧠 المحلل الذكي يفحص السجلات ويبني العرض التفاعلي...</div>
+              <div class="text-[11px] text-sky-100/90 font-semibold truncate max-w-md">السؤال: ${escHtml(String(questionText || '').slice(0, 90))}</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-white/15 border border-amber-300/40 text-[10.5px] font-black text-amber-200">Gemini AI</span>
+        </div>
+        <div class="relative z-10 grid grid-cols-3 gap-2">
+          <div class="h-10 rounded-xl moit-shimmer-line"></div>
+          <div class="h-10 rounded-xl moit-shimmer-line"></div>
+          <div class="h-10 rounded-xl moit-shimmer-line"></div>
+        </div>
+        <div class="relative z-10 h-20 rounded-xl moit-shimmer-line"></div>`;
+      feed.prepend(card);
+    }
+
+    function removeAiThinkingShimmerCard() {
+      document.getElementById('aiThinkingShimmerCard')?.remove();
+    }
+
+  
+
+    /* ===== v28: OPS ROOM REAL-DATA TELEMETRY TABS + HUD QUICK-PEEK ===== */
+    window.__OPS_HUD_PEEK_DATA = {};
+
+    function moveOpsLiquidPill(trackId, pillId, activeBtn) {
+      const track = document.getElementById(trackId);
+      const pill = document.getElementById(pillId);
+      if (!track || !pill || !activeBtn || activeBtn.offsetWidth === 0) return;
+      pill.style.width = activeBtn.offsetWidth + 'px';
+      pill.style.height = activeBtn.offsetHeight + 'px';
+      pill.style.transform = `translate3d(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px, 0)`;
+      pill.style.opacity = '1';
+      track.classList.add('hud-pill-ready');
+    }
+
+    function showOpsHudPeek(tabId, anchorEl) {
+      const pop = document.getElementById('opsHudQuickPeek');
+      const info = window.__OPS_HUD_PEEK_DATA[tabId];
+      if (!pop || !info || !anchorEl) return;
+      const rowsHtml = info.rows.map(r => `
+        <div class="flex items-center justify-between gap-3 text-[11px] py-0.5">
+          <span class="text-slate-300 font-bold">${escHtml(r.label)}</span>
+          <span class="font-black ${r.cls || 'text-amber-300'}">${escHtml(r.val)}</span>
+        </div>`).join('');
+      pop.innerHTML = `
+        <div class="flex items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-white/15">
+          <span class="text-[11px] font-black text-white">${escHtml(info.title)}</span>
+          <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded-full bg-white/10 text-emerald-300">${escHtml(info.status || 'بث حي')}</span>
+        </div>
+        ${rowsHtml}
+        ${info.note ? `<div class="mt-1.5 pt-1.5 border-t border-white/10 text-[10px] text-slate-300 leading-relaxed">${escHtml(info.note)}</div>` : ''}
+      `;
+      const rect = anchorEl.getBoundingClientRect();
+      pop.classList.add('visible');
+      const popW = pop.offsetWidth || 250;
+      let left = rect.left + (rect.width / 2) - (popW / 2);
+      left = Math.max(12, Math.min(window.innerWidth - popW - 12, left));
+      const top = Math.min(window.innerHeight - 160, rect.bottom + 8);
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+    }
+
+    function hideOpsHudPeek() {
+      const pop = document.getElementById('opsHudQuickPeek');
+      if (pop) pop.classList.remove('visible');
+    }
+
+    function initOpsHudTelemetryTabs() {
+      const mainTrack = document.getElementById('mainTabsTrack');
+      const subTrack = document.getElementById('reportsSubtabsTrack');
+      if (!mainTrack || mainTrack.dataset.hudInit === '1') return;
+      mainTrack.dataset.hudInit = '1';
+      mainTrack.classList.add('hud-tab-track');
+
+      const mainPill = document.createElement('div');
+      mainPill.id = 'opsMainLiquidPill';
+      mainPill.className = 'hud-liquid-pill';
+      mainTrack.insertBefore(mainPill, mainTrack.firstChild);
+
+      if (!document.getElementById('opsHudQuickPeek')) {
+        const peek = document.createElement('div');
+        peek.id = 'opsHudQuickPeek';
+        document.body.appendChild(peek);
+      }
+
+      // Inject real telemetry slots on main tabs
+      const addMainSlot = (tabId, html) => {
+        const b = mainTrack.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (!b) return;
+        if (html) b.insertAdjacentHTML('beforeend', html);
+        b.insertAdjacentHTML('beforeend', `<span class="hud-tab-bar-bottom"><span id="hudOpsBar_${tabId}" class="hud-tab-bar-fill"></span></span>`);
+        b.addEventListener('mouseenter', () => showOpsHudPeek(tabId, b));
+        b.addEventListener('mouseleave', hideOpsHudPeek);
+        b.addEventListener('click', () => {
+          hideOpsHudPeek();
+          setTimeout(() => moveOpsLiquidPill('mainTabsTrack', 'opsMainLiquidPill', b), 20);
+        });
+      };
+
+      const dotsHtml = Array.from({ length: 8 }, (_, i) => `<span id="hudOpsDirDot_${i}" class="hud-dir-dot"></span>`).join('');
+      addMainSlot('overview', `<span id="hudOpsDirMatrix" class="hud-dot-matrix" title="تغطية مديريات عدن الثمان">${dotsHtml}</span>`);
+      addMainSlot('aggregator', `<svg id="hudOpsSparkSvg" class="hud-sparkline" viewBox="0 0 34 14"><polyline id="hudOpsSparkLine" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" points=""/></svg><span id="hudOpsTrendPill" class="hud-micro-pill" style="display:none"></span>`);
+      addMainSlot('reports', `<span id="hudOpsAuditBeacon" class="hud-live-beacon hud-beacon-amber" style="display:none"></span><span id="hudOpsAuditMainBadge" class="hud-micro-pill" style="display:none"></span>`);
+      addMainSlot('archive', ``);
+      addMainSlot('comparator', `<span id="hudOpsCompBadge" class="hud-micro-pill" style="display:none"></span>`);
+      addMainSlot('campaigns', `<span id="hudOpsCampBeacon" class="hud-live-beacon hud-beacon-emerald" style="display:none"></span>`);
+      addMainSlot('evidence', `<span id="hudOpsEvidBeacon" class="hud-live-beacon hud-beacon-rose" style="display:none"></span>`);
+
+      // Subtabs telemetry slots
+      if (subTrack && subTrack.dataset.hudInit !== '1') {
+        subTrack.dataset.hudInit = '1';
+        subTrack.classList.add('hud-tab-track');
+        const subPill = document.createElement('div');
+        subPill.id = 'opsSubLiquidPill';
+        subPill.className = 'hud-liquid-pill';
+        subTrack.insertBefore(subPill, subTrack.firstChild);
+
+        const addSubSlot = (subId, html) => {
+          const b = subTrack.querySelector(`.subtab-btn[data-subrep="${subId}"]`);
+          if (!b) return;
+          b.classList.add('inline-flex', 'items-center', 'gap-1.5');
+          if (html) b.insertAdjacentHTML('beforeend', html);
+          b.insertAdjacentHTML('beforeend', `<span class="hud-tab-bar-bottom"><span id="hudSubBar_${subId}" class="hud-tab-bar-fill"></span></span>`);
+          b.addEventListener('click', () => {
+            setTimeout(() => moveOpsLiquidPill('reportsSubtabsTrack', 'opsSubLiquidPill', b), 20);
+          });
+        };
+
+        addSubSlot('data_auditor', `<span id="hudSubAuditBeacon" class="hud-live-beacon hud-beacon-amber" style="display:none"></span><span id="hudSubAuditBadge" class="hud-micro-pill"></span>`);
+        addSubSlot('disparity', `<span class="hud-heat-track"><span id="hudSubDispHeat" class="hud-heat-fill" style="width:0%"></span></span><span id="hudSubDispBadge" class="hud-micro-pill"></span>`);
+        addSubSlot('fx_basket', `<span class="hud-heat-track"><span id="hudSubFxHeat" class="hud-heat-fill" style="width:0%"></span></span><span id="hudSubFxBadge" class="hud-micro-pill"></span>`);
+        addSubSlot('ai_analyst', `<span id="hudSubAiBeacon" class="hud-live-beacon hud-beacon-emerald" style="display:none"></span><span id="hudSubAiBadge" class="hud-micro-pill hud-pill-ai"></span>`);
+        addSubSlot('gas_analytics', `<span id="hudSubGasAnBadge" class="hud-micro-pill"></span>`);
+        addSubSlot('gas_supply', `<span id="hudSubGasSupBadge" class="hud-micro-pill"></span>`);
+        ['merged_exec', 'fx_simulator', 'perf', 'period_cmp'].forEach(id => addSubSlot(id, ''));
+      }
+
+      window.addEventListener('resize', () => {
+        const actM = mainTrack.querySelector('.tab-btn.active');
+        if (actM) moveOpsLiquidPill('mainTabsTrack', 'opsMainLiquidPill', actM);
+        const actS = subTrack?.querySelector('.subtab-btn.active');
+        if (actS) moveOpsLiquidPill('reportsSubtabsTrack', 'opsSubLiquidPill', actS);
+      });
+      mainTrack.addEventListener('scroll', hideOpsHudPeek, { passive: true });
+
+      setTimeout(() => {
+        updateOpsHudTelemetry();
+        const actM = mainTrack.querySelector('.tab-btn.active');
+        if (actM) moveOpsLiquidPill('mainTabsTrack', 'opsMainLiquidPill', actM);
+      }, 120);
+    }
+
+    function updateOpsHudTelemetry() {
+      const mainTrack = document.getElementById('mainTabsTrack');
+      if (!mainTrack) return;
+
+      const ovReps = Array.isArray(filteredOvReports) && filteredOvReports.length ? filteredOvReports : (Array.isArray(allReports) ? allReports : []);
+      const allReps = Array.isArray(allReports) ? allReports : [];
+      const reportedSet = new Set(ovReps.map(r => r.directorate));
+
+      // 1) Overview 8-Dot Directorate Matrix
+      const reportedNames = [];
+      const missingNames = [];
+      (ADEN_8_DIRS || []).forEach((d, idx) => {
+        const dot = document.getElementById(`hudOpsDirDot_${idx}`);
+        const ok = reportedSet.has(d);
+        if (ok) reportedNames.push(d);
+        else missingNames.push(d);
+        if (dot) {
+          dot.classList.toggle('lit', ok);
+          dot.title = `${d}: ${ok ? 'تم الرفع ✅' : 'لم يرفع بعد ⏳'}`;
+        }
+      });
+      const ovPct = Math.round((reportedNames.length / 8) * 100);
+      const ovBar = document.getElementById('hudOpsBar_overview');
+      if (ovBar) {
+        ovBar.style.width = ovPct + '%';
+        ovBar.className = 'hud-tab-bar-fill ' + (ovPct === 100 ? 'hud-bar-gold' : (ovPct >= 50 ? 'hud-bar-emerald' : 'hud-bar-amber'));
+      }
+
+      // 2) Aggregator Real USD Sparkline (last up to 7 dates)
+      const byDateFx = {};
+      allReps.forEach(r => {
+        const dt = r.visitDate || r.date || '';
+        const usd = Number(r.usdSell || 0);
+        if (dt && usd > 0) {
+          if (!byDateFx[dt]) byDateFx[dt] = [];
+          byDateFx[dt].push(usd);
+        }
+      });
+      const sortedDates = Object.keys(byDateFx).sort().slice(-7);
+      const fxSeries = sortedDates.map(dt => {
+        const arr = byDateFx[dt];
+        return arr.reduce((s, v) => s + v, 0) / arr.length;
+      });
+      const sparkLine = document.getElementById('hudOpsSparkLine');
+      const trendPill = document.getElementById('hudOpsTrendPill');
+      const aggBar = document.getElementById('hudOpsBar_aggregator');
+      let fxDeltaPct = 0;
+      let latestUsd = fxSeries.length ? Math.round(fxSeries[fxSeries.length - 1]) : 0;
+      if (sparkLine && fxSeries.length >= 2) {
+        const minV = Math.min(...fxSeries);
+        const maxV = Math.max(...fxSeries);
+        const span = (maxV - minV) || 1;
+        const pts = fxSeries.map((v, i) => {
+          const x = (i / (fxSeries.length - 1)) * 30 + 2;
+          const y = 12 - ((v - minV) / span) * 10;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        sparkLine.setAttribute('points', pts);
+        const prev = fxSeries[fxSeries.length - 2];
+        const curr = fxSeries[fxSeries.length - 1];
+        fxDeltaPct = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
+        const col = fxDeltaPct > 0.5 ? '#fb7185' : (fxDeltaPct < -0.5 ? '#34d399' : '#38bdf8');
+        sparkLine.setAttribute('stroke', col);
+        if (trendPill) {
+          trendPill.style.display = 'inline-flex';
+          const arrow = fxDeltaPct > 0.5 ? '↗' : (fxDeltaPct < -0.5 ? '↘' : '→');
+          trendPill.textContent = `${arrow} ${Math.abs(fxDeltaPct).toFixed(1)}%`;
+          trendPill.className = 'hud-micro-pill ' + (fxDeltaPct > 0.5 ? 'hud-pill-crit' : (fxDeltaPct < -0.5 ? 'hud-pill-ok' : ''));
+        }
+        if (aggBar) {
+          aggBar.style.width = '100%';
+          aggBar.className = 'hud-tab-bar-fill ' + (fxDeltaPct > 0.5 ? 'hud-bar-rose' : 'hud-bar-emerald');
+        }
+      } else {
+        if (sparkLine) sparkLine.setAttribute('points', '');
+        if (trendPill) trendPill.style.display = 'none';
+        if (aggBar) aggBar.style.width = allReps.length ? '55%' : '0%';
+      }
+
+      // 3) Real Data Quality Auditor Telemetry
+      let auditInfo = { critCnt: 0, warnCnt: 0, health: 100 };
+      try {
+        if (typeof computeDataQualityAudit === 'function' && allReps.length > 0) {
+          auditInfo = computeDataQualityAudit();
+        }
+      } catch (_e) { /* keep defaults */ }
+      const anomCnt = (auditInfo.critCnt || 0) + (auditInfo.warnCnt || 0);
+      const repBeacon = document.getElementById('hudOpsAuditBeacon');
+      const repBadge = document.getElementById('hudOpsAuditMainBadge');
+      const repBar = document.getElementById('hudOpsBar_reports');
+      if (repBeacon) {
+        repBeacon.style.display = anomCnt > 0 ? 'inline-block' : 'none';
+        repBeacon.className = 'hud-live-beacon ' + (auditInfo.critCnt > 0 ? 'hud-beacon-rose' : 'hud-beacon-amber');
+      }
+      if (repBadge) {
+        if (allReps.length === 0) {
+          repBadge.style.display = 'none';
+        } else {
+          repBadge.style.display = 'inline-flex';
+          repBadge.textContent = anomCnt > 0 ? `${anomCnt} تنبيه` : 'سليم ✓';
+          repBadge.className = 'hud-micro-pill ' + (auditInfo.critCnt > 0 ? 'hud-pill-crit' : (anomCnt > 0 ? 'hud-pill-warn' : 'hud-pill-ok'));
+        }
+      }
+      if (repBar) {
+        repBar.style.width = allReps.length ? Math.max(15, auditInfo.health || 0) + '%' : '0%';
+        repBar.className = 'hud-tab-bar-fill ' + (auditInfo.critCnt > 0 ? 'hud-bar-rose' : (anomCnt > 0 ? 'hud-bar-amber' : 'hud-bar-emerald'));
+      }
+
+      // Subtab: Data Auditor
+      const subAudBeacon = document.getElementById('hudSubAuditBeacon');
+      const subAudBadge = document.getElementById('hudSubAuditBadge');
+      const subAudBar = document.getElementById('hudSubBar_data_auditor');
+      if (subAudBeacon) {
+        subAudBeacon.style.display = anomCnt > 0 ? 'inline-block' : 'none';
+        subAudBeacon.className = 'hud-live-beacon ' + (auditInfo.critCnt > 0 ? 'hud-beacon-rose' : 'hud-beacon-amber');
+      }
+      if (subAudBadge) {
+        subAudBadge.textContent = allReps.length ? (anomCnt > 0 ? `${anomCnt} تنبيه • ${auditInfo.health}%` : `سليم ${auditInfo.health}%`) : '—';
+        subAudBadge.className = 'hud-micro-pill ' + (auditInfo.critCnt > 0 ? 'hud-pill-crit' : (anomCnt > 0 ? 'hud-pill-warn' : 'hud-pill-ok'));
+      }
+      if (subAudBar) {
+        subAudBar.style.width = allReps.length ? (auditInfo.health || 0) + '%' : '0%';
+        subAudBar.className = 'hud-tab-bar-fill ' + (auditInfo.critCnt > 0 ? 'hud-bar-rose' : (anomCnt > 0 ? 'hud-bar-amber' : 'hud-bar-emerald'));
+      }
+
+      // 4) Real Max Price Disparity Heat Bar
+      let maxDisp = 0;
+      let pricedCommoditiesSet = new Set();
+      const itemPricesMap = {};
+      ovReps.forEach(r => {
+        const pm = r.prices || {};
+        Object.keys(pm).forEach(k => {
+          const p = Number(pm[k] || 0);
+          if (p > 0) {
+            pricedCommoditiesSet.add(k);
+            if (!itemPricesMap[k]) itemPricesMap[k] = [];
+            itemPricesMap[k].push(p);
+          }
+        });
+      });
+      Object.values(itemPricesMap).forEach(arr => {
+        if (arr.length >= 2) {
+          const mn = Math.min(...arr);
+          const mx = Math.max(...arr);
+          if (mn > 0) {
+            const d = ((mx - mn) / mn) * 100;
+            if (d > maxDisp && d < 300) maxDisp = d;
+          }
+        }
+      });
+      const dispHeat = document.getElementById('hudSubDispHeat');
+      const dispBadge = document.getElementById('hudSubDispBadge');
+      const dispBar = document.getElementById('hudSubBar_disparity');
+      const dispColor = maxDisp > 25 ? '#f43f5e' : (maxDisp > 10 ? '#f59e0b' : '#10b981');
+      if (dispHeat) {
+        dispHeat.style.width = Math.min(100, Math.round(maxDisp * 2.5)) + '%';
+        dispHeat.style.background = dispColor;
+      }
+      if (dispBadge) {
+        dispBadge.textContent = maxDisp > 0 ? `${maxDisp.toFixed(0)}%` : '0%';
+        dispBadge.className = 'hud-micro-pill ' + (maxDisp > 25 ? 'hud-pill-crit' : (maxDisp > 10 ? 'hud-pill-warn' : 'hud-pill-ok'));
+      }
+      if (dispBar) {
+        dispBar.style.width = Math.min(100, Math.round(maxDisp * 2.5)) + '%';
+        dispBar.className = 'hud-tab-bar-fill ' + (maxDisp > 25 ? 'hud-bar-rose' : (maxDisp > 10 ? 'hud-bar-amber' : 'hud-bar-emerald'));
+      }
+
+      // 5) Subtab: FX & Basket Heat Bar
+      const fxHeat = document.getElementById('hudSubFxHeat');
+      const fxBadge = document.getElementById('hudSubFxBadge');
+      const fxBar = document.getElementById('hudSubBar_fx_basket');
+      if (fxBadge) {
+        fxBadge.textContent = latestUsd > 0 ? `${fmtNum(latestUsd)} ر.ي` : '—';
+        fxBadge.className = 'hud-micro-pill ' + (fxDeltaPct > 0.5 ? 'hud-pill-crit' : (fxDeltaPct < -0.5 ? 'hud-pill-ok' : ''));
+      }
+      if (fxHeat) {
+        fxHeat.style.width = latestUsd > 0 ? Math.min(100, Math.max(25, Math.abs(fxDeltaPct) * 20)) + '%' : '0%';
+        fxHeat.style.background = fxDeltaPct > 0.5 ? '#f43f5e' : (fxDeltaPct < -0.5 ? '#10b981' : '#38bdf8');
+      }
+      if (fxBar) {
+        fxBar.style.width = latestUsd > 0 ? '80%' : '0%';
+        fxBar.className = 'hud-tab-bar-fill ' + (fxDeltaPct > 0.5 ? 'hud-bar-rose' : 'hud-bar-cyan');
+      }
+
+      // 6) Subtab: AI Analyst Neural Readiness
+      const aiBeacon = document.getElementById('hudSubAiBeacon');
+      const aiBadge = document.getElementById('hudSubAiBadge');
+      const aiBar = document.getElementById('hudSubBar_ai_analyst');
+      if (aiBeacon) aiBeacon.style.display = allReps.length > 0 ? 'inline-block' : 'none';
+      if (aiBadge) aiBadge.textContent = allReps.length > 0 ? `جاهز • ${fmtNum(allReps.length)} تقرير` : 'بانتظار البيانات';
+      if (aiBar) {
+        aiBar.style.width = allReps.length > 0 ? '100%' : '0%';
+        aiBar.className = 'hud-tab-bar-fill hud-bar-cyan';
+      }
+
+      // 7) Gas Subtabs + Comparator + Archive + Campaigns + Evidence
+      const gasTotal = ovReps.reduce((s, r) => s + Number(r.gasTotal || 0), 0);
+      const violTotal = ovReps.reduce((s, r) => s + Number(r.violTotal || 0), 0);
+      const actTotal = ovReps.reduce((s, r) => s + Number(r.actTotal || 0), 0);
+      const gAn = document.getElementById('hudSubGasAnBadge');
+      const gSup = document.getElementById('hudSubGasSupBadge');
+      if (gAn) gAn.textContent = gasTotal > 0 ? `${fmtNum(gasTotal)} أسطوانة` : '0';
+      if (gSup) gSup.textContent = gasTotal > 0 ? `${fmtNum(gasTotal)}` : '0';
+
+      const compBadge = document.getElementById('hudOpsCompBadge');
+      const compBar = document.getElementById('hudOpsBar_comparator');
+      if (compBadge) {
+        if (pricedCommoditiesSet.size > 0) {
+          compBadge.style.display = 'inline-flex';
+          compBadge.textContent = `${pricedCommoditiesSet.size} سلعة`;
+          compBadge.className = 'hud-micro-pill hud-pill-ok';
+        } else {
+          compBadge.style.display = 'none';
+        }
+      }
+      if (compBar) compBar.style.width = Math.min(100, Math.round((pricedCommoditiesSet.size / 81) * 100)) + '%';
+
+      const archBar = document.getElementById('hudOpsBar_archive');
+      if (archBar) {
+        archBar.style.width = allReps.length > 0 ? '100%' : '0%';
+        archBar.className = 'hud-tab-bar-fill hud-bar-cyan';
+      }
+
+      const activeCamps = (Array.isArray(managedCampaigns) ? managedCampaigns : []).filter(c => String(c.status || '').includes('نشط') || String(c.status || '').toLowerCase() === 'active');
+      const campBeacon = document.getElementById('hudOpsCampBeacon');
+      const campBar = document.getElementById('hudOpsBar_campaigns');
+      if (campBeacon) campBeacon.style.display = activeCamps.length > 0 ? 'inline-block' : 'none';
+      if (campBar) {
+        campBar.style.width = activeCamps.length > 0 ? '100%' : ((allCampaignRows || []).length > 0 ? '40%' : '0%');
+        campBar.className = 'hud-tab-bar-fill hud-bar-emerald';
+      }
+
+      const evidCnt = (Array.isArray(allEvidence) ? allEvidence.length : 0);
+      const evidBeacon = document.getElementById('hudOpsEvidBeacon');
+      const evidBar = document.getElementById('hudOpsBar_evidence');
+      if (evidBeacon) evidBeacon.style.display = (evidCnt > 0 || violTotal > 0) ? 'inline-block' : 'none';
+      if (evidBar) {
+        evidBar.style.width = (evidCnt > 0 || violTotal > 0) ? '100%' : '0%';
+        evidBar.className = 'hud-tab-bar-fill hud-bar-rose';
+      }
+
+      // 8) Populate Desktop HUD Quick-Peek Popover Real Data
+      const latestRep = allReps[0] || null;
+      window.__OPS_HUD_PEEK_DATA = {
+        overview: {
+          title: '📊 رادار لوحة القيادة الحية',
+          status: `${reportedNames.length}/8 مديريات`,
+          rows: [
+            { label: 'التغطية الميدانية', val: `${ovPct}% (${reportedNames.length} من 8)`, cls: ovPct >= 75 ? 'text-emerald-300' : 'text-amber-300' },
+            { label: 'المخالفات والإجراءات', val: `${fmtNum(violTotal)} مخالفة • ${fmtNum(actTotal)} إجراء`, cls: violTotal > 0 ? 'text-rose-300' : 'text-emerald-300' },
+            { label: 'الغاز المورّد', val: `${fmtNum(gasTotal)} أسطوانة`, cls: 'text-cyan-300' }
+          ],
+          note: missingNames.length ? `بانتظار الرفع: ${missingNames.slice(0, 4).join('، ')}${missingNames.length > 4 ? '...' : ''}` : 'جميع مديريات العاصمة عدن الثمان أتمت الرفع ✅'
+        },
+        aggregator: {
+          title: '🏛️ مُجمّع المديريات الذكي',
+          status: latestUsd > 0 ? `${fmtNum(latestUsd)} ر.ي/دولار` : 'جاهز',
+          rows: [
+            { label: 'أيام التغطية المرصودة', val: `${sortedDates.length} أيام`, cls: 'text-cyan-300' },
+            { label: 'تغير الصرف الأخير', val: `${fxDeltaPct >= 0 ? '+' : ''}${fxDeltaPct.toFixed(1)}%`, cls: fxDeltaPct > 0.5 ? 'text-rose-300' : 'text-emerald-300' },
+            { label: 'السلع المسعّرة', val: `${pricedCommoditiesSet.size} / 81 سلعة`, cls: 'text-amber-300' }
+          ]
+        },
+        reports: {
+          title: '📑 مركز التقارير الموسعة (10 تقارير)',
+          status: anomCnt > 0 ? `${anomCnt} تنبيه جودة` : 'جودة سليمة',
+          rows: [
+            { label: 'مؤشر سلامة البيانات', val: `${auditInfo.health}%`, cls: auditInfo.health >= 90 ? 'text-emerald-300' : 'text-amber-300' },
+            { label: 'أعلى تفاوت سعري', val: `${maxDisp.toFixed(1)}%`, cls: maxDisp > 20 ? 'text-rose-300' : 'text-emerald-300' },
+            { label: 'ذاكرة المحلل الذكي', val: `${fmtNum(allReps.length)} تقرير`, cls: 'text-indigo-300' }
+          ]
+        },
+        archive: {
+          title: '📁 أرشيف التقارير السحابي',
+          status: `${fmtNum(allReps.length)} سجل`,
+          rows: [
+            { label: 'إجمالي التقارير المحفوظة', val: `${fmtNum(allReps.length)} تقرير`, cls: 'text-cyan-300' },
+            { label: 'آخر مديرية رفعت', val: latestRep ? latestRep.directorate : 'لا يوجد', cls: 'text-emerald-300' },
+            { label: 'تاريخ آخر تقرير', val: latestRep ? fmtDateDMY(latestRep.visitDate || latestRep.date) : '—', cls: 'text-amber-300' }
+          ]
+        },
+        comparator: {
+          title: '⚖️ مقارن السلع المتقدم',
+          status: `${pricedCommoditiesSet.size} سلعة`,
+          rows: [
+            { label: 'السلع المتاحة للمقارنة', val: `${pricedCommoditiesSet.size} من 81`, cls: 'text-emerald-300' },
+            { label: 'أعلى فجوة سعرية حالية', val: `${maxDisp.toFixed(1)}%`, cls: maxDisp > 20 ? 'text-rose-300' : 'text-cyan-300' }
+          ]
+        },
+        campaigns: {
+          title: '📢 حوكمة الحملات وسحب المنتجات',
+          status: activeCamps.length > 0 ? `${activeCamps.length} حملة نشطة` : 'لا توجد حملات نشطة',
+          rows: [
+            { label: 'الحملات النشطة حالياً', val: `${activeCamps.length}`, cls: activeCamps.length > 0 ? 'text-emerald-300' : 'text-slate-300' },
+            { label: 'بلاغات السحب الواردة', val: `${fmtNum((allCampaignRows || []).length)} بلاغ`, cls: 'text-amber-300' }
+          ]
+        },
+        evidence: {
+          title: '🖼️ سجل المخالفات والأدلة المصورة',
+          status: `${fmtNum(evidCnt)} دليل`,
+          rows: [
+            { label: 'الأدلة المصورة الموثّقة', val: `${fmtNum(evidCnt)} صورة`, cls: 'text-cyan-300' },
+            { label: 'المخالفات في النطاق الحالي', val: `${fmtNum(violTotal)} مخالفة`, cls: violTotal > 0 ? 'text-rose-300' : 'text-emerald-300' }
+          ]
+        }
+      };
+
+      const actM = mainTrack.querySelector('.tab-btn.active');
+      if (actM) moveOpsLiquidPill('mainTabsTrack', 'opsMainLiquidPill', actM);
+      const actS = document.querySelector('#reportsSubtabsTrack .subtab-btn.active');
+      if (actS) moveOpsLiquidPill('reportsSubtabsTrack', 'opsSubLiquidPill', actS);
+    }
+
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initOpsHudTelemetryTabs); } else { setTimeout(initOpsHudTelemetryTabs, 60); }
+  
+    /* ===== v29: ARCHIVE PAGINATION & SMART SYNC SELECTOR EVENTS ===== */
+    (function bindOpsV29Controls() {
+      const init = () => {
+        const sel = document.getElementById('opsSyncDaysSelect');
+        if (sel && sel.dataset.v29Bound !== '1') {
+          sel.dataset.v29Bound = '1';
+          sel.addEventListener('change', () => {
+            if (typeof syncFromCloud === 'function') syncFromCloud();
+          });
+        }
+        const prevBtn = document.getElementById('arcPrevPageBtn');
+        const nextBtn = document.getElementById('arcNextPageBtn');
+        if (prevBtn && prevBtn.dataset.v29Bound !== '1') {
+          prevBtn.dataset.v29Bound = '1';
+          prevBtn.addEventListener('click', () => {
+            if (arcCurrentPage > 1) { arcCurrentPage--; renderArchive(true); }
+          });
+        }
+        if (nextBtn && nextBtn.dataset.v29Bound !== '1') {
+          nextBtn.dataset.v29Bound = '1';
+          nextBtn.addEventListener('click', () => {
+            arcCurrentPage++; renderArchive(true);
+          });
+        }
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else setTimeout(init, 50);
+    })();
+
+  
+
+    /* ===== v31: OPS SMART ERROR TRANSLATOR, OFFLINE EMERGENCY SNAPSHOT & CRASH GUARD ===== */
+    const OPS_EMERGENCY_SNAPSHOT_KEY = 'MOIT_OPS_LAST_SNAPSHOT_V1';
+
+    function explainOpsErrorSmart(err, fallbackAr) {
+      const raw = String((err && err.message) ? err.message : (err || '')).trim();
+      const low = raw.toLowerCase();
+      if (!navigator.onLine || low.includes('failed to fetch') || low.includes('load failed') || low.includes('networkerror') || low.includes('network request failed')) {
+        return 'انقطع الاتصال بالإنترنت — تحقق من الشبكة ثم اضغط «مزامنة فورية»';
+      }
+      if ((err && err.name === 'AbortError') || low.includes('aborted') || low.includes('timeout')) {
+        return 'استغرق الخادم وقتاً أطول من المعتاد — أعد المحاولة الآن أو اختر نطاق «آخر 30 يوم» لسرعة أعلى';
+      }
+      if (low.includes('quotaexceeded') || low.includes('quota')) {
+        return 'ذاكرة المتصفح ممتلئة — يمكنك مواصلة العمل السحابي دون التأثير على البيانات في Google Sheets';
+      }
+      if (low.includes('unexpected token') || low.includes('json')) {
+        return 'استجابة غير مكتملة من خادم Google — تحقق من استقرار الإنترنت وأعد المزامنة';
+      }
+      if (low.includes('http 4') || low.includes('http 5') || low === 'http') {
+        return 'تعذر الوصول المؤقت لخادم السحابة — أعد المحاولة بعد لحظات';
+      }
+      if (/[\u0600-\u06FF]/.test(raw)) return raw;
+      return fallbackAr || 'حدث خطأ غير متوقع — يرجى إعادة المحاولة';
+    }
+
+    function saveOpsEmergencySnapshot() {
+      try {
+        if (!Array.isArray(allReports) || !allReports.length) return;
+        // Keep up to 150 most recent reports in emergency offline snapshot to stay well under localStorage quota
+        const snap = {
+          savedAt: new Date().toISOString(),
+          reports: allReports.slice(0, 150),
+          campaigns: Array.isArray(managedCampaigns) ? managedCampaigns.slice(0, 40) : [],
+          campaignRows: Array.isArray(allCampaignRows) ? allCampaignRows.slice(0, 120) : [],
+          evidence: Array.isArray(allEvidence) ? allEvidence.slice(0, 120) : []
+        };
+        localStorage.setItem(OPS_EMERGENCY_SNAPSHOT_KEY, JSON.stringify(snap));
+      } catch (_e) { /* quota safe */ }
+    }
+
+    function restoreOpsEmergencySnapshot() {
+      try {
+        const raw = localStorage.getItem(OPS_EMERGENCY_SNAPSHOT_KEY);
+        if (!raw) return null;
+        const snap = JSON.parse(raw);
+        if (!snap || !Array.isArray(snap.reports) || !snap.reports.length) return null;
+        if (!allReports.length) {
+          allReports = snap.reports;
+          if (Array.isArray(snap.campaigns)) managedCampaigns = snap.campaigns;
+          if (Array.isArray(snap.campaignRows)) allCampaignRows = snap.campaignRows;
+          if (Array.isArray(snap.evidence)) allEvidence = snap.evidence;
+          if (typeof refreshAllViews === 'function') refreshAllViews();
+        }
+        const dt = snap.savedAt ? new Date(snap.savedAt) : null;
+        const label = dt && !isNaN(dt.getTime())
+          ? dt.toLocaleString('ar-YE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+          : 'آخر مزامنة';
+        return { count: snap.reports.length, label };
+      } catch (_e) {
+        return null;
+      }
+    }
+
+    (function initOpsV31NetworkAndSafetyGuard() {
+      const mountBanner = () => {
+        if (document.getElementById('opsLiveNetBanner')) return;
+        const bar = document.createElement('div');
+        bar.id = 'opsLiveNetBanner';
+        bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-lg z-[95] hidden items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border transition-all duration-300';
+        document.body.appendChild(bar);
+      };
+
+      const showOpsNetState = (isOnline) => {
+        mountBanner();
+        const bar = document.getElementById('opsLiveNetBanner');
+        if (!bar) return;
+        if (!isOnline) {
+          bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-lg z-[95] flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border bg-amber-950/95 text-amber-100 border-amber-400/50 backdrop-blur-md';
+          bar.innerHTML = '<span>📶 انقطع الاتصال بالإنترنت — يمكنك متابعة استعراض وتصدير البيانات المحملة حالياً بأمان</span>';
+        } else {
+          bar.className = 'no-print fixed bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-lg z-[95] flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border bg-emerald-950/95 text-emerald-100 border-emerald-400/50 backdrop-blur-md';
+          bar.innerHTML = '<span>✅ عاد الاتصال بالإنترنت — جارٍ تحديث بيانات غرفة العمليات من السحابة تلقائياً...</span>';
+          setTimeout(() => {
+            if (navigator.onLine) {
+              bar.classList.add('hidden');
+              bar.classList.remove('flex');
+            }
+          }, 4200);
+        }
+      };
+
+      window.addEventListener('offline', () => showOpsNetState(false));
+      window.addEventListener('online', () => {
+        showOpsNetState(true);
+        if (typeof syncFromCloud === 'function') setTimeout(() => syncFromCloud(), 1200);
+      });
+
+      const releaseStuckOpsUi = () => {
+        const syncBtn = document.getElementById('btnCloudSync');
+        if (syncBtn && syncBtn.disabled) {
+          syncBtn.disabled = false;
+          syncBtn.innerHTML = '<span>🔄</span><span>مزامنة فورية</span>';
+        }
+        const aiShimmer = document.getElementById('aiThinkingShimmerCard');
+        if (aiShimmer) aiShimmer.classList.add('hidden');
+      };
+
+      window.addEventListener('unhandledrejection', (ev) => {
+        releaseStuckOpsUi();
+        const msg = explainOpsErrorSmart(ev.reason, 'تعذر إكمال العملية — يرجى إعادة المحاولة');
+        if (typeof showToast === 'function' && msg) showToast(msg, '⚠️');
+      });
+
+      const checkCdnHealth = () => {
+        const missing = [];
+        if (typeof Chart === 'undefined') missing.push('الرسوم البيانية');
+        if (typeof XLSX === 'undefined') missing.push('تصدير إكسل');
+        if (missing.length && typeof showToast === 'function') {
+          showToast('📶 بطء الإنترنت أخّر تحميل مكتبة (' + missing.join(' و') + ') — أعد تحديث الصفحة عند استقرار الشبكة', '⚠️');
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          if (!navigator.onLine) showOpsNetState(false);
+          setTimeout(checkCdnHealth, 3500);
+        });
+      } else {
+        if (!navigator.onLine) showOpsNetState(false);
+        setTimeout(checkCdnHealth, 3500);
+      }
+    })();
 
   </script>
 
