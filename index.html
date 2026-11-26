@@ -2961,16 +2961,34 @@
       document.querySelectorAll('.viol-input').forEach(inp => {
         violSum += parseNum(inp.value);
       });
-      document.getElementById('kpiViolationsTotal').textContent = violSum.toLocaleString('en-US');
-      document.getElementById('totalViolationsBadge').textContent = `${violSum.toLocaleString('en-US')} مخالفة`;
-      document.getElementById('summaryViolationsMirror').textContent = violSum.toLocaleString('en-US');
+      // v45: Also count actual logged violation rows in Section 07 (#logTbody) so a logged violation with photos never uploads as 0!
+      let logViolCnt = 0;
+      let logActCnt = 0;
+      document.querySelectorAll('#logTbody tr').forEach(tr => {
+        const fTxt = tr.querySelector('.log-firm')?.value?.trim() || '';
+        const tTxt = tr.querySelector('.log-type')?.value?.trim() || '';
+        const pTxt = tr.querySelector('.log-proc')?.value?.trim() || '';
+        if (fTxt || tTxt) {
+          logViolCnt++;
+          if (pTxt) logActCnt++;
+        }
+      });
+      const effectiveViolSum = Math.max(violSum, logViolCnt);
+      document.getElementById('kpiViolationsTotal').textContent = effectiveViolSum.toLocaleString('en-US');
+      document.getElementById('totalViolationsBadge').textContent = `${effectiveViolSum.toLocaleString('en-US')} مخالفة`;
+      document.getElementById('summaryViolationsMirror').textContent = effectiveViolSum.toLocaleString('en-US');
 
       let actSum = 0;
       document.querySelectorAll('.act-input').forEach(inp => {
         actSum += parseNum(inp.value);
       });
-      document.getElementById('kpiActionsTotal').textContent = actSum.toLocaleString('en-US');
-      document.getElementById('summaryActionsMirror').textContent = actSum.toLocaleString('en-US');
+      const effectiveActSum = Math.max(actSum, logActCnt);
+      document.getElementById('kpiActionsTotal').textContent = effectiveActSum.toLocaleString('en-US');
+      document.getElementById('summaryActionsMirror').textContent = effectiveActSum.toLocaleString('en-US');
+      const vfInp = document.getElementById('violatingFirmsInput');
+      if (vfInp && parseNum(vfInp.value) === 0 && logViolCnt > 0) {
+        vfInp.value = logViolCnt;
+      }
       if (typeof updatePriceChangeRadar === 'function') updatePriceChangeRadar();
       if (typeof updateModernReadinessProgress === 'function') updateModernReadinessProgress();
       if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
@@ -6731,17 +6749,41 @@
         if (rec.inspectorName && rec.inspectorName !== '-') setVal('inspectorName', rec.inspectorName);
         if (rec.directorName) setVal('directorName', rec.directorName);
 
-        if (rec.prices && typeof rec.prices === 'object') {
-          Object.entries(rec.prices).forEach(([pid, pval]) => {
+        let parsedPrices = rec.prices;
+        if (typeof parsedPrices === 'string') {
+          try { parsedPrices = JSON.parse(parsedPrices); } catch (_e) { parsedPrices = {}; }
+        }
+        let filledPricesCnt = 0;
+        if (parsedPrices && typeof parsedPrices === 'object') {
+          document.querySelectorAll('.price-input').forEach(inp => { inp.value = ''; });
+          Object.entries(parsedPrices).forEach(([pid, pval]) => {
             const inp = document.querySelector(`[data-price-id="${pid}"]`);
-            const num = Number(String(pval).replace(/[^0-9]/g, ''));
-            if (inp && num > 0) inp.value = num.toLocaleString('en-US');
+            const num = parseNum(pval);
+            if (inp && num > 0) {
+              inp.value = num.toLocaleString('en-US');
+              filledPricesCnt++;
+            }
+          });
+        }
+        // v45: Restore matching cloud violations into Section 07 (#logTbody)
+        const evPool = Array.isArray(window.__CACHED_CLOUD_EVIDENCE) ? window.__CACHED_CLOUD_EVIDENCE : [];
+        const matchedEvs = evPool.filter(ev => String(ev.directorate || '').trim() === String(rec.directorate || '').trim() && cleanIsoDate(ev.visitDate) === cleanIsoDate(rec.visitDate));
+        if (matchedEvs.length > 0) {
+          const logTrs = document.querySelectorAll('#logTbody tr');
+          matchedEvs.forEach((ev, eIdx) => {
+            const tr = logTrs[eIdx];
+            if (!tr) return;
+            if (tr.querySelector('.log-firm')) tr.querySelector('.log-firm').value = ev.firm || '';
+            if (tr.querySelector('.log-type')) tr.querySelector('.log-type').value = ev.type || '';
+            if (tr.querySelector('.log-proc')) tr.querySelector('.log-proc').value = ev.proc || '';
+            if (tr.querySelector('.log-status') && ev.status) tr.querySelector('.log-status').value = ev.status;
           });
         }
         if (typeof recalculateKPIs === 'function') recalculateKPIs();
+        if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
         const modal = document.getElementById('dirCloudHistoryModal');
         if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-        showToast(`تم تعبئة بيانات سجل ${rec.directorate} (${rec.visitDate}) داخل النموذج بنجاح!`, '✅');
+        showToast(`تم تعبئة سجل ${rec.directorate} (${rec.visitDate}) — ${filledPricesCnt} صنف داخل النموذج بنجاح!`, '✅');
       }
 
       function renderCloudHistoryList() {
@@ -6835,7 +6877,12 @@
         if (refBtn) { refBtn.disabled = false; refBtn.textContent = '🔄 تحديث من Google Sheets'; }
 
         if (data && data.status === 'success' && Array.isArray(data.reports)) {
-          cachedCloudReports = data.reports.map(r => ({ ...r, visitDate: cleanIsoDate(r.visitDate) }));
+          window.__CACHED_CLOUD_EVIDENCE = Array.isArray(data.evidenceRows) ? data.evidenceRows : [];
+          cachedCloudReports = data.reports.map(r => {
+            let pObj = r.prices;
+            if (typeof pObj === 'string') { try { pObj = JSON.parse(pObj); } catch (_e) { pObj = {}; } }
+            return { ...r, visitDate: cleanIsoDate(r.visitDate), prices: (pObj && typeof pObj === 'object') ? pObj : {} };
+          });
           if (badge) badge.textContent = `✅ تم تحميل ${cachedCloudReports.length} سجل من Google Sheets`;
           renderCloudHistoryList();
         } else {
@@ -7874,7 +7921,7 @@
           if (!reps.length) return;
           const sums = {}, cnts = {};
           reps.slice(-24).forEach(r => {
-            const p = r.prices || {};
+            let p = r.prices || {}; if (typeof p === 'string') { try { p = JSON.parse(p); } catch (_e) { p = {}; } }
             Object.keys(p).forEach(k => {
               const v = parseNum(p[k]);
               if (v > 0) { sums[k] = (sums[k] || 0) + v; cnts[k] = (cnts[k] || 0) + 1; }
@@ -9903,7 +9950,7 @@ ${catalogText}`;
     function collectDirAutoDraftV40() {
       const prices = {};
       document.querySelectorAll('.price-input').forEach(inp => {
-        const id = inp.getAttribute('data-id') || inp.id;
+        const id = inp.getAttribute('data-price-id') || inp.getAttribute('data-id') || inp.id;
         const v = parseNum(inp.value);
         if (id && v > 0) prices[id] = v;
       });
@@ -9972,8 +10019,8 @@ ${catalogText}`;
 
       if (d.prices) {
         document.querySelectorAll('.price-input').forEach(inp => {
-          const id = inp.getAttribute('data-id') || inp.id;
-          if (id && d.prices[id] > 0) inp.value = d.prices[id];
+          const id = inp.getAttribute('data-price-id') || inp.getAttribute('data-id') || inp.id;
+          if (id && d.prices[id] > 0) inp.value = Number(d.prices[id]).toLocaleString('en-US');
         });
       }
       if (Array.isArray(d.gasRows) && d.gasRows.length) {
@@ -10094,6 +10141,21 @@ ${catalogText}`;
           });
         });
       }).catch(() => {});
+    })();
+
+  
+    /* v45-log-live */
+    (function bindV45LogTbodyLiveKpi() {
+      const bind = () => {
+        const ltb = document.getElementById('logTbody');
+        if (ltb && ltb.dataset.v45Bound !== '1') {
+          ltb.dataset.v45Bound = '1';
+          ltb.addEventListener('input', () => { if (typeof recalculateKPIs === 'function') recalculateKPIs(); });
+          ltb.addEventListener('change', () => { if (typeof recalculateKPIs === 'function') recalculateKPIs(); });
+        }
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+      else setTimeout(bind, 80);
     })();
 
   </script>

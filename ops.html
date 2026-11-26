@@ -3383,16 +3383,20 @@ if (data.action === 'gemini_brief' && data.prompt) {
           if (v > 0) entries.push({ dir: r.directorate, date: r.visitDate, val: v });
         });
         let min = 0, max = 0, minDir = '-', maxDir = '-';
+        let minDirs = [], maxDirs = [], uniqueDirCount = 0;
         if (entries.length) {
           const minObj = entries.reduce((a, b) => b.val < a.val ? b : a);
           const maxObj = entries.reduce((a, b) => b.val > a.val ? b : a);
           min = minObj.val; minDir = minObj.dir;
           max = maxObj.val; maxDir = maxObj.dir;
+          minDirs = [...new Set(entries.filter(e => e.val === min).map(e => e.dir))];
+          maxDirs = [...new Set(entries.filter(e => e.val === max).map(e => e.dir))];
+          uniqueDirCount = new Set(entries.map(e => e.dir)).size;
         }
         const avg = entries.length ? Math.round(entries.reduce((a, b) => a + b.val, 0) / entries.length) : 0;
         const spread = max - min;
         const spreadPct = min > 0 ? Math.round((spread / min) * 100) : 0;
-        return { ...item, count: entries.length, min, max, minDir, maxDir, avg, spread, spreadPct };
+        return { ...item, count: entries.length, min, max, minDir, maxDir, minDirs, maxDirs, uniqueDirCount, avg, spread, spreadPct };
       });
     }
 
@@ -3542,11 +3546,22 @@ if (data.action === 'gemini_brief' && data.prompt) {
             <td class="font-extrabold text-[#102a4e]">${escHtml(it.name)}</td>
             <td class="text-xs text-slate-600">${escHtml(it.unit)}</td>
             <td class="text-center font-bold">${it.count}</td>
-            <td class="font-bold text-emerald-700">${it.min ? fmtNum(it.min) : '-'}</td>
-            <td class="font-bold text-rose-700">${it.max ? fmtNum(it.max) : '-'}</td>
-            <td class="font-black text-[#102a4e]">${it.avg ? fmtNum(it.avg) : '-'}</td>
+            <td class="font-bold text-emerald-700">
+              ${it.min ? `<div>${fmtNum(it.min)}</div><div class="text-[10px] font-bold text-emerald-800/80 whitespace-nowrap" title="${escHtml((it.minDirs || []).join('، '))}">📍 ${escHtml(it.minDir)}${(it.minDirs && it.minDirs.length > 1) ? ` +${it.minDirs.length - 1}` : ''}</div>` : '-'}
+            </td>
+            <td class="font-bold text-rose-700">
+              ${it.max ? `<div>${fmtNum(it.max)}</div><div class="text-[10px] font-bold text-rose-800/80 whitespace-nowrap" title="${escHtml((it.maxDirs || []).join('، '))}">📍 ${escHtml(it.maxDir)}${(it.maxDirs && it.maxDirs.length > 1) ? ` +${it.maxDirs.length - 1}` : ''}</div>` : '-'}
+            </td>
+            <td class="font-black text-[#102a4e]">
+              ${it.avg ? `<div>${fmtNum(it.avg)}</div><div class="text-[10px] font-bold text-slate-500 whitespace-nowrap">${it.uniqueDirCount > 1 ? `متوسط ${it.uniqueDirCount} مديريات` : `📍 ${escHtml(it.minDir)}`}</div>` : '-'}
+            </td>
             <td class="text-center">${badge}</td>
-            <td class="text-center"><button type="button" onclick="openItemInComparator('${it.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-2.5 py-1 rounded-lg text-[11px] font-extrabold">⚖️ قارن</button></td>
+            <td class="text-center">
+              <div class="flex flex-wrap items-center justify-center gap-1">
+                <button type="button" onclick="openItemInComparator('${it.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-2 py-1 rounded-lg text-[11px] font-extrabold">⚖️ قارن</button>
+                ${(it.count >= 2 && it.spreadPct >= 100) ? `<button type="button" onclick="switchMainTab('reports'); setTimeout(() => switchSubReport('data_auditor'), 60);" title="قيمة شاذة تسببت بتفاوت حاد — اضغط لاستبعادها في مدقق الجودة" class="bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 px-2 py-1 rounded-lg text-[10px] font-black">🛡️ استبعاد شاذ</button>` : ''}
+              </div>
+            </td>
           </tr>`;
       }).join('');
     }
@@ -5571,11 +5586,11 @@ if (data.action === 'gemini_brief' && data.prompt) {
       const sumAoa = [['المديرية', 'التاريخ', 'المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'دولار بيع', 'سعودي بيع', 'الوضع التمويني', 'رئيس الفريق'],
         ...filteredOvReports.map(r => [r.directorate, fmtDateDMY(r.visitDate), r.firmsCovered, r.gasTotal, r.violTotal, r.actTotal, r.usdSell, r.sarSell, r.supplyStatus, r.inspectorName]),
         ['الإجمالي العام', `${filteredOvReports.length} تقرير`, filteredOvReports.reduce((s,r)=>s+r.firmsCovered,0), filteredOvReports.reduce((s,r)=>s+r.gasTotal,0), filteredOvReports.reduce((s,r)=>s+r.violTotal,0), filteredOvReports.reduce((s,r)=>s+r.actTotal,0), '-', '-', 'العاصمة عدن', 'غرفة العمليات']];
-      const prAoa = [['#', 'المجموعة', 'السلعة', 'العبوة', 'عدد الرصد', 'أدنى سعر', 'أعلى سعر', 'المتوسط', 'الفارق السعري'],
-        ...computeConsolidatedPrices(filteredOvReports).map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.max, p.avg, p.spread])];
+      const prAoa = [['#', 'المجموعة', 'السلعة', 'العبوة', 'عدد الرصد', 'أدنى سعر', 'مديرية أدنى سعر', 'أعلى سعر', 'مديرية أعلى سعر', 'المتوسط', 'الفارق السعري', 'نسبة التفاوت %'],
+        ...computeConsolidatedPrices(filteredOvReports).map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.min ? (p.minDir || '-') : '-', p.max, p.max ? (p.maxDir || '-') : '-', p.avg, p.spread, p.count >= 2 ? p.spreadPct + '%' : '-'])];
       saveStyledWorkbook([
         { name: 'ملخص_المديريات', aoa: sumAoa, widths: [18, 13, 12, 12, 12, 12, 12, 12, 14, 18] },
-        { name: 'متوسطات_الأسعار_81', aoa: prAoa, widths: [6, 18, 22, 13, 10, 12, 12, 12, 14] }
+        { name: 'متوسطات_الأسعار_81', aoa: prAoa, widths: [6, 18, 22, 13, 10, 12, 16, 12, 16, 12, 14, 12] }
       ], `التقرير_الموحد_العاصمة_عدن_${todayIso()}.xlsx`);
     }
 
