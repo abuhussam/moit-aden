@@ -2383,8 +2383,8 @@
     const MILK_ITEMS = [
       { id: 'm1', name: 'فائق', unit: '2500 جرام' },
       { id: 'm2', name: 'فائق', unit: '1800 جرام' },
-      { id: 'm3', name: 'صقر', unit: '2500 جرام' },
-      { id: 'm4', name: 'صقر', unit: '1800 جرام' },
+      { id: 'm3', name: 'الصقر', unit: '2500 جرام' },
+      { id: 'm4', name: 'الصقر', unit: '1800 جرام' },
       { id: 'm5', name: 'نيدو', unit: '2500 جرام' },
       { id: 'm6', name: 'نيدو', unit: '1800 جرام' },
       { id: 'm7', name: 'دانو', unit: '2500 جرام' },
@@ -9316,11 +9316,20 @@ ${catalogText}`;
               });
             };
 
-            if (_gasDigitalText && _gasDigitalText.length >= 80) {
-              if (statusEl) statusEl.textContent = `⚡ وضع التوربو النصي: قراءة كشف الغاز الرقمي (${_gasPreparedPages.length} صفحات) في طلب واحد...`;
-              const digPrompt = gasPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + _gasDigitalText.slice(0, 48000);
-              const parsed = await postGasWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digPrompt }, 55000);
-              mergeGasParsed(parsed);
+            if (_gasDigitalText && _gasDigitalText.length >= 60) {
+              // v39: Try Zero-AI Local Deterministic Gas PDF Parser FIRST (0.1s, 0 Gemini quota, works offline!)
+              const localGas = typeof parseDigitalGasPdfLocally === 'function'
+                ? parseDigitalGasPdfLocally(_gasDigitalText)
+                : { rows: [] };
+              if (localGas && Array.isArray(localGas.rows) && localGas.rows.length >= 2) {
+                mergeGasParsed(localGas);
+                if (statusEl) statusEl.textContent = `⚡ تم الاستخراج المحلي الفوري لكشف الغاز (${localGas.rows.length} وكيل) خلال 0.1 ثانية بدون استهلاك حصة Gemini!`;
+              } else {
+                if (statusEl) statusEl.textContent = `⚡ وضع التوربو النصي: قراءة كشف الغاز الرقمي (${_gasPreparedPages.length} صفحات) عبر مجمّع Gemini...`;
+                const digPrompt = gasPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + _gasDigitalText.slice(0, 48000);
+                const parsed = await postGasWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digPrompt }, 55000);
+                mergeGasParsed(parsed);
+              }
             } else {
               const batches = [];
               for (let i = 0; i < _gasPreparedPages.length; i += 3) batches.push(_gasPreparedPages.slice(i, i + 3));
@@ -9701,6 +9710,141 @@ ${catalogText}`;
       }
 
       return { fx, items: Array.from(itemsMap.values()) };
+    }
+
+  
+
+    /* ===== v39: ZERO-AI DETERMINISTIC LOCAL DIGITAL GAS PDF PARSER (0.1s, 0 GEMINI QUOTA, WORKS OFFLINE) ===== */
+    function parseDigitalGasPdfLocally(rawText) {
+      const arDigits = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
+      const toEn = (s) => String(s || '').replace(/[٠-٩]/g, d => arDigits[d]).replace(/[٫،]/g, '.');
+      const normAr = (s) => toEn(s)
+        .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const lines = String(rawText || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let station = '';
+      let directorate = '';
+      let visitDate = '';
+      const rows = [];
+      const seenAgents = new Set();
+
+      const STATIONS = ['منشأة البريقة', 'البريقة', 'جعولة', 'العريش', 'بئر أحمد', 'إنماء', 'الحسوة'];
+      const DIRS = [
+        { k: 'صيرة', v: 'صيرة (كريتر)' }, { k: 'كريتر', v: 'صيرة (كريتر)' },
+        { k: 'خور مكسر', v: 'خور مكسر' }, { k: 'خورمكسر', v: 'خور مكسر' },
+        { k: 'المعلا', v: 'المعلا' }, { k: 'التواهي', v: 'التواهي' },
+        { k: 'الشيخ عثمان', v: 'الشيخ عثمان' }, { k: 'المنصورة', v: 'المنصورة' },
+        { k: 'دار سعد', v: 'دار سعد' }, { k: 'البريقة', v: 'البريقة' }
+      ];
+
+      const HEADER_SKIP = ['اسم المسوق', 'اسم الوكيل', 'الكميه', 'الكمية', 'رقم الجوال', 'الاجمالي', 'الإجمالي', 'المجموع', 'الشركه اليمنيه', 'الشركة اليمنية', 'الجمهوريه اليمنيه', 'الجمهورية اليمنية', 'وزاره الصناعه', 'وزارة الصناعة', 'توقيع', 'المدير العام', 'كشف صرف', 'كشف توزيع'];
+
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const en = toEn(raw);
+        const nl = normAr(raw);
+        if (!nl || nl.startsWith('---')) continue;
+
+        // Detect station, directorate, and date from header lines
+        if (!station) {
+          const stHit = STATIONS.find(st => nl.includes(normAr(st)));
+          if (stHit && (nl.includes('محطه') || nl.includes('منشاه') || nl.includes('تعبئه') || nl.includes('غاز'))) {
+            station = stHit === 'البريقة' ? 'منشأة البريقة' : stHit;
+          }
+        }
+        if (!directorate) {
+          const dHit = DIRS.find(d => nl.includes(normAr(d.k)));
+          if (dHit && (nl.includes('مديريه') || nl.includes('كشف') || nl.includes('توزيع') || nl.includes('صرف') || nl.length < 30)) {
+            directorate = dHit.v;
+          }
+        }
+        if (!visitDate) {
+          const dm1 = en.match(/\b(202\d)[-\/](0?\d|1[0-2])[-\/](0?\d|[12]\d|3[01])\b/);
+          const dm2 = en.match(/\b(0?\d|[12]\d|3[01])[-\/](0?\d|1[0-2])[-\/](202\d)\b/);
+          if (dm1) visitDate = `${dm1[1]}-${dm1[2].padStart(2, '0')}-${dm1[3].padStart(2, '0')}`;
+          else if (dm2) visitDate = `${dm2[3]}-${dm2[2].padStart(2, '0')}-${dm2[1].padStart(2, '0')}`;
+        }
+
+        if (HEADER_SKIP.some(h => nl.includes(normAr(h)))) continue;
+        if (/^[0-9\|\s\-\.\/]+$/.test(en)) continue;
+
+        // Split row into cells
+        const cells = en.includes('|')
+          ? en.split('|').map(c => c.trim()).filter(Boolean)
+          : en.split(/\s{2,}/).map(c => c.trim()).filter(Boolean);
+        if (cells.length < 2) continue;
+
+        // Drop leading serial number (1..150)
+        const workCells = [...cells];
+        if (/^\d{1,3}$/.test(workCells[0]) && Number(workCells[0]) <= 150) {
+          workCells.shift();
+        }
+        if (!workCells.length) continue;
+
+        // Extract Yemeni mobile phone (77/78/73/71/70 + 7 digits)
+        let phone = '';
+        const phoneRe = /(?:\+?967)?\s*(7[01378]\d{7})\b/;
+        let qty = 0;
+        let status = '';
+        const textParts = [];
+
+        workCells.forEach(cell => {
+          const cNorm = normAr(cell);
+          const pm = cell.replace(/[\s\-]/g, '').match(phoneRe);
+          if (pm && !phone) {
+            phone = pm[1];
+            const rem = cell.replace(/[\s\-]/g, '').replace(pm[0], '').trim();
+            if (!rem) return;
+          }
+          if (cNorm.includes('موقف') || cNorm.includes('توقيف') || cNorm.includes('ايقاف') || cNorm.includes('متوقف')) {
+            status = 'موقف';
+            if (cNorm.length < 18) return;
+          } else if (cNorm.includes('تغطيه')) {
+            status = 'تغطية مربع وكيل';
+            if (cNorm.length < 22) return;
+          } else if (cNorm.includes('معرض')) {
+            if (!status) status = 'معرض الشركة';
+          } else if (cNorm.includes('صرف طبيعي') || cNorm === 'طبيعي' || cNorm === 'منصرف' || cNorm === 'مستلم') {
+            if (!status) status = 'صرف طبيعي';
+            return;
+          }
+
+          // Pure integer cell = cylinder quantity (10..5000, or 0 if stopped)
+          const cleanNum = cell.replace(/[,\s]/g, '').replace(/اسطوان[ةه]/g, '');
+          if (/^\d{1,4}$/.test(cleanNum)) {
+            const v = Number(cleanNum);
+            if (v >= 0 && v <= 5000 && qty === 0) {
+              qty = v;
+              return;
+            }
+          }
+          if (cell !== '-' && cell !== '—' && /[\u0600-\u06FF]/.test(cell)) {
+            textParts.push(cell);
+          }
+        });
+
+        const agent = (textParts[0] || '').trim();
+        if (!agent || agent.length < 3) continue;
+        // Must have either a quantity, phone, or explicit gas status to be a real agent row
+        if (qty === 0 && !phone && !status) continue;
+
+        const key = normAr(agent);
+        if (seenAgents.has(key)) continue;
+        seenAgents.add(key);
+
+        const loc = (textParts[1] || '').trim();
+        const notes = textParts.slice(2).join(' — ').trim();
+        const finalStatus = status || (qty === 0 ? 'موقف' : 'صرف طبيعي');
+
+        rows.push({ agent, loc, phone, qty, status: finalStatus, notes });
+      }
+
+      return { station: station || 'منشأة البريقة', directorate, visitDate, rows };
     }
 
   </script>
