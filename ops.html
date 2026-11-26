@@ -3240,8 +3240,32 @@ if (data.action === 'gemini_brief' && data.prompt) {
           try {
             if (isJson) {
               const parsed = JSON.parse(ev.target.result);
-              if (Array.isArray(parsed)) parsed.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
-              else if (upsertReport({ ...parsed, _source: 'local' })) loaded++;
+              if (parsed && Array.isArray(parsed.reports)) {
+                // v42: Full Local PC Backup (.json) Restore (reports + evidence + campaigns + recalls)
+                parsed.reports.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
+                if (Array.isArray(parsed.evidenceRows) && parsed.evidenceRows.length) {
+                  const existingEv = new Set(allEvidence.map(x => `${x.directorate}|${x.visitDate}|${x.firm}|${x.type}`));
+                  parsed.evidenceRows.forEach(evRow => {
+                    const k = `${evRow.directorate}|${evRow.visitDate}|${evRow.firm}|${evRow.type}`;
+                    if (!existingEv.has(k)) { allEvidence.push(evRow); existingEv.add(k); }
+                  });
+                }
+                if (Array.isArray(parsed.campaigns) && parsed.campaigns.length) {
+                  const existingC = new Set(managedCampaigns.map(x => x.id));
+                  parsed.campaigns.forEach(c => { if (c.id && !existingC.has(c.id)) { managedCampaigns.push(c); existingC.add(c.id); } });
+                }
+                if (Array.isArray(parsed.campaignRows) && parsed.campaignRows.length) {
+                  const existingRc = new Set(allCampaignRows.map(x => `${x.directorate}|${x.date}|${x.firm}|${x.product}|${x.qty}`));
+                  parsed.campaignRows.forEach(rc => {
+                    const k = `${rc.directorate}|${rc.date}|${rc.firm}|${rc.product}|${rc.qty}`;
+                    if (!existingRc.has(k)) { allCampaignRows.push(rc); existingRc.add(k); }
+                  });
+                }
+              } else if (Array.isArray(parsed)) {
+                parsed.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
+              } else if (upsertReport({ ...parsed, _source: 'local' })) {
+                loaded++;
+              }
             } else {
             const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
             const jsonSheetName = wb.SheetNames.find(n => n.includes('بيانات') || n.includes('JSON') || n.includes('Data'));
@@ -5473,6 +5497,39 @@ if (data.action === 'gemini_brief' && data.prompt) {
     }
     @media (hover: none), (max-width: 768px) {
       #opsHudQuickPeek { display: none !important; }
+    }
+
+  
+    /* ===== v42: GOLD MASTER DARK-MODE CONTRAST & CLEAN PRINT RULES ===== */
+    body.dark-mode .hud-micro-pill {
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+    body.dark-mode .hud-pill-ok { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+    body.dark-mode .hud-pill-warn { background: rgba(245, 158, 11, 0.24); color: #fcd34d; border-color: rgba(245, 158, 11, 0.45); }
+    body.dark-mode .hud-pill-crit { background: rgba(244, 63, 94, 0.24); color: #fda4af; border-color: rgba(244, 63, 94, 0.45); }
+    body.dark-mode .hud-pill-ai { background: rgba(99, 102, 241, 0.24); color: #c7d2fe; border-color: rgba(129, 140, 248, 0.45); }
+    body.dark-mode #arcPaginationBar {
+      background-color: #131f33 !important;
+      border-color: #334155 !important;
+      color: #e2e8f0 !important;
+    }
+    body.dark-mode #arcPaginationBar button {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+      color: #f8fafc !important;
+    }
+    body.dark-mode #opsGeminiKeysList > div {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+      color: #f1f5f9 !important;
+    }
+    @media print {
+      #opsHudQuickPeek, #dirCloudUploadFxModal, #dirAutoDraftRestoreBar,
+      #dirLiveNetBanner, #opsLiveNetBanner, #moitSwUpdateBar, .hud-liquid-pill {
+        display: none !important;
+      }
     }
 
   </style></head><body>${currentPdfHtml}</body></html>`);
@@ -8686,6 +8743,7 @@ ${ctx}`;
       if (!document.getElementById('opsHudQuickPeek')) {
         const peek = document.createElement('div');
         peek.id = 'opsHudQuickPeek';
+        peek.className = 'no-print';
         document.body.appendChild(peek);
       }
 
@@ -9498,6 +9556,196 @@ ${ctx}`;
 
       return { station: station || 'منشأة البريقة', directorate, visitDate, rows };
     }
+
+  
+
+    /* ===== v40: SMART BACKGROUND LIVE AUTO-POLL RADAR (EVERY 2 MINUTES) ===== */
+    (function initOpsV40SmartAutoPoll() {
+      let autoPollEnabled = true;
+      let pollBusy = false;
+
+      const mountToggle = () => {
+        const syncBtn = document.getElementById('btnCloudSync');
+        if (!syncBtn || document.getElementById('opsAutoPollToggleBtn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'opsAutoPollToggleBtn';
+        btn.type = 'button';
+        btn.title = 'فحص خلفي تلقائي كل دقيقتين لوصول تقارير جديدة من المديريات';
+        btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-emerald-400/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-[11px] font-black transition';
+        btn.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="hidden lg:inline">رادار حي</span>';
+        btn.addEventListener('click', () => {
+          autoPollEnabled = !autoPollEnabled;
+          btn.className = autoPollEnabled
+            ? 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-emerald-400/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-[11px] font-black transition'
+            : 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-slate-500/40 bg-slate-800/60 hover:bg-slate-700/70 text-slate-300 text-[11px] font-black transition';
+          btn.innerHTML = autoPollEnabled
+            ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="hidden lg:inline">رادار حي</span>'
+            : '<span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span><span class="hidden lg:inline">متوقف</span>';
+          showToast(autoPollEnabled ? '🟢 تم تفعيل الرادار التلقائي (يفحص كل دقيقتين)' : '⏸️ تم إيقاف الفحص التلقائي مؤقتاً', '📡');
+        });
+        syncBtn.parentElement?.insertBefore(btn, syncBtn);
+      };
+
+      const silentCheck = async () => {
+        if (!autoPollEnabled || pollBusy || !navigator.onLine || document.visibilityState !== 'visible') return;
+        const url = typeof getBakedUrl === 'function' ? getBakedUrl() : '';
+        if (!url) return;
+        pollBusy = true;
+        try {
+          const syncDays = document.getElementById('opsSyncDaysSelect')?.value || '30';
+          const reqUrl = url + (url.includes('?') ? '&' : '?') + 'days=' + encodeURIComponent(syncDays) + '&t=' + Date.now();
+          const ctrl = new AbortController();
+          const tm = setTimeout(() => ctrl.abort(), 15000);
+          let res;
+          try { res = await fetch(reqUrl, { signal: ctrl.signal }); } finally { clearTimeout(tm); }
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data || data.status !== 'success' || !Array.isArray(data.reports)) return;
+
+          // Detect genuinely new or updated cloud reports
+          const oldSigMap = new Map();
+          allReports.forEach(r => oldSigMap.set(`${r.directorate}|${r.visitDate}`, String(r.timestamp || '')));
+          const newlyArrivedDirs = [];
+          data.reports.forEach(r => {
+            const k = `${r.directorate}|${r.visitDate}`;
+            const prevTs = oldSigMap.get(k);
+            if (prevTs === undefined || (r.timestamp && String(r.timestamp) !== prevTs)) {
+              if (r.directorate && !newlyArrivedDirs.includes(r.directorate)) newlyArrivedDirs.push(r.directorate);
+            }
+          });
+
+          if (newlyArrivedDirs.length > 0) {
+            allReports = allReports.filter(r => r._source === 'local');
+            data.reports.forEach(r => upsertReport({ ...r, _source: 'cloud' }));
+            allReports.sort((a, b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
+            if (Array.isArray(data.evidenceRows)) allEvidence = data.evidenceRows;
+            if (Array.isArray(data.campaigns)) managedCampaigns = data.campaigns;
+            if (Array.isArray(data.campaignRows)) allCampaignRows = data.campaignRows;
+            if (typeof saveOpsEmergencySnapshot === 'function') saveOpsEmergencySnapshot();
+            if (typeof refreshAllViews === 'function') refreshAllViews();
+            const dirNames = newlyArrivedDirs.slice(0, 3).join('، ');
+            showToast(`🔔 وصل تحديث جديد من: ${dirNames} — تم تحديث لوحة القيادة تلقائياً!`, '📡');
+          }
+        } catch (_e) { /* silent background check */ }
+        finally { pollBusy = false; }
+      };
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountToggle);
+      else setTimeout(mountToggle, 80);
+      setInterval(silentCheck, 120000);
+    })();
+
+
+    /* ===== v40: AUTOMATIC PWA SERVICE WORKER UPDATE NOTIFICATION BANNER ===== */
+    (function initV40SwAutoUpdateWatcher() {
+      if (!('serviceWorker' in navigator)) return;
+      const showUpdateBar = () => {
+        if (document.getElementById('moitSwUpdateBar')) return;
+        const bar = document.createElement('div');
+        bar.id = 'moitSwUpdateBar';
+        bar.className = 'no-print fixed bottom-14 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[99] flex items-center justify-between gap-2.5 rounded-2xl px-4 py-2.5 text-xs font-extrabold shadow-2xl border border-amber-400/60 bg-[#0b1c36]/95 text-white backdrop-blur-md';
+        bar.innerHTML = '<span>✨ يتوفر إصدار أحدث للمنظومة</span><button type="button" onclick="window.location.reload()" class="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0b1c36] font-black text-xs shrink-0 transition">🔄 تحديث فوري</button>';
+        document.body.appendChild(bar);
+      };
+      let hadController = Boolean(navigator.serviceWorker.controller);
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hadController) showUpdateBar();
+        hadController = true;
+      });
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (!reg) return;
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar();
+          });
+        });
+      }).catch(() => {});
+    })();
+
+  
+
+    /* ===== v41: 1-CLICK LOCAL PC FULL ARCHIVE BACKUP (.JSON) + 30-DAY REMINDER ===== */
+    const OPS_LAST_PC_BACKUP_KEY = 'MOIT_OPS_LAST_PC_BACKUP_V41';
+
+    async function downloadFullPcBackupV41() {
+      const btn = document.getElementById('opsPcBackupBtn');
+      const origHtml = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>جارٍ التجهيز...</span>'; }
+      try {
+        const url = typeof getBakedUrl === 'function' ? getBakedUrl() : '';
+        let payload = null;
+        if (url && navigator.onLine) {
+          const ctrl = new AbortController();
+          const tm = setTimeout(() => ctrl.abort(), 30000);
+          try {
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'days=all&t=' + Date.now(), { signal: ctrl.signal });
+            if (res.ok) {
+              const j = await res.json();
+              if (j && j.status === 'success') payload = j;
+            }
+          } finally { clearTimeout(tm); }
+        }
+        const backupObj = {
+          system: 'منظومة النزول الميداني الموحد - مكتب وزارة الصناعة والتجارة عدن',
+          exportedAt: new Date().toISOString(),
+          source: payload ? 'cloud_full_archive' : 'local_loaded_memory',
+          counts: {
+            reports: payload ? (payload.reports || []).length : (allReports || []).length,
+            evidenceRows: payload ? (payload.evidenceRows || []).length : (allEvidence || []).length,
+            campaigns: payload ? (payload.campaigns || []).length : (managedCampaigns || []).length,
+            campaignRows: payload ? (payload.campaignRows || []).length : (allCampaignRows || []).length
+          },
+          reports: payload ? (payload.reports || []) : (allReports || []),
+          evidenceRows: payload ? (payload.evidenceRows || []) : (allEvidence || []),
+          campaigns: payload ? (payload.campaigns || []) : (managedCampaigns || []),
+          campaignRows: payload ? (payload.campaignRows || []) : (allCampaignRows || [])
+        };
+        const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json;charset=utf-8' });
+        const a = document.createElement('a');
+        const todayStr = new Date().toISOString().slice(0, 10);
+        a.href = URL.createObjectURL(blob);
+        a.download = `نسخة_احتياطية_منظومة_عدن_${todayStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        try { localStorage.setItem(OPS_LAST_PC_BACKUP_KEY, new Date().toISOString()); } catch (_e) {}
+        showToast(`💾 تم حفظ النسخة الاحتياطية الكاملة على جهازك (${fmtNum(backupObj.counts.reports)} تقرير • ${fmtNum(backupObj.counts.evidenceRows)} دليل)`, '✅');
+      } catch (err) {
+        showToast('❌ ' + explainOpsErrorSmart(err, 'تعذر تنزيل النسخة الاحتياطية'), '⚠️');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+      }
+    }
+
+    (function initOpsV41PcBackupButton() {
+      const mount = () => {
+        const importBtn = document.getElementById('btnImportExcel');
+        if (!importBtn || document.getElementById('opsPcBackupBtn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'opsPcBackupBtn';
+        btn.type = 'button';
+        btn.title = 'تنزيل نسخة احتياطية كاملة للأرشيف مباشرة على جهاز الكمبيوتر';
+        btn.className = 'inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs sm:text-sm px-3 py-2 rounded-xl transition';
+        btn.innerHTML = '<span>💾</span><span class="hidden xl:inline">نسخ احتياطي للكمبيوتر</span>';
+        btn.addEventListener('click', downloadFullPcBackupV41);
+        importBtn.parentElement?.insertBefore(btn, importBtn.nextSibling);
+
+        // Gentle 30-day reminder if backup is overdue
+        try {
+          const lastIso = localStorage.getItem(OPS_LAST_PC_BACKUP_KEY);
+          if (lastIso) {
+            const daysSince = (Date.now() - new Date(lastIso).getTime()) / 86400000;
+            if (daysSince >= 30 && typeof showToast === 'function') {
+              setTimeout(() => showToast(`💾 تذكير شهري: مرّ ${Math.floor(daysSince)} يوماً على آخر نسخة احتياطية على الكمبيوتر — اضغط زر «💾» للحفظ`, '🛡️'), 4500);
+            }
+          }
+        } catch (_e) {}
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+      else setTimeout(mount, 90);
+    })();
 
   </script>
 
