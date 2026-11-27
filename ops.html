@@ -1679,7 +1679,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           <label for="aiQuestionInput" class="block text-xs font-black text-[#102a4e]">💬 اسأل بياناتك بالعربي (اكتب أي سؤال حول الأسعار، الغاز، المخالفات، أو المديريات):</label>
           <div class="flex flex-col sm:flex-row gap-2">
             <input id="aiQuestionInput" type="text" placeholder="مثال: ما أكثر 5 سلع تفاوتاً هذا الأسبوع؟ أو لخّص وضع الغاز والموقفين في المنصورة..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:border-indigo-600 focus:outline-none" />
-            <button id="btnAskAiData" type="button" class="moit-sheen-btn shrink-0 bg-gradient-to-l from-[#102a4e] to-indigo-800 hover:from-indigo-800 hover:to-indigo-700 text-amber-300 font-black text-xs px-5 py-2.5 rounded-xl shadow transition">✨ تحليل وإجابة عبر Gemini</button>
+            <button id="btnAskAiData" type="button" class="moit-sheen-btn shrink-0 bg-gradient-to-l from-[#102a4e] to-indigo-800 hover:from-indigo-800 hover:to-indigo-700 text-amber-300 font-black text-xs px-5 py-2.5 rounded-xl shadow transition">✨ تحليل ذكي موثق</button>
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
             <span class="font-bold text-slate-500">أسئلة سريعة:</span>
@@ -1696,9 +1696,10 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         <div id="aiGenerativeFeedWrap" class="space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xs font-black text-[#102a4e]">✨ مساحة التحليل التفاعلي والرسوم البيانية المولّدة (مبنية حصراً على سجلات النظام):</span>
-            <button id="clearAiFeedBtn" type="button" class="hidden rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-800 px-2.5 py-1 text-[11px] font-extrabold">🗑️ مسح البطاقات</button>
+            <button id="clearAiFeedBtn" type="button" class="hidden rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-800 px-2.5 py-1 text-[11px] font-extrabold">🗑️ مسح التحليل والسجل</button>
           </div>
-          <div id="aiGenerativeFeed" class="space-y-4"></div>
+          <div id="v541AiReportHead" class="hidden rounded-xl bg-[#102a4e] text-white p-3 space-y-2 break-words" aria-live="polite"><div class="font-black text-sm" id="v541AiQuestion"></div><details><summary class="cursor-pointer text-xs text-amber-200">نطاق التحليل ومصادر البيانات</summary><div id="v541AiSources" class="text-xs whitespace-pre-line break-all pt-2"></div></details></div>
+          <div id="aiGenerativeFeed" class="space-y-3" aria-live="polite"></div>
         </div>
 
         <!-- AI Response Editor + Status + Session History -->
@@ -1707,7 +1708,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
             <span id="aiAnalystStatusBadge" class="text-xs font-extrabold text-indigo-800">✨ جاهز — اختر أحد التحليلات الجاهزة أو اكتب سؤالك أعلاه</span>
             <span id="aiAnalystScopeBadge" class="rounded-full bg-indigo-100 text-indigo-900 px-2.5 py-0.5 text-[11px] font-black">0 تقرير مشمول</span>
           </div>
-          <textarea id="aiAnalystOutputEditor" rows="11" placeholder="ستظهر هنا نتيجة التحليل الذكي أو الإجابة الرسمية من Gemini AI قابلة للتعديل والنسخ والتصدير إلى Word وPDF..." class="w-full rounded-xl border border-slate-300 p-3.5 text-xs font-semibold leading-relaxed bg-white focus:border-indigo-600 focus:outline-none"></textarea>
+          <details class="rounded-xl border border-slate-200 p-2"><summary class="cursor-pointer text-xs font-bold">عرض النص الكامل (المسودة المعدلة تحتاج إعادة توليد قبل التصدير الرسمي)</summary><textarea id="aiAnalystOutputEditor" rows="11" placeholder="ستظهر هنا نتيجة التحليل الموثق قابلة للنسخ والتحرير؛ التصدير الرسمي يتطلب النص المتحقق منه." class="w-full rounded-xl border border-slate-300 p-3.5 text-xs font-semibold leading-relaxed bg-white focus:border-indigo-600 focus:outline-none"></textarea></details>
           <div id="aiSessionHistoryWrap" class="hidden space-y-1.5 pt-1">
             <div class="text-[11px] font-black text-slate-600">🕒 آخر التحليلات والإجابات في هذه الجلسة (اضغط للاسترجاع):</div>
             <div id="aiSessionHistoryChips" class="flex flex-wrap gap-1.5"></div>
@@ -2207,7 +2208,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 class="text-sm sm:text-base font-black text-[#102a4e]">تقرير تقييم وأداء المديريات الثمان (تحليل راداري متعدد المحاور)</h3>
-            <p class="text-xs text-slate-500">مؤشرات تشغيلية وصفية. نسبة المعالجة تخص الأدلة المؤهلة التي راجعها المشرف، وليست نسبة جميع المخالفات المصرح بها.</p>
+            <p class="text-xs text-slate-500">مؤشرات تشغيلية وصفية. نسبة المعالجة تخص الأدلة المؤهلة التي راجعها المشرف، وليست نسبة جميع المخالفات المصرح بها.</p><p id="v541ExpandedScope" class="text-xs font-bold text-slate-600"></p>
           </div>
           <div class="flex gap-2">
             <button id="perfExcelBtn" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg">📊 إكسل</button>
@@ -3439,7 +3440,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       ['ovExportExcelBtn', 'ovExportWordBtn', 'ovExportPdfBtn'].forEach(id => { document.getElementById(id).disabled = !hasData; });
 
       const reportedDirs = new Set(filteredOvReports.map(r => r.directorate));
-      document.getElementById('ovComplianceRatio').textContent = `${reportedDirs.size} / 8 مديريات`;
+      document.getElementById('ovComplianceRatio').textContent = `${reportedDirs.size} من 8 مديريات`;
       document.getElementById('ovRadarGrid').innerHTML = ADEN_8_DIRS.map(d => {
         const ok = reportedDirs.has(d);
         const rep = filteredOvReports.find(r => r.directorate === d);
@@ -3974,7 +3975,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
     function renderExpandedReports() {
       if (typeof renderDirectorateExcellenceScorecard === 'function') renderDirectorateExcellenceScorecard();
       // 1. Performance & Radar
-      const perf = computeDirectoratesPerformance();
+      const snapshot=v54SelectedSnapshot(filteredOvReports),perf=computeDirectoratesPerformance(snapshot.reports,snapshot.evidence);
+      const scopeNote=document.getElementById('v541ExpandedScope');if(scopeNote)scopeNote.textContent='نطاق لوحة القيادة: '+snapshot.reports.length+' تقرير؛ '+snapshot.coverage.directorates.length+' من '+ADEN_8_DIRS.length+' مديريات.';
       document.getElementById('repPerfTableBody').innerHTML = perf.map((p, i) => `
         <tr>
           <td class="text-center font-black text-[#102a4e]">${i + 1}</td>
@@ -4029,7 +4031,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       // 2. Price Disparity Report
       const disp = v54DisparityRows();
       destroyChart('repDisp');
-      charts.repDisp = new Chart(document.getElementById('repDisparityChart').getContext('2d'), {
+      charts.repDisp = v541Chart('repDisparityChart', {
         type: 'bar',
         data: {
           labels: disp.length ? disp.slice(0, 10).map(x => `${x.name} (${x.unit})`) : ['لا توجد فروقات سعرية مرصودة'],
@@ -4050,7 +4052,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         </tr>`).join('') : '<tr><td colspan="8" class="text-center py-6 text-slate-400 font-bold">لا توجد تفاوتات سعرية كافية بعد (يتطلب رصد مديريتين فأكثر).</td></tr>';
 
       // 3. FX vs Basket Report
-      const fxSeries = computeFxBasketSeries();
+      const fxSeries = computeFxBasketSeries(snapshot.reports);
       destroyChart('repFxBasket');
       charts.repFxBasket = v541Chart('repFxBasketChart', {
         type: 'line',
@@ -4085,7 +4087,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       // 4. Gas & Supply Status Report
       const supplyMap = Object.create(null);
-      ADEN_8_DIRS.forEach(dir=>{const r=allReports.filter(x=>x.directorate===dir).sort((a,b)=>b.visitDate.localeCompare(a.visitDate))[0];const k=r?(r.supplyStatus||'حالة غير مرصودة'):'لا يوجد تقرير';supplyMap[k]=(supplyMap[k]||0)+1;});
+      ADEN_8_DIRS.forEach(dir=>{const r=snapshot.reports.filter(x=>x.directorate===dir).sort((a,b)=>b.visitDate.localeCompare(a.visitDate))[0];const k=r?(r.supplyStatus||'حالة غير مرصودة'):'لا يوجد تقرير';supplyMap[k]=(supplyMap[k]||0)+1;});
       destroyChart('repSupplyPie');
       charts.repSupplyPie = new Chart(document.getElementById('repSupplyPieChart').getContext('2d'), {
         type: 'pie',
@@ -4109,7 +4111,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       document.getElementById('repGasTableBody').innerHTML = ADEN_8_DIRS.map(d => {
         const p = perf.find(x => x.dir === d) || { gas: 0, reports: 0 };
-        const latest = allReports.filter(r=>r.directorate===d).sort((a,b)=>b.visitDate.localeCompare(a.visitDate))[0];
+        const latest = snapshot.reports.filter(r=>r.directorate===d).sort((a,b)=>b.visitDate.localeCompare(a.visitDate))[0];
         const share = p.gas!==null&&totalGasAll>0 ? Math.round(p.gas/totalGasAll*100) : null;
         return `
           <tr>
@@ -4126,7 +4128,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       generateLocalMergedNarrative(!document.getElementById('mergedNarrativeEditor')?.value?.trim());
       renderGasAnalyticsPanel();
       if (typeof renderDataAuditorAndBasket === 'function') renderDataAuditorAndBasket();
-      if (typeof getAiScopedReports === 'function') getAiScopedReports();
+      if (typeof getAiScopedReports === 'function') getAiScopedReports();if(typeof v541InvalidateAiScope==='function')v541InvalidateAiScope();
     }
 
     const OPS_OFFICIAL_GAS_DB = {"صيرة (كريتر)": [], "خور مكسر": [], "المعلا": [], "التواهي": [], "الشيخ عثمان": [], "المنصورة": [], "دار سعد": [], "البريقة": []};
@@ -4370,12 +4372,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           acts: MoitAnalytics.aggregate(dReps,'actTotal').value
         };
       });
-      const totFirms=MoitAnalytics.aggregate(reps,'firmsCovered').value;
-      const totGas=MoitAnalytics.aggregate(reps,'gasTotal').value;
-      const totViols=MoitAnalytics.aggregate(reps,'violTotal').value;
-      const totActs=MoitAnalytics.aggregate(reps,'actTotal').value;
-      const avgUsd=MoitAnalytics.aggregate(reps,'usdSell',true).value,avgSar=MoitAnalytics.aggregate(reps,'sarSell',true).value;
       const snap=MoitAnalytics.snapshot({reports:reps,catalog:ALL_ITEMS,dirs:ADEN_8_DIRS,scope:{from:f,to:t},evidence:allEvidence,exclusions:[...getExcludedOutliersSet()],excluded:isOutlierExcluded});
+      const {firms:totFirms,gas:totGas,violations:totViols,actions:totActs,usdSell:avgUsd,sarSell:avgSar}=Object.fromEntries(Object.entries(snap.metrics).map(([k,v])=>[k,v.value]));
       const prices = snap.prices.filter(p => p.count > 0);
       const topSpread = [...prices].filter(p => p.uniqueDirCount >= 2 && p.spread > 0).sort((a, b) => b.spreadPct - a.spreadPct).slice(0, 5);
       return { f, t, reps, byDir, totFirms, totGas, totViols, totActs, avgUsd, avgSar, prices, topSpread, snapshot:snap };
@@ -5603,7 +5601,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
     function exportMasterExecutiveExcel() {
       const snapshot=v54SelectedSnapshot(filteredOvReports);
       const perf = computeDirectoratesPerformance(snapshot.reports,snapshot.evidence);
-      const disp = snapshot.prices.filter(x => x.uniqueDirCount >= 2 && x.spread > 0).sort((a, b) => b.spreadPct - a.spreadPct);
+      const disp = snapshot.prices.filter(x=>x.uniqueDirCount>=2&&x.spread>0).sort((a,b)=>b.spreadPct-a.spreadPct||String(a.id).localeCompare(String(b.id))).slice(0,10);
       const fx = computeFxBasketSeries(snapshot.reports);
       const campS = computeCampaignSummary(snapshot.recalls);
       saveStyledWorkbook([
@@ -5619,7 +5617,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
     function buildMasterAnalyticalBody(withCharts = false) {
       const snapshot=v54SelectedSnapshot(filteredOvReports);
       const perf = computeDirectoratesPerformance(snapshot.reports,snapshot.evidence);
-      const disp = snapshot.prices.filter(x => x.uniqueDirCount >= 2 && x.spread > 0).sort((a, b) => b.spreadPct - a.spreadPct).slice(0, 8);
+      const disp = snapshot.prices.filter(x=>x.uniqueDirCount>=2&&x.spread>0).sort((a,b)=>b.spreadPct-a.spreadPct||String(a.id).localeCompare(String(b.id))).slice(0,10);
       return buildOverviewDocBody(withCharts,snapshot) + `
         <h3>ثالثاً: تقييم أداء المديريات الثمان</h3>
         <table class="rep"><tr><th>المديرية</th><th>التقارير</th><th>المنشآت</th><th>الغاز</th><th>المخالفات</th><th>الإجراءات</th><th>معالجة الأدلة المؤهلة المراجعة</th></tr>
@@ -6030,7 +6028,7 @@ ${txt}`;
 
       // Sub-report 1: Performance
       document.getElementById('perfExcelBtn').addEventListener('click', () => {
-        const p = computeDirectoratesPerformance();
+        const snapshot=v54SelectedSnapshot(filteredOvReports),p=computeDirectoratesPerformance(snapshot.reports,snapshot.evidence);
         saveStyledWorkbook([{ name: 'تقييم_المديريات', aoa: [['المديرية', 'التقارير', 'المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'نسبة المعالجة بين الأدلة المؤهلة المراجعة %'], ...p.map(x => [x.dir, x.reports, x.firms, x.gas, x.viols, x.acts, x.actionRate===null?'غير قابل للاحتساب':fmtNum(x.actionRate,2)+'% ('+x.review.resolved+'/'+x.review.eligible+')'])], widths: [18, 10, 12, 12, 12, 12, 14] }], `تقييم_أداء_المديريات_${todayIso()}.xlsx`);
       });
       document.getElementById('perfWordBtn').addEventListener('click', () => downloadWordDoc('تقرير تقييم أداء المديريات الثمان', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, chartSnapshotHtml('repRadarChart', 'رادار الأداء التشغيلي') + `<table class="rep">${document.getElementById('repPerfTableBody').parentElement.innerHTML}</table>`, `تقييم_المديريات_${todayIso()}.doc`));
@@ -6046,7 +6044,7 @@ ${txt}`;
 
       // Sub-report 3: FX & Basket
       document.getElementById('fxExcelBtn').addEventListener('click', () => {
-        const fx = computeFxBasketSeries();
+        const fx = computeFxBasketSeries(v54SelectedSnapshot(filteredOvReports).reports);
         saveStyledWorkbook([{ name: 'الصرف_والسلة', aoa: [['التاريخ', 'عدد التقارير', 'دولار بيع', 'سعودي بيع', 'مؤشر السلة الأساسية'], ...fx.map(x => [x.date, x.count, x.usdAvg, x.sarAvg, x.basket])], widths: [14, 12, 14, 14, 18] }], `حركة_الصرف_والسلة_${todayIso()}.xlsx`);
       });
       document.getElementById('fxWordBtn').addEventListener('click', () => downloadWordDoc('تقرير حركة الصرف وتكلفة السلة الغذائية', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, chartSnapshotHtml('repFxBasketChart', 'منحنى الصرف مقابل مؤشر السلة') + `<table class="rep">${document.getElementById('repFxTableBody').parentElement.innerHTML}</table>`, `حركة_الصرف_والسلة_${todayIso()}.doc`));
@@ -6054,7 +6052,7 @@ ${txt}`;
 
       // Sub-report 4: Gas & Supply
       document.getElementById('gasExcelBtn').addEventListener('click', () => {
-        const p = computeDirectoratesPerformance();
+        const snapshot=v54SelectedSnapshot(filteredOvReports),p=computeDirectoratesPerformance(snapshot.reports,snapshot.evidence);
         saveStyledWorkbook([{ name: 'توزيع_الغاز', aoa: [['المديرية', 'أسطوانات الغاز', 'عدد التقارير'], ...p.map(x => [x.dir, x.gas, x.reports])], widths: [18, 16, 14] }], `تقرير_الغاز_والتموين_${todayIso()}.xlsx`);
       });
       document.getElementById('gasWordBtn').addEventListener('click', () => downloadWordDoc('تقرير توزيع الغاز والوضع التمويني', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, chartSnapshotHtml('repGasBarChart', 'توزيع أسطوانات الغاز حسب المديرية') + `<table class="rep">${document.getElementById('repGasTableBody').parentElement.innerHTML}</table>`, `تقرير_الغاز_والتموين_${todayIso()}.doc`));
@@ -6658,13 +6656,13 @@ ${txt}`;
       const f = document.getElementById('aiFromDate')?.value || '';
       const t = document.getElementById('aiToDate')?.value || '';
       const dir = document.getElementById('aiDirScope')?.value || '';
-      const reps = allReports.filter(r =>
+      const reps = allReports.filter(r => r._source==='cloud' && MoitAnalytics.validDate(r.visitDate) &&
         (!f || (r.visitDate && r.visitDate >= f)) &&
         (!t || (r.visitDate && r.visitDate <= t)) &&
         (!dir || r.directorate === dir)
       );
       const b = document.getElementById('aiAnalystScopeBadge');
-      if (b) b.textContent = `${fmtNum(reps.length)} تقرير مشمول`;
+      if (b) b.textContent = `${fmtNum(reps.length)} تقرير سحابي مشمول`;
       return { f, t, dir, reps };
     }
 
@@ -6695,6 +6693,7 @@ ${txt}`;
       const canvasId = 'aiGenChart_' + _aiGenChartSeq;
       const card = document.createElement('div');
       card.id = cardId;
+      card.dataset.aiSection=String(v54AiLastSpecs.indexOf(spec));
       const isNotFound = spec.grounded_status === 'not_found';
       card.className = `ai-gen-card moit-reveal rounded-2xl border-2 ${isNotFound ? 'border-amber-400 bg-amber-50/50' : 'border-[#102a4e]/25 bg-white'} shadow-md p-4 space-y-3.5 transition`;
 
@@ -6714,7 +6713,7 @@ ${txt}`;
             </div>`).join('')}
         </div>` : '';
 
-      const hasChart = spec.chart && Array.isArray(spec.chart.labels) && spec.chart.labels.length > 0 && Array.isArray(spec.chart.datasets) && spec.chart.datasets.length > 0;
+      const hasChart = spec.chart && Array.isArray(spec.chart.labels) && spec.chart.labels.length > 0 && Array.isArray(spec.chart.datasets) && spec.chart.datasets.some(d=>Array.isArray(d.data)&&d.data.some(v=>typeof v==='number'&&Number.isFinite(v)&&(!['pie','doughnut','polarArea'].includes(spec.chart.type)||v>0)));
       const chartHtml = hasChart ? `
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <div class="flex items-center justify-between gap-2 mb-2">
@@ -6757,12 +6756,12 @@ ${txt}`;
           <div class="flex items-center gap-1.5">
             <button type="button" data-card-pdf="${cardId}" class="rounded-lg bg-[#0b1c36] hover:bg-[#1b3b6f] text-white px-2.5 py-1 text-[10.5px] font-extrabold">🖨️ PDF</button>
             <button type="button" data-card-word="${cardId}" class="rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 text-[10.5px] font-extrabold">📝 وورد</button>
-            <button type="button" data-card-del="${cardId}" class="rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 px-2 py-1 text-[10.5px] font-black">✕</button>
+            <button type="button" data-card-del="${cardId}" title="إخفاء هذا السياق من العرض فقط؛ يبقى ضمن التقرير الكامل" class="rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 px-2 py-1 text-[10.5px] font-black">✕</button>
           </div>
         </div>
-        <div class="text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-line">${escHtml(spec.summary || rawFallbackText || '')}</div>
+        <div class="text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-line">${escHtml(spec.scopeText&&spec.summary?.endsWith('\n'+spec.scopeText)?spec.summary.slice(0,-spec.scopeText.length-1):(spec.summary || rawFallbackText || ''))}</div>
         ${kpisHtml}
-        ${chartHtml}
+        ${chartHtml || (spec.chart?'<div class="text-xs text-slate-500">لا تتوفر بيانات كافية للرسم.</div>':'')}
         ${tableHtml}
         ${recsHtml}
       `;
@@ -6798,17 +6797,15 @@ ${txt}`;
 
       // Wire per-card actions
       card.querySelector(`[data-card-del="${cardId}"]`)?.addEventListener('click', () => {
-        destroyChart(canvasId);
-        card.remove();
-        if (!feed.children.length && clearBtn) clearBtn.classList.add('hidden');
+        destroyChart(canvasId);card.remove();
       });
       const buildSingleCardExportHtml = (withChartImg) => {
         const cImg = (withChartImg && hasChart) ? chartSnapshotHtml(canvasId, spec.chart.title || 'الرسم البياني') : '';
         const tHtml = hasTable ? `<table class="rep"><tr>${spec.table.headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr>${spec.table.rows.map(r => `<tr>${(Array.isArray(r) ? r : [r]).map(c => `<td>${escHtml(c)}</td>`).join('')}</tr>`).join('')}</table>` : '';
         return `${buildSecTitle('01', spec.title || _lastAiTitle)}<div dir="rtl" style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;line-height:1.8;">${escHtml(spec.summary || '').replace(/\n/g, '<br/>')}</div>${cImg}${tHtml}${(spec.recommendations||[]).map(r=>'<p>'+escHtml(r)+'</p>').join('')}`;
       };
-      card.querySelector(`[data-card-word="${cardId}"]`)?.addEventListener('click', () => downloadWordDoc(spec.title || _lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildSingleCardExportHtml(false), `تحليل_تفاعلي_${todayIso()}.doc`));
-      card.querySelector(`[data-card-pdf="${cardId}"]`)?.addEventListener('click', () => openPdfPreview(spec.title || _lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildSingleCardExportHtml(true), `تحليل_تفاعلي_${todayIso()}.pdf`));
+      card.querySelector(`[data-card-word="${cardId}"]`)?.addEventListener('click', () => v541AiExportReady() && downloadWordDoc(spec.title || _lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildSingleCardExportHtml(false), `تحليل_تفاعلي_${todayIso()}.doc`));
+      card.querySelector(`[data-card-pdf="${cardId}"]`)?.addEventListener('click', () => v541AiExportReady() && openPdfPreview(spec.title || _lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildSingleCardExportHtml(true), `تحليل_تفاعلي_${todayIso()}.pdf`));
     }
 
     function renderAiSessionHistory() {
@@ -6826,9 +6823,7 @@ ${txt}`;
         b.addEventListener('click', () => {
           const item = _aiSessionHistory[Number(b.getAttribute('data-ai-hist'))];
           if (!item) return;
-          _lastAiTitle = item.title;v54AiLastText=item.text;v54AiContext=item.context||null;
-          document.getElementById('aiAnalystOutputEditor').value = item.text;
-          document.getElementById('aiAnalystStatusBadge').textContent = `🕒 تم استرجاع: ${item.title}`;
+          v541RestoreAiHistory(item);
         });
       });
     }
@@ -6858,12 +6853,37 @@ ${txt}`;
       const summary=`${title}: ${format(total.value)}. النطاق: ${dir||'المديريات المتاحة'}، من ${f||'بداية الأرشيف المحمّل'} إلى ${t||'آخر تاريخ محمّل'}. ${isAvg?'متوسط متوازن للمديريات. ':''}السجلات المقروءة ${total.known} من ${total.n}؛ ${total.n-total.known} غير مرصودة أو مستبعدة. ${!found?'لا يُفسر غياب البيانات على أنه صفر. ':''}${rep.length?'تغطية التقارير: '+new Set(rep.map(r=>r.directorate)).size+' مديرية، '+rep.length+' تقرير. ':''}المصدر: لقطة Google Sheets الموثقة ${meta?.asOf||'غير متاح'}.`;
       return {title,grounded_status:found?'found':'not_found',summary,kpis:[{label:'القيمة المحسوبة',value:format(total.value),tone:found?'emerald':'amber'},{label:'السجلات ذات القيمة',value:String(total.known),tone:'indigo'},{label:'غير مرصود/مستبعد',value:String(total.n-total.known),tone:'amber'}],table:tableRows.length?{title:'تفاصيل الحساب',headers:['النطاق','القيمة','مرصود','غير مرصود'],rows:tableRows}:null,chart:null,recommendations:[]};
     }
-    let v54AiContext=null, v54AiSeq=0, v54AiLastText='', v54AiLastSpecs=[];
-    function v54ClearAiSession(){
-      v54AiSeq++;v54AiContext=null;v54AiLastText='';v54AiLastSpecs=[];_aiSessionHistory.length=0;
+    let v54AiContext=null, v54AiSeq=0, v54AiLastText='', v54AiLastSpecs=[],v541AiPending=null,v541AiCurrent=null;
+    function v541ClearAiView(){
       const feed=document.getElementById('aiGenerativeFeed');if(feed){feed.querySelectorAll('canvas').forEach(c=>destroyChart(c.id));feed.innerHTML='';}
+      document.getElementById('v541AiReportHead')?.classList.add('hidden');document.getElementById('clearAiFeedBtn')?.classList.add('hidden');
+      v54AiLastText='';v54AiLastSpecs=[];v541AiCurrent=null;const out=document.getElementById('aiAnalystOutputEditor');if(out)out.value='';
+    }
+    function v541CurrentAiKey(){
+      const scope=getAiScopedReports();return MoitHybrid.environmentKey(v54AiEnvironment(scope.f,scope.t,scope.dir));
+    }
+    function v541AiExportReady(){
+      if(!window.__moitOpsToken||!window.__OPS_SYNC_META||!v541AiCurrent||v541AiCurrent.key!==v541CurrentAiKey()){showToast('تغير نطاق البيانات أو انتهت الجلسة؛ أعد التحليل قبل التصدير.','⚠️');return false;}return true;
+    }
+    function v541ShowAiResult(item){
+      v541ClearAiView();v541AiCurrent=item;_lastAiTitle=item.title;v54AiLastText=item.text;v54AiLastSpecs=item.specs;v54AiContext=item.context;
+      const h=document.getElementById('v541AiReportHead');if(h)h.classList.remove('hidden');
+      const q=document.getElementById('v541AiQuestion');if(q)q.textContent='السؤال: '+item.title+' — '+item.time;
+      const sources=document.getElementById('v541AiSources');if(sources)sources.textContent=item.mode+'\n'+[...new Set(item.specs.map(x=>x.scopeText).filter(Boolean))].join('\n');
+      item.specs.slice().reverse().forEach(x=>renderAiGenerativeCard(x,''));
+      const out=document.getElementById('aiAnalystOutputEditor');if(out)out.value=item.text;const status=document.getElementById('aiAnalystStatusBadge');if(status)status.textContent=item.mode;
+    }
+    function v541RestoreAiHistory(item){
+      if(!window.__moitOpsToken||!window.__OPS_SYNC_META||item.key!==v541CurrentAiKey()){showToast('هذه نتيجة سابقة لنطاق أو بيانات مختلفة؛ أعد السؤال للتحليل الحالي.','⚠️');return;}
+      ++v54AiSeq;v541AiPending=null;v541ShowAiResult(item);const ask=document.getElementById('btnAskAiData');if(ask){ask.disabled=false;ask.textContent='✨ تحليل ذكي موثق';}
+    }
+    function v541InvalidateAiScope(){
+      if(v541AiCurrent&&v541AiCurrent.key!==v541CurrentAiKey()||v541AiPending&&v541AiPending.key!==v541CurrentAiKey()){++v54AiSeq;v541AiPending=null;v54AiContext=null;v541ClearAiView();const status=document.getElementById('aiAnalystStatusBadge');if(status)status.textContent='تغير نطاق البيانات؛ أعد التحليل.';const ask=document.getElementById('btnAskAiData');if(ask){ask.disabled=false;ask.textContent='✨ تحليل ذكي موثق';}}
+    }
+    function v54ClearAiSession(){
+      v54AiSeq++;v54AiContext=null;v541AiPending=null;_aiSessionHistory.length=0;v541ClearAiView();
       const out=document.getElementById('aiAnalystOutputEditor');if(out)out.value='';const status=document.getElementById('aiAnalystStatusBadge');if(status)status.textContent='';
-      const ask=document.getElementById('btnAskAiData');if(ask){ask.disabled=false;ask.textContent='✨ تحليل وإجابة عبر Gemini';}renderAiSessionHistory();
+      const ask=document.getElementById('btnAskAiData');if(ask){ask.disabled=false;ask.textContent='✨ تحليل ذكي موثق';}renderAiSessionHistory();
     }
     function v54AiEnvironment(f,t,dir,reports=allReports){
       const dirs=dir?[dir]:ADEN_8_DIRS.slice(),excluded=getExcludedOutliersSet();
@@ -6881,35 +6901,36 @@ ${txt}`;
         // Only allowlisted recommendation IDs and boolean evidence references leave the client.
         try{const raw=await call({action:'gemini_brief',fastJson:true,prompt:'رتب فقط التوصيات المحلية المسموح بها حسب الأولوية. أعد JSON فقط {"recommendations":[{"code":"...","factId":"..."}]} دون نص أو أرقام جديدة، بحد خمسة. الخيارات الموثقة: '+JSON.stringify(result.recOptions)},25000);const advice=MoitHybrid.verifyAdvice(raw,result);if(advice.length){const target=result.specs.find(s=>s.title==='توصيات قابلة للمراجعة');if(target)target.recommendations=advice;mode+='؛ ترتيب توصيات Gemini متحقق من المراجع';}}catch(_){mode+='؛ توصيات محلية (تعذر التحقق من Gemini)';}
       }
+      else if(result.specs.length&&MoitHybrid.interpretationOptions(result).length&&mode==='محرك محلي موثوق'){
+        try{const options=MoitHybrid.interpretationOptions(result);const raw=await call({action:'gemini_brief',fastJson:true,prompt:'اختر أهم التفسيرات الموثقة فقط. أعد JSON {"insights":[{"id":"i1","factId":"f1"}]} دون نص حر أو حقائق إضافية: '+JSON.stringify(options)},25000);const insights=MoitHybrid.verifyInterpretation(raw,result);result.specs.push({title:'أولويات التفسير الرقابي',summary:insights.join('\n'),grounded_status:'found',kpis:[],recommendations:[]});mode+='؛ اختيار تفسيرات Gemini متحقق من المراجع';}catch(_){mode+='؛ تعذر التحقق من تفسير Gemini';}
+      }
       return {...result,mode};
     }
     async function runInteractiveGeminiAnalysis(taskTitle,userInstruction){
       const statusEl=document.getElementById('aiAnalystStatusBadge'),outEl=document.getElementById('aiAnalystOutputEditor'),askBtn=document.getElementById('btnAskAiData');
-      const request=++v54AiSeq,token=window.__moitOpsToken,meta=window.__OPS_SYNC_META;
-      const q=String(userInstruction||'').trim();v54AiLastText='';v54AiLastSpecs=[];if(outEl)outEl.value='';if(statusEl)statusEl.textContent='جارٍ فهم السؤال وحساب البيانات...';
+      const token=window.__moitOpsToken,meta=window.__OPS_SYNC_META,q=String(userInstruction||'').trim();
+      const scope=getAiScopedReports(),env=v54AiEnvironment(scope.f,scope.t,scope.dir),key=MoitHybrid.environmentKey(env),questionKey=MoitHybrid.normalize(q);
+      if(v541AiPending&&v541AiPending.key===key&&v541AiPending.questionKey===questionKey&&v541AiPending.token===token)return;
+      const request=++v54AiSeq;v541AiPending={key,questionKey,token};v541ClearAiView();if(statusEl)statusEl.textContent='جارٍ فهم السؤال وحساب البيانات...';
       if(askBtn){askBtn.disabled=true;askBtn.textContent='جارٍ التحليل...';}
       try{
         if(!token||!meta)throw Error('يلزم تسجيل الدخول ومزامنة بيانات موثقة أولاً.');
-        const scope=getAiScopedReports(),env=v54AiEnvironment(scope.f,scope.t,scope.dir);
         const result=await v54RunHybrid(q,env,v54AiContext,callAppsScriptGemini);
         if(request!==v54AiSeq||token!==window.__moitOpsToken)return;
-        const current=getAiScopedReports(),next=v54AiEnvironment(current.f,current.t,current.dir);
-        if(meta!==window.__OPS_SYNC_META||next.scopeKey!==env.scopeKey||MoitAnalytics.snapshotKey(next.reports,next.scope,next.exclusions,next.evidence)!==MoitAnalytics.snapshotKey(env.reports,env.scope,env.exclusions,env.evidence)||MoitAnalytics.canonical(next.recalls)!==MoitAnalytics.canonical(env.recalls))throw Error('تغيرت البيانات أو نطاق الفلتر أثناء التحليل؛ أعد السؤال.');
-        const label='طلب '+request+' — '+q.slice(0,100);_lastAiTitle=taskTitle;
-        const specs=result.specs.map(x=>({...x,title:label+' | '+x.title,summary:x.summary+'\nطريقة الإجابة: '+result.mode}));
-        if(result.limitations.length)specs.push({title:label+' | حدود الإجابة',grounded_status:'not_found',summary:result.limitations.join('\n'),kpis:[],recommendations:[]});
-        specs.slice().reverse().forEach(x=>renderAiGenerativeCard(x,''));
-        v54AiLastSpecs=specs;v54AiLastText=specs.map(x=>x.title+'\n'+x.summary+(x.table?'\n'+x.table.headers.join(' | ')+'\n'+x.table.rows.map(r=>r.join(' | ')).join('\n'):'')+(x.recommendations?.length?'\n'+x.recommendations.join('\n'):'')).join('\n\n');
-        if(outEl)outEl.value=v54AiLastText;if(statusEl)statusEl.textContent=result.mode+' — طلب '+request;
-        if(result.specs.length)v54AiContext=result.context;
-        _aiSessionHistory.unshift({title:taskTitle,text:v54AiLastText,context:result.specs.length?result.context:null,time:new Date().toLocaleTimeString('ar-YE',{timeZone:'Asia/Aden'})});if(_aiSessionHistory.length>6)_aiSessionHistory.pop();renderAiSessionHistory();
-      }catch(e){if(request!==v54AiSeq)return;if(statusEl)statusEl.textContent='⚠️ '+e.message;if(outEl)outEl.value=e.message;showToast(e.message,'⚠️');}
-      finally{if(request===v54AiSeq&&askBtn){askBtn.disabled=false;askBtn.textContent='✨ تحليل وإجابة عبر Gemini';}}
+        if(meta!==window.__OPS_SYNC_META||key!==v541CurrentAiKey())throw Error('تغيرت البيانات أو نطاق الفلتر أثناء التحليل؛ أعد السؤال.');
+        const specs=result.specs.slice();if(result.limitations.length)specs.push({title:'حدود الإجابة',grounded_status:'not_found',summary:result.limitations.join('\n'),kpis:[],recommendations:[]});
+        const safeTitle=MoitHybrid.sensitiveText(q)?'استعلام غير مسموح':String(taskTitle||q).slice(0,300);
+        const body=specs.map(x=>x.title+'\n'+x.summary+(x.table?'\n'+x.table.headers.join(' | ')+'\n'+x.table.rows.map(r=>r.join(' | ')).join('\n'):'')+(x.recommendations?.length?'\n'+x.recommendations.join('\n'):'')).join('\n\n');
+        const item={title:safeTitle,questionKey,key,specs,text:body+'\n\nطريقة الإجابة: '+result.mode,mode:result.mode+' — طلب '+request,context:result.specs.length?result.context:null,time:new Date().toLocaleTimeString('ar-YE',{timeZone:'Asia/Aden'})};
+        v541ShowAiResult(item);
+        if(!MoitHybrid.sensitiveText(q)){const prev=_aiSessionHistory.findIndex(x=>x.questionKey===questionKey&&x.key===key);if(prev>=0)_aiSessionHistory.splice(prev,1);_aiSessionHistory.unshift(item);if(_aiSessionHistory.length>6)_aiSessionHistory.pop();renderAiSessionHistory();}
+      }catch(e){if(request!==v54AiSeq)return;v54AiContext=null;v541ClearAiView();if(statusEl)statusEl.textContent='⚠️ '+e.message;if(outEl)outEl.value=e.message;showToast(e.message,'⚠️');}
+      finally{if(request===v54AiSeq){v541AiPending=null;if(askBtn){askBtn.disabled=false;askBtn.textContent='✨ تحليل ذكي موثق';}}}
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       ['aiFromDate', 'aiToDate', 'aiDirScope'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', getAiScopedReports);
+        document.getElementById(id)?.addEventListener('change', ()=>{getAiScopedReports();v541InvalidateAiScope();});
       });
       document.querySelectorAll('[data-ai-range]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -6921,7 +6942,7 @@ ${txt}`;
           else if (mode === '7d') { fEl.value = daysAgoIso(6); tEl.value = today; }
           else if (mode === 'month') { fEl.value = today.slice(0, 8) + '01'; tEl.value = today; }
           else { fEl.value = ''; tEl.value = ''; }
-          getAiScopedReports();
+          getAiScopedReports();v541InvalidateAiScope();
           showToast('تم تحديث نطاق بيانات المحلل الذكي', '📅');
         });
       });
@@ -6976,25 +6997,30 @@ ${txt}`;
       });
 
       const buildAiDocHtml = () => {
-        const txt = (document.getElementById('aiAnalystOutputEditor')?.value || '').trim();
-        const paras = txt.split('\n').map(l => l.trim() ? `<p style="margin:5px 0; text-align:justify; line-height:1.8;">${escHtml(l)}</p>` : '<br/>').join('');
-        return `${buildSecTitle('01', _lastAiTitle)}<div dir="rtl" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:12px 16px; font-size:12px;">${paras || '<p>لا يوجد تحليل مولّد بعد.</p>'}</div>`;
+        const sectionHtml=v54AiLastSpecs.map((spec,i)=>{
+          const body=escHtml(spec.summary||'').replace(/\n/g,'<br/>');
+          const table=spec.table&&spec.table.headers?.length?'<table class="rep"><tr>'+spec.table.headers.map(h=>'<th>'+escHtml(h)+'</th>').join('')+'</tr>'+spec.table.rows.map(r=>'<tr>'+r.map(c=>'<td>'+escHtml(c)+'</td>').join('')+'</tr>').join('')+'</table>':'';
+          const recs=(spec.recommendations||[]).map(r=>'<p>'+escHtml(r)+'</p>').join('');
+          const canvas=document.querySelector('#aiGenerativeFeed [data-ai-section="'+i+'"] canvas');
+          return buildSecTitle(String(i+1).padStart(2,'0'),spec.title)+'<p dir="rtl">'+body+'</p>'+table+(canvas?chartSnapshotHtml(canvas.id,spec.chart?.title||'الرسم البياني'):'')+recs;
+        }).join('');
+        return '<p>'+escHtml(v541AiCurrent?.mode||'')+'</p>'+sectionHtml;
       };
 
       document.getElementById('aiAnalystCopyWaBtn')?.addEventListener('click', () => {
         const txt = (document.getElementById('aiAnalystOutputEditor')?.value || '').trim();
-        if (!txt || txt!==v54AiLastText) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
+        if (!txt || txt!==v54AiLastText || !v541AiExportReady()) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
         navigator.clipboard?.writeText(`🏛️ *مكتب وزارة الصناعة والتجارة / العاصمة عدن — غرفة العمليات*\n📌 *${_lastAiTitle}*\n━━━━━━━━━━━━━━━━━━━━\n${txt}`);
         showToast('تم نسخ التحليل جاهزاً للواتساب', '📋');
       });
       document.getElementById('aiAnalystWordBtn')?.addEventListener('click', () => {
         const txt = (document.getElementById('aiAnalystOutputEditor')?.value || '').trim();
-        if (!txt || txt!==v54AiLastText) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
+        if (!txt || txt!==v54AiLastText || !v541AiExportReady()) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
         downloadWordDoc(_lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildAiDocHtml(), `تحليل_ذكي_عدن_${todayIso()}.doc`);
       });
       document.getElementById('aiAnalystPdfBtn')?.addEventListener('click', () => {
         const txt = (document.getElementById('aiAnalystOutputEditor')?.value || '').trim();
-        if (!txt || txt!==v54AiLastText) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
+        if (!txt || txt!==v54AiLastText || !v541AiExportReady()) { showToast('ولّد تحليلاً موثقاً أو أعد التوليد بعد تعديل النص', '⚠️'); return; }
         openPdfPreview(_lastAiTitle, `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildAiDocHtml(), `تحليل_ذكي_عدن_${todayIso()}.pdf`);
       });
     });
@@ -7538,7 +7564,7 @@ ${txt}`;
         btn = document.createElement('button');
         btn.id = 'pwaInstallFloatBtn';
         btn.type = 'button';
-        btn.className = 'no-print fixed bottom-20 left-4 z-[130] rounded-2xl bg-gradient-to-l from-[#0f2942] to-amber-700 text-white px-4 py-2.5 text-xs font-black shadow-2xl border border-amber-300 flex items-center gap-2';
+        btn.className = 'no-print fixed bottom-2 left-2 z-[130] max-w-[44vw] rounded-2xl bg-gradient-to-l from-[#0f2942] to-amber-700 text-white px-4 py-2.5 text-xs font-black shadow-2xl border border-amber-300 flex items-center gap-2';
         btn.innerHTML = '<span>📲</span><span>تثبيت لوحة التحكم كتطبيق</span>';
         btn.addEventListener('click', async () => {
           if (!_deferredPwaPrompt) return;
