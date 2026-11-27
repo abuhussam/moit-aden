@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <meta name="moit-v54-production-endpoint" content="https://script.google.com/macros/s/AKfycbyXCIhaQynkJJ3J9xb5sPLXOFMgiu2OcPT4GubAXmQy6gBjDrVVSOzKlDxN8CEhmgTI/exec" />
   <meta charset="UTF-8" />
   <meta id="bakedGsUrlMeta" name="moit-gs-url" content="https://script.google.com/macros/s/AKfycbyXCIhaQynkJJ3J9xb5sPLXOFMgiu2OcPT4GubAXmQy6gBjDrVVSOzKlDxN8CEhmgTI/exec" />
   <meta id="bakedStaffRegistryMeta" name="moit-staff-registry" content="{}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>نموذج تقرير النزول الميداني للمديريات – مكتب وزارة الصناعة والتجارة عدن</title>
+  <script>
+  function v54FieldExportCell(v){if(v==null)return null;if(typeof v==='number')return Number.isFinite(v)?v:null;if(typeof v==='boolean')return v;if(typeof v!=='string')throw Error('نوع خلية تصدير غير مدعوم');return /^[\s\uFEFF]*[=+\-@]/.test(v)&&v!=='-'&&v!=='—'?"'"+v:v;}
+  </script>
+  <script src="./closure-v54.js"></script>
+  <script src="./analytics-v54.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -797,23 +803,32 @@ window.__moitDirSessions=Object.create(null);
 function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;return [...a].map((v,i)=>([4,6,8,10].includes(i)?'-':'')+v.toString(16).padStart(2,'0')).join('');}
 function moitEsc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function moitDirSession(d){return window.__moitDirSessions[d]||'';}
-function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMITTED'&&j.operationId===p.operationId&&j.reportId&&j.directorate===p.directorate&&j.visitDate===p.visitDate&&Number.isSafeInteger(j.revision)&&j.revision>0&&/^[a-f0-9]{64}$/i.test(j.payloadHash||'')&&j.auditLogged===true&&j.evidenceFailedCount===0);}
+function moitFormComparable(state){const {cloudRevision,cloudKey,_savedAt,_savedAtIso,...rest}=state||{};return JSON.stringify(rest);}
+function moitSameSubmissionState(a,b){return moitFormComparable(a)===moitFormComparable(b)&&a.cloudKey===b.cloudKey&&a.cloudRevision===b.cloudRevision;}
+async function moitReadBeforeSubmit(url,body){const session=moitDirSession(body.directorate);if(!session)throw Error('يلزم توثيق جلسة المديرية للتحقق من التقرير');const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),30000);try{const res=await fetch(url,{signal:ctrl.signal,method:'POST',redirect:'follow',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,sessionToken:session})});const j=await res.json();if(session!==moitDirSession(body.directorate))throw Error('تغيرت جلسة المديرية أثناء التحقق');if(!res.ok||j.status!=='success')throw Error(j.error||'تعذر التحقق من الخادم');return j;}finally{clearTimeout(tm);}}
+async function moitFormDigest(state){try{const bytes=new TextEncoder().encode(moitFormComparable(state));return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');}catch(_){return '';}}
+function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMITTED'&&j.operationId===p.operationId&&j.reportId&&j.directorate===p.directorate&&j.visitDate===p.visitDate&&Number.isSafeInteger(p.baseRevision)&&p.baseRevision>=0&&Number.isSafeInteger(j.revision)&&j.revision===p.baseRevision+1&&/^[a-f0-9]{64}$/i.test(j.payloadHash||'')&&j.auditLogged===true&&j.evidenceFailedCount===0);}
 (function(){const original=window.fetch.bind(window);window.fetch=async function(resource,init={}){
  const url=typeof resource==='string'?resource:resource?.url; if(!url)return original(resource,init);
  let u;try{u=new URL(url,location.href);}catch(_){return original(resource,init);}
- if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname))return original(resource,init);
+ if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname)){if(String(init.method||'GET').toUpperCase()!=='GET')return new Response(JSON.stringify({status:'error',code:'PRODUCTION_ENDPOINT_REQUIRED',error:'الكتابة مسموحة فقط إلى رابط الإنتاج المعتمد'}),{status:403,headers:{'Content-Type':'application/json'}});return original(resource,init);}
+ const lab=String(document.querySelector('meta[name=moit-v54-production-endpoint]')?.content||'').trim();
+ if(!lab||u.origin+u.pathname!==lab)return new Response(JSON.stringify({status:'error',code:'PRODUCTION_ENDPOINT_REQUIRED',error:'رابط Apps Script غير مطابق لرابط الإنتاج المعتمد'}),{status:403,headers:{'Content-Type':'application/json'}});
  const method=String(init.method||'GET').toUpperCase(); let body;
  if(method==='GET'){body={action:'read_data',days:u.searchParams.get('days')||'all'};}
- else {try{body=JSON.parse(init.body);}catch(_){return original(resource,init);}}
+ else {try{body=JSON.parse(init.body);}catch(_){return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});}}
+ if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});
  const dir=body.directorate||document.getElementById('directorateSelect')?.value||'';
  if(!['verify_dir_pin','change_dir_pin'].includes(body.action)){body.sessionToken=moitDirSession(dir); delete body.dirPin;}
  if(!body.sessionToken&&!['verify_dir_pin','change_dir_pin'].includes(body.action))return new Response(JSON.stringify({status:'error',code:'AUTH_REQUIRED',error:'يلزم توثيق جلسة المديرية'}),{headers:{'Content-Type':'application/json'}});
  const res=await original(u.origin+u.pathname,{...init,method:'POST',mode:'cors',redirect:'follow',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
- try{const j=await res.clone().json();if(j.code==='AUTH_REQUIRED')delete window.__moitDirSessions[dir];}catch(_){}return res;
+ try{const j=await res.clone().json();if(j.code==='AUTH_REQUIRED'&&body.sessionToken===window.__moitDirSessions[dir])delete window.__moitDirSessions[dir];}catch(_){}return res;
 };})();
 </script>
 </head>
 <body class="min-h-screen pb-12">
+  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54.1 Stable</div>
+
 
   <!-- Toast Notification -->
   <div id="toastBox" class="fixed bottom-5 left-5 z-50 hidden items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-2xl border border-amber-400/40 no-print">
@@ -1214,7 +1229,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         </div>
       </div>
       <div id="radarListContainer" class="p-3 flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-emerald-700 font-bold">✅ جميع الأسعار مستقرة اليوم دون أي تغيّر عن التقرير المرجعي.</span>
+        <span class="text-slate-600 font-bold">لا توجد بيانات سعرية كافية للمقارنة.</span>
       </div>
     </section>
 
@@ -1563,6 +1578,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           </div>
         </div>
         <datalist id="gasDirAgentsDatalist"></datalist>
+        <div class="no-print text-xs font-bold text-slate-600"><button type="button" id="v54RefreshAgents" class="px-3 py-1 rounded-lg bg-[#102a4e] text-white">تحديث سجل الوكلاء المركزي</button> <label><input type="checkbox" id="v54GasZeroConfirmed"> تأكيد عدم توزيع الغاز (صفر مرصود عند خلو الكشف)</label></div>
 
         <div class="rounded-xl border border-slate-200 overflow-x-auto table-scroll-wrap">
           <table class="w-full text-xs mobile-wide-lg">
@@ -1718,7 +1734,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             <span id="totalViolationsBadge" class="rounded-xl bg-rose-700 px-4 py-1 text-sm font-extrabold text-white">0 مخالفة</span>
           </div>
           <div class="flex items-center justify-between gap-3 px-3">
-            <label for="violatingFirmsInput" class="text-xs font-extrabold text-rose-900">🏢 عدد المنشآت المخالفة:</label>
+            <label for="violatingFirmsInput" class="text-xs font-extrabold text-rose-900">🏢 عدد المنشآت المخالفة (يدويًا):</label>
             <input id="violatingFirmsInput" type="number" min="0" value="0" class="input-cell max-w-[140px] text-sm" />
           </div>
         </div>
@@ -1835,6 +1851,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           <div class="rounded-xl border border-slate-200 p-3.5 bg-slate-50/60">
             <label for="supplyStatusSelect" class="block text-xs font-extrabold text-[#0f2942] mb-2">📦 تقييم الوضع التمويني العام في المديرية:</label>
             <select id="supplyStatusSelect" class="input-cell text-xs mb-2">
+              <option value="">— غير مرصود —</option>
               <option value="مستقر بوفرة">✅ مستقر بوفرة في كافة السلع الأساسية</option>
               <option value="مستقر نسبياً">🟢 مستقر نسبياً مع تفاوت محدود في الأسعار</option>
               <option value="شحة في بعض الأصناف">🟡 شحة نسبية في بعض الأصناف</option>
@@ -2510,6 +2527,20 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
     const OFFICIAL_GAS_AGENTS_DB = {"صيرة (كريتر)": [], "خور مكسر": [], "المعلا": [], "التواهي": [], "الشيخ عثمان": [], "المنصورة": [], "دار سعد": [], "البريقة": []};
     const CUSTOM_GAS_AGENTS_KEY = 'moit_aden_custom_gas_agents_v1';
+    let v54DirRegistry=null, v54DirRegistrySeq=0;
+    async function refreshCentralGasAgents(authenticate=false) {
+      const dir=document.getElementById('directorateSelect')?.value||'';
+      const url=document.querySelector('meta[name=moit-v54-production-endpoint]')?.content||'';
+      if(!dir||!url)return;
+      if(!moitDirSession(dir)&&authenticate)await window.promptCloudPinBeforeSubmit(dir,'التحقق لقراءة سجل الوكلاء المركزي');
+      const token=moitDirSession(dir);if(!token||dir!==document.getElementById('directorateSelect')?.value)return;
+      const seq=++v54DirRegistrySeq;v54DirRegistry=null;refreshGasAgentsDatalist();
+      try{const res=await fetch(url,{method:'POST',body:JSON.stringify({action:'agent_registry_read',directorate:dir})});const j=await res.json();
+        if(seq!==v54DirRegistrySeq||token!==moitDirSession(dir)||dir!==document.getElementById('directorateSelect')?.value)return;
+        if(!res.ok||j.status!=='success'||!Array.isArray(j.rows)||j.rows.some(a=>a.directorate!==dir))throw Error('تعذر قراءة سجل الوكلاء');
+        v54DirRegistry={dir,token,enabled:j.enabled===true,rows:j.rows};refreshGasAgentsDatalist();
+      }catch(e){if(seq===v54DirRegistrySeq){v54DirRegistry=null;refreshGasAgentsDatalist();showToast('تعذر تحديث السجل المركزي؛ القائمة المحلية غير معتمدة','⚠️');}}
+    }
 
     function getCustomGasAgentsMap() {
       try { return JSON.parse(localStorage.getItem(CUSTOM_GAS_AGENTS_KEY) || '{}') || {}; } catch (e) { return {}; }
@@ -2525,13 +2556,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
     function getGasAgentsForDirectorate(dir) {
       const base = (dir && OFFICIAL_GAS_AGENTS_DB[dir]) ? OFFICIAL_GAS_AGENTS_DB[dir] : [];
       const custom = (dir && getCustomGasAgentsMap()[dir]) ? getCustomGasAgentsMap()[dir] : [];
-      const seen = new Set();
-      const out = [];
-      [...base, ...custom].forEach(a => {
-        const key = (a.name || '').trim();
-        if (key && !seen.has(key)) { seen.add(key); out.push(a); }
-      });
-      return out;
+      const registry=v54DirRegistry?.dir===dir&&v54DirRegistry.token===moitDirSession(dir)?v54DirRegistry:null;
+      return MoitClosure.agentChoices(dir,registry,[...base,...custom]);
     }
     function findGasAgentRecord(dir, name) {
       const q = (name || '').trim();
@@ -2543,26 +2569,24 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       const agents = getGasAgentsForDirectorate(dir);
       const dl = document.getElementById('gasDirAgentsDatalist');
       if (dl) {
-        dl.innerHTML = agents.map(a => `<option value="${a.name.replace(/"/g, '&quot;')}">${a.addr ? a.addr + (a.phone ? ' | ' + a.phone : '') : ''}</option>`).join('');
+        dl.replaceChildren(...agents.map(a=>{const o=document.createElement('option');o.value=a.name;o.textContent=[a.addr,a.phone,a.source==='central'?'مركزي':'محلي غير معتمد'].filter(Boolean).join(' | ');return o;}));
       }
       const badge = document.getElementById('gasDirAgentsCountBadge');
-      if (badge) badge.textContent = `${agents.length} وكيل/معرض مسجل لمديرية ${dir || 'عدن'}`;
+      if (badge) badge.textContent = `${agents.filter(a=>a.source==='central').length} مركزي | ${agents.filter(a=>a.source==='local').length} محلي غير معتمد`;
     }
     function updateGasStatusSummaries() {
-      let activeCnt = 0, stoppedCnt = 0, coverCnt = 0;
-      document.querySelectorAll('#gasTbody tr').forEach(tr => {
-        const ag = (tr.querySelector('.gas-agent')?.value || '').trim();
-        const st = tr.querySelector('.gas-status')?.value || 'صرف طبيعي';
-        const q = Number(tr.querySelector('.gas-qty')?.value || 0);
-        if (!ag && !q && st === 'صرف طبيعي') return;
-        if (st === 'موقف') stoppedCnt++;
-        else if (st === 'تغطية مربع وكيل') { coverCnt++; activeCnt++; }
-        else if (q > 0 || ag) activeCnt++;
+      const directorate=document.getElementById('directorateSelect')?.value || '';
+      const gasRows=Array.from(document.querySelectorAll('#gasTbody tr'),tr=>{
+        const value=cls=>tr.querySelector('.gas-'+cls)?.value || '';
+        return {agent:value('agent'),loc:value('loc'),phone:value('phone'),qty:value('qty'),status:value('status')||'صرف طبيعي',notes:value('notes')};
       });
-      const stopBadge = document.getElementById('gasStoppedSummaryBadge');
-      if (stopBadge) stopBadge.textContent = `⛔ الموقفين: ${stoppedCnt}${coverCnt ? ' | 🔄 تغطية: ' + coverCnt : ''}`;
-      const fSum = document.getElementById('gasFooterStatusSummary');
-      if (fSum) fSum.textContent = `${activeCnt} وكيل فعّال | ${stoppedCnt} موقف${coverCnt ? ' | ' + coverCnt + ' تغطية' : ''}`;
+      const d=MoitAnalytics.gasDetails([{directorate,gasRows}]);
+      const coverCnt=gasRows.filter(g=>g.status==='تغطية مربع وكيل' && MoitAnalytics.gasRowInfo(g).used).length;
+      const label=v=>v==null?'غير مرصود':v;
+      const stopBadge=document.getElementById('gasStoppedSummaryBadge');
+      if(stopBadge)stopBadge.textContent=`⛔ الموقفين: ${label(d.stopped)}${coverCnt?' | 🔄 تغطية: '+coverCnt:''}`;
+      const fSum=document.getElementById('gasFooterStatusSummary');
+      if(fSum)fSum.textContent=`${label(d.active)} وكيل فعّال | ${label(d.stopped)} موقف${coverCnt?' | '+coverCnt+' تغطية':''}${d.unidentified||d.missingQty?' | بيانات كشف غير مكتملة':''}`;
     }
 
     function renderGasRows(count) {
@@ -2649,9 +2673,6 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           if (rec.phone !== undefined) phInp.value = rec.phone || '';
           if (rec.type === 'showroom') {
             stSel.value = 'معرض الشركة';
-            if (!qtyInp.value || Number(qtyInp.value) === 0) qtyInp.value = 200;
-          } else if (!qtyInp.value && stSel.value === 'صرف طبيعي') {
-            qtyInp.value = 100;
           }
           applyGasRowVisualStyle(tr);
           recalculateKPIs();
@@ -2675,30 +2696,32 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
       stSel.addEventListener('change', () => {
         if (stSel.value === 'موقف') {
-          qtyInp.value = 0;
           if (!ntInp.value.trim()) ntInp.value = 'موقف';
         } else if (stSel.value === 'تغطية مربع وكيل') {
-          if (!qtyInp.value || Number(qtyInp.value) <= 100) qtyInp.value = 200;
           if (!ntInp.value.trim() || ntInp.value.trim() === 'موقف') ntInp.value = 'تغطية مربع الوكيل ';
           ntInp.focus();
         } else if (stSel.value === 'معرض الشركة') {
-          if (!qtyInp.value || Number(qtyInp.value) === 0) qtyInp.value = 200;
         } else {
           if (ntInp.value.trim() === 'موقف') ntInp.value = '';
-          if (!qtyInp.value || Number(qtyInp.value) === 0) qtyInp.value = 100;
         }
         applyGasRowVisualStyle(tr);
         recalculateKPIs();
         updateGasStatusSummaries();
       });
 
+      locInp.addEventListener('input', updateGasStatusSummaries);
+      phInp.addEventListener('input', updateGasStatusSummaries);
       qtyInp.addEventListener('input', () => { recalculateKPIs(); updateGasStatusSummaries(); });
       tr.querySelectorAll('.gas-step-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const d = Number(btn.getAttribute('data-delta')) || 0;
-          qtyInp.value = Math.max(0, (Number(qtyInp.value) || 0) + d);
-          recalculateKPIs();
-          updateGasStatusSummaries();
+          const q=parseNumStrict(qtyInp.value,{nonNegative:true,integer:true});
+          if(!q.ok || qtyInp.validity.badInput){qtyInp.focus();showToast('صحح كمية الغاز قبل التعديل','⚠️');return;}
+          if(q.value===null && d<0)return;
+          const next=Math.max(0,(q.value??0)+d);
+          if(!Number.isSafeInteger(next))return;
+          qtyInp.value=next;
+          qtyInp.dispatchEvent(new Event('input',{bubbles:true}));
         });
       });
 
@@ -2813,6 +2836,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         </td>
       `;
       tbody.appendChild(tr);
+      tr.addEventListener('input', () => { tr._autoViolationName = ''; });
+      tr.addEventListener('change', () => { tr._autoViolationName = ''; });
 
       const photoInput = tr.querySelector('.log-photo-input');
       const photoBtn = tr.querySelector('.log-photo-btn');
@@ -2845,7 +2870,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             const item = document.createElement('div');
             item.className = 'relative inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200';
             item.innerHTML = `
-              <img src="${src}" class="h-8 w-8 rounded object-cover border border-slate-300" alt="صورة ${pIdx + 1}" title="صورة ${pIdx + 1} (${kb} KB)" />
+              <img src="${MoitClosure.safeImageSrc(src)}" class="h-8 w-8 rounded object-cover border border-slate-300" alt="صورة ${pIdx + 1}" title="صورة ${pIdx + 1} (${kb} KB)" />
               <span class="text-[9px] font-bold text-slate-600 px-0.5">${kb}KB</span>
               <button type="button" class="remove-one-photo text-[10px] font-black text-rose-700 hover:text-rose-900 px-1" title="حذف هذه الصورة">✕</button>
             `;
@@ -2927,6 +2952,30 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       tbody.appendChild(tr);
     }
 
+    // v54.1 Stable phase 1: a counter suggestion is not a documented finding.
+    // Never infer the independently declared number of establishments from counter clicks.
+    function isUntouchedViolationSuggestion(tr) {
+      return !!tr._autoViolationName &&
+        (tr.querySelector('.log-type')?.value || '') === tr._autoViolationName &&
+        !(tr.querySelector('.log-firm')?.value || '').trim() &&
+        !(tr.querySelector('.log-proc')?.value || '').trim() &&
+        (tr.querySelector('.log-status')?.value || 'قيد المتابعة') === 'قيد المتابعة' &&
+        !(tr._photos || []).length;
+    }
+
+    function pruneViolationSuggestions(name, declared) {
+      const rows = Array.from(document.querySelectorAll('#logTbody tr'));
+      const matching = rows.filter(tr => (tr.querySelector('.log-type')?.value || '').trim() === name);
+      let excess = Math.max(0, matching.length - declared);
+      for (const tr of matching.reverse()) {
+        if (!excess) break;
+        if (!isUntouchedViolationSuggestion(tr)) continue;
+        tr.querySelector('.log-type').value = '';
+        tr._autoViolationName = '';
+        excess--;
+      }
+    }
+
     function recalculateKPIs() {
       let priced = 0;
       document.querySelectorAll('.price-input').forEach(inp => {
@@ -2934,16 +2983,16 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       });
       document.getElementById('kpiPricedCount').textContent = priced;
 
-      let gasSum = 0;
-      document.querySelectorAll('.gas-qty').forEach(inp => {
-        gasSum += parseNum(inp.value);
-      });
-      document.getElementById('kpiGasTotal').textContent = gasSum.toLocaleString('en-US');
-      document.getElementById('gasFooterTotal').textContent = gasSum.toLocaleString('en-US');
+      const gasRows=Array.from(document.querySelectorAll('#gasTbody tr')).map(tr=>Object.fromEntries(['agent','loc','phone','qty','status','notes'].map(k=>[k,tr.querySelector('.gas-'+k)?.value||''])));
+      const gas=MoitClosure.gasObservation(gasRows,document.getElementById('v54GasZeroConfirmed')?.checked===true,parseNumStrict);
+      const gasLabel=gas.total===null?'غير مرصود/ناقص':gas.total.toLocaleString('en-US');
+      document.getElementById('kpiGasTotal').textContent = gasLabel;
+      document.getElementById('gasFooterTotal').textContent = gasLabel;
 
       let violSum = 0;
       document.querySelectorAll('.viol-input').forEach(inp => {
-        violSum += parseNum(inp.value);
+        const q = parseNumStrict(inp.value,{nonNegative:true,integer:true});
+        if (q.ok) violSum += q.value ?? 0;
       });
       // v45: Also count actual logged violation rows in Section 07 (#logTbody) so a logged violation with photos never uploads as 0!
       let logViolCnt = 0;
@@ -2952,7 +3001,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         const fTxt = tr.querySelector('.log-firm')?.value?.trim() || '';
         const tTxt = tr.querySelector('.log-type')?.value?.trim() || '';
         const pTxt = tr.querySelector('.log-proc')?.value?.trim() || '';
-        if (fTxt || tTxt) {
+        if ((fTxt || tTxt) && !isUntouchedViolationSuggestion(tr)) {
           logViolCnt++;
           if (pTxt) logActCnt++;
         }
@@ -2971,19 +3020,19 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         uniqueDocumentedFirms: uniqueLoggedFirms.size
       };
       document.getElementById('kpiViolationsTotal').textContent = effectiveViolSum.toLocaleString('en-US');
-      document.getElementById('totalViolationsBadge').textContent = (violSum > 0 && logViolCnt > 0 && violSum !== logViolCnt)
+      document.getElementById('totalViolationsBadge').textContent = (logViolCnt > 0 && violSum !== logViolCnt)
         ? `${violSum.toLocaleString('en-US')} مصرح / ${logViolCnt.toLocaleString('en-US')} موثق`
         : `${effectiveViolSum.toLocaleString('en-US')} مخالفة`;
       document.getElementById('summaryViolationsMirror').textContent = effectiveViolSum.toLocaleString('en-US');
 
       let actSum = 0;
       document.querySelectorAll('.act-input').forEach(inp => {
-        actSum += parseNum(inp.value);
+        const q = parseNumStrict(inp.value,{nonNegative:true,integer:true});
+        if (q.ok) actSum += q.value ?? 0;
       });
       const effectiveActSum = actSum;
       document.getElementById('kpiActionsTotal').textContent = effectiveActSum.toLocaleString('en-US');
       document.getElementById('summaryActionsMirror').textContent = effectiveActSum.toLocaleString('en-US');
-      const vfInp = document.getElementById('violatingFirmsInput');
       window.__lastViolReconciliation.declaredActions=actSum;window.__lastViolReconciliation.documentedActions=logActCnt;
       if (typeof updatePriceChangeRadar === 'function') updatePriceChangeRadar();
       if (typeof updateModernReadinessProgress === 'function') updateModernReadinessProgress();
@@ -3025,7 +3074,15 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         el.addEventListener('blur',()=>{const v=parseNumStrict(el.value,{nonNegative:true});if(v.ok&&v.value!==null)el.value=v.value.toLocaleString('en-US',{maximumFractionDigits:15});});
       });
       document.querySelectorAll('.viol-input, .act-input').forEach(el => {
-        el.addEventListener('input', recalculateKPIs);
+        el.addEventListener('input', () => {
+          const q = parseNumStrict(el.value,{nonNegative:true,integer:true});
+          el.setCustomValidity(q.ok && !el.validity.badInput ? '' : 'أدخل عدداً صحيحاً غير سالب');
+          if (q.ok && el.matches('.viol-input')) {
+            const name = VIOLATIONS_LIST.find(v => v.id === el.getAttribute('data-viol-id'))?.name;
+            if (name) pruneViolationSuggestions(name, q.value ?? 0);
+          }
+          recalculateKPIs();
+        });
       });
 
 
@@ -3044,7 +3101,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           return;
         }
         Object.entries(savedPrices).forEach(([id, val]) => {
-          const inp = document.querySelector(`[data-price-id="${id}"]`);
+          const inp = document.querySelector(`[data-price-id="${CSS.escape(String(id))}"]`);
           if (inp && val) inp.value = fmtNum(val);
         });
         recalculateKPIs();
@@ -3057,7 +3114,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         const dir = document.getElementById('directorateSelect').value || 'default';
         const map = {};
         document.querySelectorAll('.price-input').forEach(inp => {
-          if (inp.value) map[inp.getAttribute('data-price-id')] = parseNum(inp.value);
+          const q=parseNumStrict(inp.value,{nonNegative:true});
+          if(q.ok&&q.value!==null)map[inp.getAttribute('data-price-id')] = q.value;
         });
         try { localStorage.setItem('moit_aden_prices_v2_' + dir, JSON.stringify(map)); } catch (err) {}
       }
@@ -3072,11 +3130,13 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           const delta = Number(btn.getAttribute('data-step-val')) || 0;
           const inp = document.querySelector(`[data-price-id="${targetId}"]`);
           if (inp) {
-            const cur = parseNum(inp.value) || 0;
-            inp.value = fmtNum(Math.max(0, cur + delta));
-            recalculateKPIs();
-            saveCurrentPricesAsBaseline();
-            saveReportInternally(false, false);
+            const q = parseNumStrict(inp.value,{nonNegative:true});
+            if(!q.ok){inp.focus();showToast('صحح السعر قبل التعديل','⚠️');return;}
+            if(q.value===null && delta<0)return;
+            const next=Math.max(0,(q.value??0)+delta);
+            if(!Number.isFinite(next)||next>Number.MAX_SAFE_INTEGER)return;
+            inp.value = fmtNum(next);
+            inp.dispatchEvent(new Event('input',{bubbles:true}));
           }
         });
       });
@@ -3097,12 +3157,29 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         }
       }
 
-      document.getElementById('directorateSelect').addEventListener('change', () => {
+      function hasDistrictObservations() {
+        return [...document.querySelectorAll('.price-input,.gas-agent,.gas-qty,.gas-loc,.gas-phone,.gas-notes,.log-firm,.log-type,.log-proc,.seiz-item,.seiz-firm,.seiz-qty,#usdSell,#usdBuy,#sarSell,#sarBuy,#notesTextarea,#visitIntroTextarea')].some(el=>String(el.value||'').trim()) ||
+          [...document.querySelectorAll('.viol-input,.act-input,#summaryFirmsCovered,#violatingFirmsInput')].some(el=>parseNum(el.value)!==0) ||
+          [...document.querySelectorAll('#logTbody tr')].some(tr=>(tr._photos||[]).length) || document.getElementById('v54GasZeroConfirmed').checked;
+      }
+      for(const id of ['directorateSelect','visitDateInput']){
+        const el=document.getElementById(id);
+        el.addEventListener('focus',()=>{el._moitPreviousScope=el.value;});
+        el.addEventListener('change',e=>{
+          const before=el._moitPreviousScope;
+          if(e.isTrusted && before && before!==el.value && hasDistrictObservations() && !confirm('تم تغيير المديرية أو تاريخ النزول بينما يحتوي النموذج على بيانات. هل تقصد نقل بيانات النموذج الحالي إلى النطاق الجديد؟ اختر إلغاء للإبقاء على التقرير السابق.')){
+            el.value=before;e.stopImmediatePropagation();return;
+          }
+          el._moitPreviousScope=el.value;
+        },true);
+      }
+      document.getElementById('directorateSelect').addEventListener('change', (event) => {
         refreshDirectorateDropdowns();
-        loadBaselinePrices(false);
+        // No implicit overlay on an existing report; the explicit prefill button remains available.
+        if (event.isTrusted && !hasDistrictObservations()) loadBaselinePrices(false);
         if (typeof initDirHudTelemetryTabs === 'function') initDirHudTelemetryTabs();
         const dir = document.getElementById('directorateSelect').value;
-        if (dir) showToast(`تم تحميل وكلاء الغاز ومناطق وأسعار مديرية ${dir} تلقائياً`, '📍');
+        if (dir) showToast(`تم تحميل قوائم مديرية ${dir} — يمكن استدعاء الأسعار السابقة عند الحاجة`, '📍');
       });
 
       // Feature 3 Wiring: One-tap + / - buttons for Violations & Actions + Auto-link to Section 07 Log
@@ -3111,7 +3188,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         let targetRow = rows.find(r => {
           const tInp = r.querySelector('.log-type');
           const fInp = r.querySelector('.log-firm');
-          return tInp && !tInp.value.trim() && fInp && !fInp.value.trim();
+          return tInp && !tInp.value.trim() && fInp && !fInp.value.trim() &&
+            !(r.querySelector('.log-proc')?.value || '').trim() && !(r._photos || []).length &&
+            (r.querySelector('.log-status')?.value || 'قيد المتابعة') === 'قيد المتابعة';
         });
         if (!targetRow) {
           appendLogRow();
@@ -3119,16 +3198,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           targetRow = updatedRows[updatedRows.length - 1];
         }
         const typeInp = targetRow.querySelector('.log-type');
-        const procInp = targetRow.querySelector('.log-proc');
         const firmInp = targetRow.querySelector('.log-firm');
-        if (typeInp) typeInp.value = violName;
-        if (procInp && !procInp.value) procInp.value = 'محضر ضبط / إشعار حضور';
+        if (typeInp) { typeInp.value = violName; targetRow._autoViolationName = violName; }
         if (firmInp) {
           firmInp.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
           setTimeout(() => firmInp.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50'), 2800);
         }
-        const vfInput = document.getElementById('violatingFirmsInput');
-        if (vfInput) vfInput.value = (Number(vfInput.value) || 0) + 1;
       }
 
       document.querySelectorAll('.counter-step-btn').forEach(btn => {
@@ -3139,14 +3214,19 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           const selector = cType === 'viol' ? `[data-viol-id="${tId}"]` : `[data-act-id="${tId}"]`;
           const inp = document.querySelector(selector);
           if (inp) {
-            const nextVal = Math.max(0, (Number(inp.value) || 0) + delta);
+            const q = parseNumStrict(inp.value,{nonNegative:true,integer:true});
+            if (!q.ok || inp.validity.badInput) { inp.focus(); showToast('صحح العدد قبل التعديل','⚠️'); return; }
+            const current = q.value ?? 0;
+            const nextVal = Math.max(0, current + delta);
+            if (!Number.isSafeInteger(nextVal) || nextVal === current) return;
             inp.value = nextVal;
-            recalculateKPIs();
             if (cType === 'viol' && delta > 0) {
               const vName = btn.getAttribute('data-viol-name') || 'مخالفة تجارية';
               autoLinkViolationToLog(vName);
-              showToast(`تم تسجيل «${vName}» وإضافتها لسجل المتابعة (07) — اختر اسم المنشأة`, '⚠️');
+              showToast(`تم تسجيل «${vName}» — أدخل بيانات المنشأة في سجل المتابعة عند الحاجة`, '⚠️');
             }
+            // Recompute AFTER the log change and trigger the existing local autosave.
+            inp.dispatchEvent(new Event('input',{bubbles:true}));
           }
         });
       });
@@ -3188,9 +3268,18 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         const stampLabel = `${dateStr} (${timeStr})`;
 
         currentState._savedAt = stampLabel;
+        currentState._savedAtIso = now.toISOString();
 
         try {
           // 1. Save as the active Last Saved Report so it auto-fills on next open
+          try {
+            const previous=JSON.parse(localStorage.getItem(LS_LAST_REPORT_KEY)||'null');
+            if(previous?.directorate && previous.visitDate && (previous.directorate!==currentState.directorate || previous.visitDate < currentState.visitDate) && previous.prices){
+              const key='moit_aden_radar_reference_v1_'+previous.directorate;
+              const existing=JSON.parse(localStorage.getItem(key)||'null');
+              if(!existing || existing.visitDate<=previous.visitDate) localStorage.setItem(key,JSON.stringify({directorate:previous.directorate,visitDate:previous.visitDate,prices:previous.prices}));
+            }
+          } catch (_) {}
           localStorage.setItem(LS_LAST_REPORT_KEY, JSON.stringify(currentState));
 
           // 2. Also save baseline prices for this directorate
@@ -3211,15 +3300,16 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             if (history.length > 25) history.length = 25;
             localStorage.setItem(LS_HISTORY_LIST_KEY, JSON.stringify(history));
           }
-        } catch (err) {}
+        } catch (err) {
+          showToast('تعذر الحفظ المحلي — البيانات ما زالت في النموذج. لا تغلق الصفحة قبل حفظها بنجاح.','⚠️');
+          return false;
+        }
 
         updateSavedBadgeAndHeader(stampLabel);
-
-        // Re-apply state so all inputs/dropdowns remain filled and ready for immediate new edits
         if (showSuccessToast) {
-          applyFullFormState(currentState);
           showToast(`تم حفظ التقرير داخل الجوال (${dirName}) وتثبيته للتعبئة التلقائية والتعديل الجديد!`, '💾');
         }
+        return true;
       }
 
       function loadLastSavedReportOnStartup() {
@@ -3327,7 +3417,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       });
 
       // Auto-save draft silently whenever any input or select changes so nothing is ever lost
-      document.querySelector('main').addEventListener('input', () => {
+      document.querySelector('main').addEventListener('input', (event) => {
+        if(['directorateSelect','visitDateInput'].includes(event.target?.id))return; // wait for the scope change confirmation
         saveReportInternally(false, false);
       });
       document.querySelector('main').addEventListener('change', () => {
@@ -3467,6 +3558,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
 
       document.getElementById('sendToGsBtn').addEventListener('click', async () => {
+        if(window.__moitDirectSubmitBusy||_outboxSyncRunning)return;
+        window.__moitDirectSubmitBusy=true;
+        try {
         const webhookUrl = gsUrlInput.value.trim();
         if (!webhookUrl) {
           gsModal.classList.remove('hidden');
@@ -3482,7 +3576,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         }
 
         if(window.__loadedCloudBase&&window.__loadedCloudKey===getReportSyncKey(directorate,document.getElementById('visitDateInput')?.value)){let e={};try{e=JSON.parse(window.__loadedCloudBase.extraDataJson||'{}');}catch(_){}if((!e.violations||!e.actions)&&!confirm('هذا تقرير تاريخي ناقص التفاصيل. تحقق يدوياً من العدادات والبيانات قبل استبدالها. هل راجعتها؟'))return;}
-        const invalidInput = [...document.querySelectorAll('.price-input,.gas-qty,.viol-input,.act-input,.seiz-qty,[data-poultry-wt],#usdSell,#usdBuy,#sarSell,#sarBuy,#summaryFirmsCovered,#violatingFirmsInput')].find(el => !parseNumStrict(el.value,{nonNegative:true,integer:el.matches('.gas-qty,.viol-input,.act-input,#summaryFirmsCovered,#violatingFirmsInput')}).ok);
+        const invalidInput = [...document.querySelectorAll('.price-input,.gas-qty,.viol-input,.act-input,.seiz-qty,[data-poultry-wt],#usdSell,#usdBuy,#sarSell,#sarBuy,#summaryFirmsCovered,#violatingFirmsInput')].find(el => el.validity?.badInput || !parseNumStrict(el.value,{nonNegative:true,integer:el.matches('.gas-qty,.viol-input,.act-input,#summaryFirmsCovered,#violatingFirmsInput')}).ok);
         if (invalidInput) { invalidInput.focus(); showToast('قيمة رقمية غير صالحة — صحح الحقل قبل الحفظ','⚠️'); return; }
         if (typeof recalculateKPIs === 'function') recalculateKPIs();
         const pricesMap = {};
@@ -3493,7 +3587,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         const fullState = collectFullFormState();
         const visitDate = document.getElementById('visitDateInput')?.value || '';
         const currentKey=getReportSyncKey(directorate,visitDate);
-        if(getOfflineOutbox().some(x=>x.key===currentKey)){showToast('يوجد تقرير معلّق لنفس التاريخ؛ استأنف مزامنته أو راجعه أولاً','⚠️');return;}
+        const pendingForKey=getOfflineOutbox().filter(x=>x.key===currentKey);
+        const replacePending=pendingForKey.length===1&&pendingForKey[0].needsReview===true?pendingForKey[0]:null;
+        if(pendingForKey.length&&!replacePending){showToast('يوجد تقرير معلّق لنفس التاريخ؛ استأنف مزامنته أو راجعه أولاً','⚠️');return;}
+        if(replacePending&&!navigator.onLine){showToast('مراجعة الطلب المرفوض تحتاج الاتصال بالسحابة؛ المعلق محفوظ','⚠️');return;}
+        const invalidLog=(fullState.logRows||[]).find(r=>!r.autoSuggestion&&(r.firm||r.type||r.proc||r.photos?.length)&&(!String(r.firm||'').trim()||!String(r.type||'').trim()));
+        if(invalidLog){showToast('أكمل اسم المنشأة ونوع المخالفة في السجل التفصيلي، أو أزل الصف غير المطلوب؛ التقرير لم يُرسل','⚠️');return;}
         if(!visitDate){showToast('حدد تاريخ النزول','⚠️');return;}
         const recon=window.__lastViolReconciliation||{};let reconReason='';
         if((recon.diff!==0)||(recon.declaredActions!==recon.documentedActions)){reconReason=prompt('يوجد اختلاف بين العدادات المصرح بها والسجل التفصيلي. اكتب سبب الاختلاف (مثلاً السجل التفصيلي عينة من المخالفات):')||'';if(!reconReason.trim())return;}
@@ -3506,15 +3605,34 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           return;
         }
 
+        if(!moitSameSubmissionState(fullState,collectFullFormState())){showToast('تغير النموذج أثناء التحقق؛ راجعه وأعد الإرسال','⚠️');return;}
+        // Read the scoped report head before a new insert or explicit recovery. Never rebase an old draft silently.
+        if(navigator.onLine&&(replacePending||fullState.cloudKey!==currentKey||!fullState.cloudRevision)){
+          try{
+            if(replacePending){const j=await moitReadBeforeSubmit(webhookUrl,{action:'operation_status',directorate,operationId:replacePending.operationId});
+              if(j.found!==false||j.state!=='NOT_FOUND'){showToast('العملية السابقة تحتاج استئنافًا أو مراجعة من غرفة العمليات؛ لم يتم استبدالها','⚠️');return;}}
+            const head=await moitReadBeforeSubmit(webhookUrl,{action:'report_head',directorate,visitDate});
+            if(head.directorate!==directorate||head.visitDate!==visitDate||typeof head.found!=='boolean'||!Number.isSafeInteger(head.revision)||(head.found?(head.revision<1||!head.reportId):head.revision!==0))throw Error('استجابة هوية التقرير غير صالحة');
+            if(head.found){
+              const loaded=window.__loadedCloudBase;
+              if(!replacePending||fullState.cloudKey!==currentKey||fullState.cloudRevision!==head.revision||loaded?.reportId!==head.reportId||Number(loaded?.revision)!==head.revision){showToast('يوجد تقرير سابق لهذا التاريخ؛ حمّل نسخته الأحدث من السجل السحابي ثم أعد تطبيق التعديل وأرسلها','⚠️');return;}
+            }else if(fullState.cloudKey===currentKey&&fullState.cloudRevision){showToast('التقرير السابق غير موجود في السحابة؛ راجع غرفة العمليات قبل الاستبدال','⚠️');return;}
+            if(replacePending&&!confirm('هل راجعت نسخة الطلب المرفوض وأعدت تطبيق التعديلات المطلوبة على النموذج الصحيح؟ سيتم استبدال الطلب الذي لم يبدأ حفظه بالنسخة الحالية.'))return;
+          }catch(e){showToast(explainDirErrorSmart(e,'تعذر التحقق من التقرير السابق')+' — المسودة محفوظة عند الحفظ المحلي','⚠️');return;}
+        }
+        if(!moitSameSubmissionState(fullState,collectFullFormState())){showToast('تغير النموذج أثناء التحقق؛ راجعه وأعد الإرسال','⚠️');return;}
+        const formDigest=await moitFormDigest(fullState);
+        if(!moitSameSubmissionState(fullState,collectFullFormState()))return;
         const opIdNew = 'OP-' + moitUUID();
-        const enrichedLogRows = (fullState.logRows || []).filter(r => (r.firm || r.type)).map((r, i) => ({
+        const enrichedLogRows = (fullState.logRows || []).filter(r => (r.firm || r.type) && !r.autoSuggestion).map((r, i) => ({
           ...r,
           violationId: r.violationId || ('VIO-' + moitUUID())
         }));
+        const gasObservation=MoitClosure.gasObservation(fullState.gasRows,fullState.gasZeroConfirmed===true,parseNumStrict);
         const payload = {
           action: 'report_upsert',
           operationId: opIdNew,
-          baseRevision: window.__loadedCloudKey === getReportSyncKey(directorate, visitDate) ? window.__loadedCloudRevision : 0,
+          baseRevision: fullState.cloudKey === currentKey ? fullState.cloudRevision : 0,
           sessionToken: window.__dirSessionToken || '',
           directorate: directorate,
           visitDate: visitDate,
@@ -3522,7 +3640,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           usdBuy: parseNumStrict(document.getElementById('usdBuy')?.value, {nonNegative:true}).value,
           sarSell: parseNumStrict(document.getElementById('sarSell')?.value, {nonNegative:true}).value,
           sarBuy: parseNumStrict(document.getElementById('sarBuy')?.value, {nonNegative:true}).value,
-          gasTotal: (fullState.gasRows||[]).length && (fullState.gasRows||[]).every(g=>{const n=parseNumStrict(g.qty);return n.ok&&n.value!==null;}) ? parseNum(document.getElementById('kpiGasTotal')?.textContent) : null,
+          gasTotal: gasObservation.total,
           violationsTotal: parseNum(document.getElementById('kpiViolationsTotal')?.textContent || '0'),
           violatingFirms: parseNumStrict(document.getElementById('violatingFirmsInput')?.value, {nonNegative:true}).value,
           actionsTotal: parseNum(document.getElementById('kpiActionsTotal')?.textContent || '0'),
@@ -3535,10 +3653,11 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           inspectorName: document.getElementById('inspectorName')?.value || '',
           directorName: document.getElementById('directorName')?.value || '',
           gasStation: document.getElementById('gasStationSelect')?.value || '',
-          gasRows: (fullState.gasRows || []).filter(g => g.agent || g.loc || parseNum(g.qty) > 0 || g.status === 'موقف'),
+          gasRows: gasObservation.rows,
           prices: pricesMap,
           logRows: enrichedLogRows,
           extraData: {
+            observationStates:{gasTotal:gasObservation.state},
             supplyDetails: fullState.supplyDetails || '',
             inspectorTitle: fullState.inspectorTitle || '',
             directorStamp: fullState.directorStamp || '',
@@ -3551,6 +3670,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           }
         };
 
+        try { payload.extraData.observationStates=MoitClosure.observationStates(payload); } catch(e) { showToast('تحقق من القيم الرقمية قبل الإرسال','⚠️'); return; }
         const btn = document.getElementById('sendToGsBtn');
         const origHtml = btn.innerHTML;
         btn.innerHTML = '<span>⏳</span><span>جارٍ الإرسال...</span>';
@@ -3585,7 +3705,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           }
         }
         if (!navigator.onLine) {
-          try { enqueueOfflineReport(payload,webhookUrl); } catch(e) { showToast('تعذر حفظ صندوق الانتظار؛ احتفظ بالنموذج مفتوحاً وصدّر نسخة احتياطية','⚠️'); btn.innerHTML=origHtml; btn.disabled=false; return; }
+          try { enqueueOfflineReport(payload,webhookUrl,formDigest,replacePending?.operationId); } catch(e) { showToast('تعذر حفظ صندوق الانتظار؛ احتفظ بالنموذج مفتوحاً وصدّر نسخة احتياطية','⚠️'); btn.innerHTML=origHtml; btn.disabled=false; return; }
           btn.innerHTML = origHtml;
           btn.disabled = false;
           showToast('📶 لا يوجد إنترنت — تم حفظ التقرير في صندوق الانتظار وسيتم رفعه تلقائياً فور توفر الشبكة', '⏳');
@@ -3593,7 +3713,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         }
 
         try {
-          enqueueOfflineReport(payload,webhookUrl);
+          try{enqueueOfflineReport(payload,webhookUrl,formDigest,replacePending?.operationId);}catch(_){showToast('تعذر حفظ صندوق الانتظار؛ لم يرسل التقرير. لا تغلق النموذج قبل حفظه','⚠️');return;}
           const _upFx = document.getElementById('dirCloudUploadFxModal');
           const _upSpin = document.getElementById('dirUpFxSpinnerWrap');
           const _upChk = document.getElementById('dirUpFxCheckWrap');
@@ -3624,6 +3744,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               body: JSON.stringify(payload)
             });
           } finally { clearTimeout(tm); }
+          if(!res.ok)throw new Error('فشل HTTP — تم الاحتفاظ بالمسودة وصندوق الانتظار');
           const rawResp = await res.text();
           if (!rawResp || rawResp.trim().startsWith('<')) {
             const htmlErr = new Error('استجابة غير قابلة للتحقق من الخادم (صفحة HTML أو رد فارغ) — لم تُحذف المسودة وسيُحفظ في صندوق الانتظار');
@@ -3644,8 +3765,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           }
           if (!moitReceiptOK(jr,payload)) throw new Error('لم يكتمل اعتماد العملية؛ ستبقى المسودة والأدلة في صندوق الانتظار');
           verifiedReceipt = jr;
-          window.__loadedCloudRevision = Number(jr.revision);
-          window.__loadedCloudKey = getReportSyncKey(directorate,visitDate);
+          await moitPromoteMatchingReceipt(jr,payload,formDigest);
           if (_upFx) {
             _upSpin?.classList.add('hidden');
             _upChk?.classList.remove('hidden');
@@ -3657,7 +3777,6 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             _upFx.classList.remove('flex');
           }
           if (typeof markReportSyncedLocal === 'function') markReportSyncedLocal(directorate, visitDate);
-          if (typeof clearDirAutoDraftV40 === 'function') clearDirAutoDraftV40();
           if (typeof removeFromOfflineOutbox === 'function') removeFromOfflineOutbox(directorate, visitDate, payload.operationId);
           const sentTime = new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
           const detailsEl = document.getElementById('gsSuccessDetails');
@@ -3675,22 +3794,16 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           }
           showToast('تم إرسال تقرير مديرية ' + directorate + ' إلى Google Sheets بنجاح!', '✅');
         } catch (err) {
-          const errCode = err && err._code ? String(err._code) : '';
-          if (errCode === 'INVALID_PIN' || errCode === 'LOCKED_OUT') {
-            showToast('🔐 ' + explainDirErrorSmart(err, 'رمز قفل المديرية غير صحيح — تحقق من الرمز وأعد المحاولة'), '🔐');
-          } else if (errCode === 'SERVER_BUSY') {
-            try { enqueueOfflineReport(payload,webhookUrl); } catch(e) { showToast('فشل التخزين المحلي؛ لا تغلق النموذج','⚠️'); }
-            showToast('⏳ الخادم مشغول بحفظ تقارير أخرى — تم حفظ تقريرك في صندوق الانتظار وسيُرفع تلقائياً خلال ثوانٍ', '⏳');
-          } else {
-            try { enqueueOfflineReport(payload,webhookUrl); } catch(e) { showToast('فشل التخزين المحلي؛ لا تغلق النموذج','⚠️'); }
-            showToast('📶 ' + explainDirErrorSmart(err, 'تعذر الاتصال بالشبكة') + ' — تم حفظ التقرير في صندوق الانتظار وسيُرفع تلقائياً عند استقرار الإنترنت', '⏳');
-          }
+          const errCode=err?._code||'TRANSPORT_ERROR';
+          try{recordOutboxFailure(payload.operationId,errCode,err?.message);}catch(_){showToast('تعذر تحديث حالة المعلق؛ لا تغلق النموذج','⚠️');}
+          showToast(explainDirErrorSmart(err,'تعذر تأكيد الإرسال')+' — راجع حالة التقرير المعلق؛ لم يتم حذفه','⚠️');
         } finally {
           const _upHide = document.getElementById('dirCloudUploadFxModal');
           if (_upHide) { _upHide.classList.add('hidden'); _upHide.classList.remove('flex'); }
           btn.innerHTML = origHtml;
           btn.disabled = false;
         }
+        } finally { window.__moitDirectSubmitBusy=false; }
       });
 
 
@@ -3698,7 +3811,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       // EXCEL (.XLSX) EXPORT / IMPORT & WHATSAPP SHARING ENGINE
       // =========================================================================
       window.collectFullFormState = collectFullFormState;
-      function collectFullFormState() {
+      function collectFullFormState(includeSuggestions = true) {
         const state = {
           cloudRevision: window.__loadedCloudRevision||0,cloudKey:window.__loadedCloudKey||'',
           directorate: document.getElementById('directorateSelect').value || '',
@@ -3708,9 +3821,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           usdBuy: document.getElementById('usdBuy').value || '',
           sarSell: document.getElementById('sarSell').value || '',
           sarBuy: document.getElementById('sarBuy').value || '',
-          violatingFirms: document.getElementById('violatingFirmsInput').value || '0',
-          firmsCovered: document.getElementById('summaryFirmsCovered').value || '0',
-          supplyStatus: document.getElementById('supplyStatusSelect').value || 'مستقر بوفرة',
+          violatingFirms: document.getElementById('violatingFirmsInput').value || '',
+          firmsCovered: document.getElementById('summaryFirmsCovered').value || '',
+          supplyStatus: document.getElementById('supplyStatusSelect').value || '',
           supplyDetails: document.getElementById('supplyDetailsTextarea').value || '',
           notes: document.getElementById('notesTextarea').value || '',
           visitIntro: document.getElementById('visitIntroTextarea')?.value || '',
@@ -3740,7 +3853,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           state.poultryStatus[sel.getAttribute('data-poultry-st')] = sel.value;
         });
 
-        state.gasStation = document.getElementById('gasStationSelect')?.value || 'منشأة البريقة';
+        state.gasStation = document.getElementById('gasStationSelect')?.value || '';
+        state.gasZeroConfirmed=document.getElementById('v54GasZeroConfirmed')?.checked===true;
         document.querySelectorAll('#gasTbody tr').forEach(tr => {
           const agent = (tr.querySelector('.gas-agent')?.value || '').trim();
           const loc = (tr.querySelector('.gas-loc')?.value || '').trim();
@@ -3762,8 +3876,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         document.querySelectorAll('#logTbody tr').forEach(tr => {
           state.logRows.push({
             violationId: tr._violationId || (tr._violationId = 'VIO-' + moitUUID()),
+            ...(isUntouchedViolationSuggestion(tr) ? { autoSuggestion: tr._autoViolationName } : {}),
             firm: tr.querySelector('.log-firm')?.value || '',
-            type: tr.querySelector('.log-type')?.value || '',
+            type: !includeSuggestions && isUntouchedViolationSuggestion(tr) ? '' : (tr.querySelector('.log-type')?.value || ''),
             proc: tr.querySelector('.log-proc')?.value || '',
             status: tr.querySelector('.log-status')?.value || 'قيد المتابعة',
             photos: Array.isArray(tr._photos) ? tr._photos.slice(0, 2) : []
@@ -3784,6 +3899,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         return state;
       }
 
+      window.applyFullFormState = applyFullFormState;
       function applyFullFormState(state) {
         if (!state || typeof state !== 'object') return;
         window.__loadedCloudBase=null;window.__loadedCloudKey=state.cloudKey===getReportSyncKey(state.directorate,state.visitDate)?state.cloudKey:'';window.__loadedCloudRevision=window.__loadedCloudKey?Number(state.cloudRevision)||0:0;
@@ -3793,10 +3909,10 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         }
         if (state.visitDate !== undefined) document.getElementById('visitDateInput').value = state.visitDate;
         if (state.shift !== undefined) document.getElementById('shiftSelect').value = state.shift;
-        if (state.usdSell !== undefined) document.getElementById('usdSell').value = state.usdSell ? fmtNum(state.usdSell) : '';
-        if (state.usdBuy !== undefined) document.getElementById('usdBuy').value = state.usdBuy ? fmtNum(state.usdBuy) : '';
-        if (state.sarSell !== undefined) document.getElementById('sarSell').value = state.sarSell ? fmtNum(state.sarSell) : '';
-        if (state.sarBuy !== undefined) document.getElementById('sarBuy').value = state.sarBuy ? fmtNum(state.sarBuy) : '';
+        if (state.usdSell !== undefined) document.getElementById('usdSell').value = fmtNum(state.usdSell);
+        if (state.usdBuy !== undefined) document.getElementById('usdBuy').value = fmtNum(state.usdBuy);
+        if (state.sarSell !== undefined) document.getElementById('sarSell').value = fmtNum(state.sarSell);
+        if (state.sarBuy !== undefined) document.getElementById('sarBuy').value = fmtNum(state.sarBuy);
         if (state.violatingFirms !== undefined) document.getElementById('violatingFirmsInput').value = state.violatingFirms;
         if (state.firmsCovered !== undefined) document.getElementById('summaryFirmsCovered').value = state.firmsCovered;
         if (state.supplyStatus !== undefined) document.getElementById('supplyStatusSelect').value = state.supplyStatus;
@@ -3814,19 +3930,21 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (state.prices) {
           document.querySelectorAll('.price-input').forEach(el=>el.value='');
           Object.entries(state.prices).forEach(([id, val]) => {
-            const inp = document.querySelector(`[data-price-id="${id}"]`);
+            const inp = document.querySelector(`[data-price-id="${CSS.escape(String(id))}"]`);
             if (inp && val !== undefined && val !== '') inp.value = fmtNum(val);
           });
         }
         if (state.poultryWeights) {
+          document.querySelectorAll('[data-poultry-wt]').forEach(el=>el.value='');
           Object.entries(state.poultryWeights).forEach(([id, val]) => {
-            const inp = document.querySelector(`[data-poultry-wt="${id}"]`);
+            const inp = document.querySelector(`[data-poultry-wt="${CSS.escape(String(id))}"]`);
             if (inp && val !== undefined) inp.value = val;
           });
         }
         if (state.poultryStatus) {
+          document.querySelectorAll('[data-poultry-st]').forEach(el=>el.value='متوفر');
           Object.entries(state.poultryStatus).forEach(([id, val]) => {
-            const sel = document.querySelector(`[data-poultry-st="${id}"]`);
+            const sel = document.querySelector(`[data-poultry-st="${CSS.escape(String(id))}"]`);
             if (sel && val !== undefined) sel.value = val;
           });
         }
@@ -3834,6 +3952,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (document.getElementById('gasStationSelect')) {
           document.getElementById('gasStationSelect').value = state.gasStation||'';
         }
+        document.getElementById('v54GasZeroConfirmed').checked=state.gasZeroConfirmed===true;
         if (Array.isArray(state.gasRows)) {
           renderGasRows(Math.max(7, state.gasRows.length));
           refreshDirectorateDropdowns();
@@ -3854,12 +3973,14 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (typeof evaluateAllPriceGuards === 'function') setTimeout(evaluateAllPriceGuards, 80);
 
         if (state.violations) {
+          document.querySelectorAll('.viol-input').forEach(el=>el.value='0');
           Object.entries(state.violations).forEach(([id, val]) => {
             const inp = document.querySelector(`[data-viol-id="${id}"]`);
             if (inp && val !== undefined) inp.value = val;
           });
         }
         if (state.actions) {
+          document.querySelectorAll('.act-input').forEach(el=>el.value='0');
           Object.entries(state.actions).forEach(([id, val]) => {
             const inp = document.querySelector(`[data-act-id="${id}"]`);
             if (inp && val !== undefined) inp.value = val;
@@ -3878,6 +3999,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             if (r.violationId) tr._violationId = r.violationId;
             if (r.firm !== undefined) tr.querySelector('.log-firm').value = r.firm;
             if (r.type !== undefined) tr.querySelector('.log-type').value = r.type;
+            if (r.autoSuggestion === r.type && r.type) tr._autoViolationName = r.type;
             if (r.proc !== undefined) tr.querySelector('.log-proc').value = r.proc;
             if (r.status !== undefined) tr.querySelector('.log-status').value = r.status;
             if (Array.isArray(r.photos)) {
@@ -3909,12 +4031,13 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           });
         }
 
+        for(const id of ['directorateSelect','visitDateInput']){const el=document.getElementById(id);el._moitPreviousScope=el.value;}
         recalculateKPIs();
         saveCurrentPricesAsBaseline();
       }
 
       function buildExcelWorkbook() {
-        const st = collectFullFormState();
+        const st = collectFullFormState(false);
         const wb = XLSX.utils.book_new();
         wb.Workbook = { Views: [{ RTL: true }], Sheets: [] };
         const gasTotal = document.getElementById('kpiGasTotal').textContent || '0';
@@ -4161,7 +4284,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         merges.push({ s: { r: rNotes, c: 2 }, e: { r: rNotes, c: 8 } });
 
         const rSup = rows.length;
-        rows.push(['ثانياً: تقييم الوضع التمويني العام:', '', `${st.supplyStatus || 'مستقر بوفرة'}${st.supplyDetails ? ' — ' + st.supplyDetails : ''}`, '', '', '', '', '', '']);
+        rows.push(['ثانياً: تقييم الوضع التمويني العام:', '', `${st.supplyStatus || 'غير مرصود'}${st.supplyDetails ? ' — ' + st.supplyDetails : ''}`, '', '', '', '', '', '']);
         merges.push({ s: { r: rSup, c: 0 }, e: { r: rSup, c: 1 } });
         merges.push({ s: { r: rSup, c: 2 }, e: { r: rSup, c: 8 } });
 
@@ -4170,7 +4293,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         merges.push({ s: { r: rPrep, c: 1 }, e: { r: rPrep, c: 4 } });
         merges.push({ s: { r: rPrep, c: 6 }, e: { r: rPrep, c: 8 } });
 
-        const ws = XLSX.utils.aoa_to_sheet(rows);
+        const ws = XLSX.utils.aoa_to_sheet(rows.map(row=>row.map(v54FieldExportCell)));
         ws['!cols'] = [{ wch: 6 }, { wch: 20 }, { wch: 13 }, { wch: 14 }, { wch: 4 }, { wch: 6 }, { wch: 20 }, { wch: 13 }, { wch: 14 }];
         ws['!merges'] = merges;
         ws['!pageSetup'] = { paperSize: 9, orientation: 'portrait', fitToWidth: 1, fitToHeight: 0 };
@@ -4328,7 +4451,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
       // WhatsApp Formatted Report Builder & Share Modal
       function buildWhatsappReportText() {
-        const st = collectFullFormState();
+        const st = collectFullFormState(false);
         const dir = st.directorate || 'غير محدد';
         const gasTotal = document.getElementById('kpiGasTotal').textContent || '0';
         const violTotal = document.getElementById('kpiViolationsTotal').textContent || '0';
@@ -4465,7 +4588,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
 
       function buildFourA4PagesArray() {
-        const st = collectFullFormState();
+        const st = collectFullFormState(false);
         const logoImg = document.querySelector('img[alt="شعار الجمهورية اليمنية"]');
         const logoSrc = logoImg ? logoImg.src : '';
         const gasTotal = document.getElementById('kpiGasTotal').textContent || '0';
@@ -4567,21 +4690,21 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           `<table dir="rtl" style="width:100%;border-collapse:collapse;border:1.5px solid #0d6e6e;font-size:11.5px;line-height:1.4;">
             <tr>
               <td style="background:#e6f4f1;font-weight:800;padding:5px 10px 9px 10px;border:1px solid #94a3b8;width:17%;color:#0f2942;white-space:nowrap;">📍 المديرية:</td>
-              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:800;width:33%;color:#0d6e6e;font-size:12.5px;">${st.directorate || '................................'}</td>
+              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:800;width:33%;color:#0d6e6e;font-size:12.5px;">${moitEsc(st.directorate || '................................')}</td>
               <td style="background:#e6f4f1;font-weight:800;padding:5px 10px 9px 10px;border:1px solid #94a3b8;width:17%;color:#0f2942;white-space:nowrap;">📅 تاريخ النزول:</td>
               <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:800;width:33%;font-family:Arial,sans-serif;font-size:12px;">${st.visitDate ? fmtDateDMY(st.visitDate) : '.... / .... / 2026'}</td>
             </tr>
             <tr>
               <td style="background:#fcf8ec;font-weight:800;padding:5px 10px 9px 10px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">💵 صرف الدولار:</td>
-              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:700;">البيع: <b style="font-family:Arial,sans-serif;color:#0f2942;">${st.usdSell || '..........'}</b> &nbsp;|&nbsp; الشراء: <b style="font-family:Arial,sans-serif;color:#0f2942;">${st.usdBuy || '..........'}</b></td>
+              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:700;">البيع: <b style="font-family:Arial,sans-serif;color:#0f2942;">${moitEsc(st.usdSell || '..........')}</b> &nbsp;|&nbsp; الشراء: <b style="font-family:Arial,sans-serif;color:#0f2942;">${moitEsc(st.usdBuy || '..........')}</b></td>
               <td style="background:#fcf8ec;font-weight:800;padding:5px 10px 9px 10px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">💴 صرف السعودي:</td>
-              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:700;">البيع: <b style="font-family:Arial,sans-serif;color:#0f2942;">${st.sarSell || '..........'}</b> &nbsp;|&nbsp; الشراء: <b style="font-family:Arial,sans-serif;color:#0f2942;">${st.sarBuy || '..........'}</b></td>
+              <td style="padding:5px 10px 9px 10px;border:1px solid #94a3b8;font-weight:700;">البيع: <b style="font-family:Arial,sans-serif;color:#0f2942;">${moitEsc(st.sarSell || '..........')}</b> &nbsp;|&nbsp; الشراء: <b style="font-family:Arial,sans-serif;color:#0f2942;">${moitEsc(st.sarBuy || '..........')}</b></td>
             </tr>
           </table>`,
           ...((st.visitAreas || st.visitIntro) ? [`<div dir="rtl" style="border:1.5px solid #0d6e6e;border-right:5px solid #0d6e6e;border-radius:6px;background:#f0fdfa;padding:7px 10px;font-size:11px;line-height:1.55;color:#0f2942;">
             <div style="font-weight:900;color:#0d6e6e;margin-bottom:3px;">📝 مقدمة نزول اليوم ومناطق الاستهداف الميداني</div>
-            ${st.visitAreas ? `<div><b>📍 مناطق النزول:</b> ${st.visitAreas}</div>` : ''}
-            ${st.visitIntro ? `<div style="margin-top:2px;">${st.visitIntro}</div>` : ''}
+            ${st.visitAreas ? `<div><b>📍 مناطق النزول:</b> ${moitEsc(st.visitAreas)}</div>` : ''}
+            ${st.visitIntro ? `<div style="margin-top:2px;">${moitEsc(st.visitIntro)}</div>` : ''}
           </div>`] : []),
           `<div>
             ${sectionBanner('01', '🧺', 'أسعار السلع الأساسية والاستراتيجية', 'رصد أسعار البيع للمستهلك بالريال اليمني', '#0d6e6e')}
@@ -4703,7 +4826,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
         const page3Blocks = [
           `<div>
-            ${sectionBanner('04', '🔥', `متابعة الإشراف على توزيع الغاز المنزلي — المحطة: ${st.gasStation || 'منشأة البريقة'}`, 'كشف صرف الوكلاء والمسوقين المعتمدين ورصد الموقفين والتغطيات ومعارض الشركة', '#b45309')}
+            ${sectionBanner('04', '🔥', `متابعة الإشراف على توزيع الغاز المنزلي — المحطة: ${moitEsc(st.gasStation || 'غير محدد')}`, 'كشف صرف الوكلاء والمسوقين المعتمدين ورصد الموقفين والتغطيات ومعارض الشركة', '#b45309')}
             <table dir="rtl" style="width:100%;border-collapse:collapse;border:1.5px solid #0f2942;font-size:10.5px;line-height:1.35;">
               <tr style="background:#0f2942;color:#ffffff;">
                 <th style="border:1px solid #334155;padding:4px 3px 8px 3px;width:5%;">م</th>
@@ -4715,9 +4838,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               </tr>
               ${(() => { const list = st.gasRows.filter(g => g.agent || g.loc || Number(g.qty) > 0 || g.status === 'موقف'); return (list.length ? list : st.gasRows.slice(0, 7)).map((g, idx) => `<tr style="background:${g.status === 'موقف' ? '#fff1f2' : g.status === 'تغطية مربع وكيل' ? '#ecfdf5' : (idx % 2 === 1 ? '#f4f8fb' : '#ffffff')};">
                 <td style="border:1px solid #cbd5e1;padding:5px 3px 8px 3px;text-align:center;font-weight:800;background:#eaf2f8;font-family:Arial,sans-serif;">${idx + 1}</td>
-                <td style="border:1px solid #cbd5e1;padding:5px 6px 8px 6px;font-weight:700;">${g.agent || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:5px 6px 8px 6px;font-weight:600;">${g.loc || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:5px 4px 8px 4px;text-align:center;font-family:Arial,sans-serif;">${g.phone || ''}</td>
+                <td style="border:1px solid #cbd5e1;padding:5px 6px 8px 6px;font-weight:700;">${moitEsc(g.agent || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:5px 6px 8px 6px;font-weight:600;">${moitEsc(g.loc || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:5px 4px 8px 4px;text-align:center;font-family:Arial,sans-serif;">${moitEsc(g.phone || '')}</td>
                 <td style="border:1px solid #cbd5e1;padding:5px 4px 8px 4px;text-align:center;font-weight:800;color:${g.status === 'موقف' ? '#be123c' : '#b45309'};font-family:Arial,sans-serif;">${g.qty !== '' ? fmtNum(g.qty) : ''}</td>
                 <td style="border:1px solid #cbd5e1;padding:5px 6px 8px 6px;font-weight:700;color:${g.status === 'موقف' ? '#be123c' : '#0f2942'};">${g.notes ? ((g.status && g.status !== 'صرف طبيعي' && !g.notes.includes(g.status)) ? g.status + ' - ' + g.notes : g.notes) : (g.status && g.status !== 'صرف طبيعي' ? g.status : '')}</td>
               </tr>`).join(''); })()}
@@ -4770,9 +4893,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               </tr>
               ${(st.logRows.length > 6 ? st.logRows.filter(x => x.firm || x.type || x.proc) : st.logRows).map((r, idx) => `<tr style="background:${idx % 2 === 1 ? '#f4f8fb' : '#ffffff'};">
                 <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;font-weight:800;background:#eaf2f8;font-family:Arial,sans-serif;">${idx + 1}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${r.firm || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;color:#9b1c1c;">${r.type || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;">${r.proc || ''}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${moitEsc(r.firm || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;color:#9b1c1c;">${moitEsc(r.type || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;">${moitEsc(r.proc || '')}</td>
                 <td style="border:1px solid #cbd5e1;padding:6px 6px 10px 6px;text-align:center;font-weight:600;color:#475569;">${r.firm || r.type ? (r.status || '') : '☐ أُنجز &nbsp; ☐ متابعة'}</td>
               </tr>`).join('')}
             </table>
@@ -4791,12 +4914,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               </tr>
               ${(st.seizRows.length > 6 ? st.seizRows.filter(x => x.item || x.firm || parseNum(x.qty) > 0) : st.seizRows).map((r, idx) => `<tr style="background:${idx % 2 === 1 ? '#f4f8fb' : '#ffffff'};">
                 <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;font-weight:800;background:#eaf2f8;font-family:Arial,sans-serif;">${idx + 1}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${r.item || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;">${r.size || ''}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;font-weight:800;font-family:Arial,sans-serif;">${r.qty || ''}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${moitEsc(r.item || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;">${moitEsc(r.size || '')}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;font-weight:800;font-family:Arial,sans-serif;">${moitEsc(r.qty || '')}</td>
                 <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;color:#475569;">${r.item ? (r.action || '') : '☐ تحريز &nbsp; ☐ إتلاف'}</td>
                 <td style="border:1px solid #cbd5e1;padding:6px 4px 10px 4px;text-align:center;font-family:Arial,sans-serif;color:#475569;">${r.item ? fmtDateDMY(r.date) : '.... / .... / 2026'}</td>
-                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${r.firm || ''}</td>
+                <td style="border:1px solid #cbd5e1;padding:6px 8px 10px 8px;font-weight:700;">${moitEsc(r.firm || '')}</td>
               </tr>`).join('')}
             </table>
           </div>`,
@@ -4809,7 +4932,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <td style="border:1px solid #0f2942;background:#fcf8ec;color:#0f2942;padding:6px 8px 10px 8px;width:33.3%;">⚖️ إجمالي الإجراءات القانونية المتخذة</td>
               </tr>
               <tr style="font-weight:800;text-align:center;font-size:13px;font-family:Arial,sans-serif;">
-                <td style="border:1px solid #0f2942;padding:7px 8px 11px 8px;color:#0f2942;">[ ${st.firmsCovered || '0'} ]</td>
+                <td style="border:1px solid #0f2942;padding:7px 8px 11px 8px;color:#0f2942;">[ ${moitEsc(st.firmsCovered || 'غير مرصود')} ]</td>
                 <td style="border:1px solid #0f2942;padding:7px 8px 11px 8px;color:#9b1c1c;">[ ${violTotal} ]</td>
                 <td style="border:1px solid #0f2942;padding:7px 8px 11px 8px;color:#0f2942;">[ ${actTotal} ]</td>
               </tr>
@@ -4820,13 +4943,13 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <td style="background:#e6f4f1;font-weight:800;padding:6px 10px 10px 10px;border:1px solid #0f2942;color:#0f2942;">💡 أولاً: أبرز الملاحظات الميدانية والاحتياجات والتوصيات:</td>
               </tr>
               <tr>
-                <td style="padding:8px 10px 12px 10px;border:1px solid #cbd5e1;">${st.notes || '1. .......................................................................................................................................................<br>2. .......................................................................................................................................................'}</td>
+                <td style="padding:8px 10px 12px 10px;border:1px solid #cbd5e1;">${(st.notes?moitEsc(st.notes):'1. .......................................................................................................................................................<br>2. .......................................................................................................................................................')}</td>
               </tr>
               <tr>
-                <td style="background:#fcf8ec;font-weight:800;padding:6px 10px 10px 10px;border:1px solid #0f2942;color:#0f2942;">📦 ثانياً: تقييم الوضع التمويني العام: &nbsp; <span style="color:#0d6e6e;">${st.supplyStatus || 'مستقر بوفرة'}</span></td>
+                <td style="background:#fcf8ec;font-weight:800;padding:6px 10px 10px 10px;border:1px solid #0f2942;color:#0f2942;">📦 ثانياً: تقييم الوضع التمويني العام: &nbsp; <span style="color:#0d6e6e;">${moitEsc(st.supplyStatus || 'غير مرصود')}</span></td>
               </tr>
               <tr>
-                <td style="padding:8px 10px 12px 10px;border:1px solid #cbd5e1;">${st.supplyDetails || '• .......................................................................................................................................................'}</td>
+                <td style="padding:8px 10px 12px 10px;border:1px solid #cbd5e1;">${moitEsc(st.supplyDetails || '• .......................................................................................................................................................')}</td>
               </tr>
             </table>
 
@@ -4835,8 +4958,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <th colspan="2" style="background:#0f2942;color:#ffffff;padding:6px 10px 10px 10px;text-align:center;">إعداد واعتماد التقرير الميداني</th>
               </tr>
               <tr style="background:#f4f8fb;font-weight:800;">
-                <td style="border:1px solid #0f2942;padding:10px 12px 14px 12px;width:50%;">👤 معد التقرير (المراقب الميداني):<br><span style="color:#0d6e6e;">الاسم: ${st.inspectorName || '................................................................'}</span></td>
-                <td style="border:1px solid #0f2942;padding:10px 12px 14px 12px;width:50%;">🏛️ مدير مكتب الصناعة والتجارة بالمديرية:<br><span style="color:#0d6e6e;">الاسم: ${st.directorName || '................................................................'}</span></td>
+                <td style="border:1px solid #0f2942;padding:10px 12px 14px 12px;width:50%;">👤 معد التقرير (المراقب الميداني):<br><span style="color:#0d6e6e;">الاسم: ${moitEsc(st.inspectorName || '................................................................')}</span></td>
+                <td style="border:1px solid #0f2942;padding:10px 12px 14px 12px;width:50%;">🏛️ مدير مكتب الصناعة والتجارة بالمديرية:<br><span style="color:#0d6e6e;">الاسم: ${moitEsc(st.directorName || '................................................................')}</span></td>
               </tr>
             </table>
           </div>`
@@ -4848,18 +4971,18 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           const cardsHtml = evidencedRows.map((r, i) => {
             const imgs = r.photos.slice(0, 2);
             const gridCols = imgs.length === 2 ? 'repeat(2,minmax(0,1fr))' : '1fr';
-            const imgsHtml = imgs.map((src, pi) => `<img src="${src}" style="max-height:155px;width:100%;object-fit:contain;border-radius:4px;border:1px solid #cbd5e1;background:#ffffff;" alt="صورة ${pi + 1}" />`).join('');
+            const imgsHtml = imgs.map((src, pi) => `<img src="${MoitClosure.safeImageSrc(src)}" style="max-height:155px;width:100%;object-fit:contain;border-radius:4px;border:1px solid #cbd5e1;background:#ffffff;" alt="صورة ${pi + 1}" />`).join('');
             return `
             <div style="border:1.5px solid #0f2942;border-radius:8px;overflow:hidden;background:#ffffff;display:flex;flex-direction:column;">
               <div style="background:#0f2942;color:#ffffff;padding:5px 10px 8px 10px;font-size:11px;font-weight:800;display:flex;justify-content:space-between;">
-                <span>مخالفة #${i + 1}: ${r.firm || 'منشأة مخالفة'}</span>
+                <span>مخالفة #${i + 1}: ${moitEsc(r.firm || 'منشأة مخالفة')}</span>
                 <span style="color:#f3d27a;">${imgs.length === 2 ? 'صورتان موثقتان' : 'صورة واحدة'}</span>
               </div>
               <div style="padding:6px;background:#f8fafc;display:grid;grid-template-columns:${gridCols};gap:6px;align-items:center;">
                 ${imgsHtml}
               </div>
               <div style="padding:6px 10px 9px 10px;font-size:10.5px;line-height:1.5;background:#f4f8fb;border-top:1px solid #cbd5e1;">
-                <div><b style="color:#9b1c1c;">المخالفة:</b> ${r.type || 'غير محدد'} &nbsp;|&nbsp; <b>الإجراء:</b> ${r.proc || '-'}</div>
+                <div><b style="color:#9b1c1c;">المخالفة:</b> ${moitEsc(r.type || 'غير محدد')} &nbsp;|&nbsp; <b>الإجراء:</b> ${moitEsc(r.proc || '-')}</div>
               </div>
             </div>`;
           }).join('');
@@ -4886,7 +5009,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
 
       function generateFormattedWordHtml() {
-        const st = collectFullFormState();
+        const st = collectFullFormState(false);
         const logoImg = document.querySelector('img[alt="شعار الجمهورية اليمنية"]');
         const logoSrc = logoImg ? logoImg.src : '';
         const gasTotal = document.getElementById('kpiGasTotal').textContent || '0';
@@ -4998,7 +5121,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         <head>
           <meta charset="utf-8">
           <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
-          <title>تقرير النزول الميداني - ${st.directorate || 'عدن'}</title>
+          <title>تقرير النزول الميداني - ${moitEsc(st.directorate || 'عدن')}</title>
           <style>
             @page Section1 {
               size: 21.0cm 29.7cm;
@@ -5046,15 +5169,15 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             <table dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:1px solid #0d6e6e;margin-bottom:6px;font-size:9pt;">
               <tr>
                 <td width="16%" style="width:16%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">المديرية:</td>
-                <td width="34%" style="width:34%;padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;color:#0d6e6e;">${st.directorate || '................................'}</td>
+                <td width="34%" style="width:34%;padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;color:#0d6e6e;">${moitEsc(st.directorate || '................................')}</td>
                 <td width="16%" style="width:16%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">تاريخ النزول:</td>
                 <td width="34%" style="width:34%;padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;">${st.visitDate ? fmtDateDMY(st.visitDate) : '.... / .... / 2026'}</td>
               </tr>
               <tr>
                 <td style="background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">صرف الدولار:</td>
-                <td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;">البيع: [ ${st.usdSell || '........'} ] &nbsp;|&nbsp; الشراء: [ ${st.usdBuy || '........'} ]</td>
+                <td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;">البيع: [ ${moitEsc(st.usdSell || '........')} ] &nbsp;|&nbsp; الشراء: [ ${moitEsc(st.usdBuy || '........')} ]</td>
                 <td style="background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;white-space:nowrap;">صرف السعودي:</td>
-                <td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;">البيع: [ ${st.sarSell || '........'} ] &nbsp;|&nbsp; الشراء: [ ${st.sarBuy || '........'} ]</td>
+                <td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;">البيع: [ ${moitEsc(st.sarSell || '........')} ] &nbsp;|&nbsp; الشراء: [ ${moitEsc(st.sarBuy || '........')} ]</td>
               </tr>
             </table>
 
@@ -5062,8 +5185,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             <!-- Section 00 -->
             ${wBanner('00', 'مقدمة نزول اليوم ومناطق الاستهداف الميداني', 'توثيق المناطق والأحياء والأنشطة المشمولة بالنزول اليومي', '#0d6e6e')}
             <table dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:1px solid #0d6e6e;margin-bottom:6px;font-size:9pt;background:#ffffff;">
-              ${st.visitAreas ? `<tr><td width="18%" style="width:18%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;">مناطق النزول:</td><td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;color:#0f2942;">${st.visitAreas}</td></tr>` : ''}
-              ${st.visitIntro ? `<tr><td width="18%" style="width:18%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;">مقدمة النزول:</td><td style="padding:4px 6px;border:1px solid #94a3b8;line-height:1.5;color:#1e293b;">${st.visitIntro}</td></tr>` : ''}
+              ${st.visitAreas ? `<tr><td width="18%" style="width:18%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;">مناطق النزول:</td><td style="padding:4px 6px;border:1px solid #94a3b8;font-weight:bold;color:#0f2942;">${moitEsc(st.visitAreas)}</td></tr>` : ''}
+              ${st.visitIntro ? `<tr><td width="18%" style="width:18%;background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #94a3b8;color:#0f2942;">مقدمة النزول:</td><td style="padding:4px 6px;border:1px solid #94a3b8;line-height:1.5;color:#1e293b;">${moitEsc(st.visitIntro)}</td></tr>` : ''}
             </table>` : ''}
 
             <!-- Section 01 -->
@@ -5129,7 +5252,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             </table>
 
             <!-- Section 04 -->
-            ${wBanner('04', `متابعة الإشراف على توزيع الغاز المنزلي — المحطة: ${st.gasStation || 'منشأة البريقة'}`, 'كشف صرف الوكلاء والمسوقين المعتمدين ورصد الموقفين والتغطيات ومعارض الشركة', '#b45309')}
+            ${wBanner('04', `متابعة الإشراف على توزيع الغاز المنزلي — المحطة: ${moitEsc(st.gasStation || 'غير محدد')}`, 'كشف صرف الوكلاء والمسوقين المعتمدين ورصد الموقفين والتغطيات ومعارض الشركة', '#b45309')}
             <table dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin-bottom:6px;border:1px solid #0f2942;">
               <thead>
                 <tr>
@@ -5144,9 +5267,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               <tbody>
                 ${(() => { const list = st.gasRows.filter(g => g.agent || g.loc || Number(g.qty) > 0 || g.status === 'موقف'); return (list.length ? list : st.gasRows.slice(0, 7)).map((g, idx) => `<tr style="background:${g.status === 'موقف' ? '#fff1f2' : g.status === 'تغطية مربع وكيل' ? '#ecfdf5' : (idx % 2 === 1 ? '#f4f8fb' : '#ffffff')};">
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:8.5pt;background:#ffffff;">${idx + 1}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:8.5pt;">${g.agent || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-size:8.5pt;">${g.loc || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:8.5pt;">${g.phone || ''}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:8.5pt;">${moitEsc(g.agent || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-size:8.5pt;">${moitEsc(g.loc || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:8.5pt;">${moitEsc(g.phone || '')}</td>
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:8.5pt;color:${g.status === 'موقف' ? '#be123c' : '#b45309'};">${g.qty !== '' ? fmtNum(g.qty) : ''}</td>
                   <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:8.5pt;color:${g.status === 'موقف' ? '#be123c' : '#0f2942'};">${g.notes ? ((g.status && g.status !== 'صرف طبيعي' && !g.notes.includes(g.status)) ? g.status + ' - ' + g.notes : g.notes) : (g.status && g.status !== 'صرف طبيعي' ? g.status : '')}</td>
                 </tr>`).join(''); })()}
@@ -5204,9 +5327,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               <tbody>
                 ${(st.logRows.length > 6 ? st.logRows.filter(x => x.firm || x.type || x.proc) : st.logRows).map((r, idx) => `<tr style="background:${idx % 2 === 1 ? '#f4f8fb' : '#ffffff'};">
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:9pt;background:#ffffff;">${idx + 1}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${r.firm || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;color:#9b1c1c;">${r.type || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-size:9pt;">${r.proc || ''}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${moitEsc(r.firm || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;color:#9b1c1c;">${moitEsc(r.type || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-size:9pt;">${moitEsc(r.proc || '')}</td>
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:8.5pt;">${r.firm || r.type ? (r.status || '') : '☐ أُنجز  ☐ متابعة'}</td>
                 </tr>`).join('')}
               </tbody>
@@ -5229,12 +5352,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               <tbody>
                 ${(st.seizRows.length > 6 ? st.seizRows.filter(x => x.item || x.firm || parseNum(x.qty) > 0) : st.seizRows).map((r, idx) => `<tr style="background:${idx % 2 === 1 ? '#f4f8fb' : '#ffffff'};">
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:9pt;background:#ffffff;">${idx + 1}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${r.item || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:9pt;">${r.size || ''}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:9pt;">${r.qty || ''}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${moitEsc(r.item || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:9pt;">${moitEsc(r.size || '')}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-weight:bold;font-size:9pt;">${moitEsc(r.qty || '')}</td>
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:8.5pt;">${r.item ? (r.action || '') : '☐ تحريز  ☐ إتلاف'}</td>
                   <td style="border:1px solid #cbd5e1;padding:3px;text-align:center;font-size:8.5pt;">${r.item ? fmtDateDMY(r.date) : '.... / .... / 2026'}</td>
-                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${r.firm || ''}</td>
+                  <td style="border:1px solid #cbd5e1;padding:3px 5px;font-weight:bold;font-size:9pt;">${moitEsc(r.firm || '')}</td>
                 </tr>`).join('')}
               </tbody>
             </table>
@@ -5249,7 +5372,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <td width="34%" style="border:1px solid #0f2942;background:#ffffff;color:#0f2942;padding:4px;">إجمالي الإجراءات القانونية المتخذة</td>
               </tr>
               <tr style="font-weight:bold;text-align:center;font-size:10pt;">
-                <td style="border:1px solid #0f2942;padding:4px;">[ ${st.firmsCovered || '0'} ]</td>
+                <td style="border:1px solid #0f2942;padding:4px;">[ ${moitEsc(st.firmsCovered || 'غير مرصود')} ]</td>
                 <td style="border:1px solid #0f2942;padding:4px;color:#9b1c1c;">[ ${violTotal} ]</td>
                 <td style="border:1px solid #0f2942;padding:4px;">[ ${actTotal} ]</td>
               </tr>
@@ -5260,13 +5383,13 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <td style="background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #0f2942;color:#0f2942;">أولاً: أبرز الملاحظات الميدانية والاحتياجات والتوصيات:</td>
               </tr>
               <tr>
-                <td style="padding:5px 6px;border:1px solid #cbd5e1;">${st.notes || '1. .......................................................................................................................................................<br>2. .......................................................................................................................................................'}</td>
+                <td style="padding:5px 6px;border:1px solid #cbd5e1;">${(st.notes?moitEsc(st.notes):'1. .......................................................................................................................................................<br>2. .......................................................................................................................................................')}</td>
               </tr>
               <tr>
-                <td style="background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #0f2942;color:#0f2942;">ثانياً: تقييم الوضع التمويني العام: &nbsp; <span style="color:#0d6e6e;">${st.supplyStatus || 'مستقر بوفرة'}</span></td>
+                <td style="background:#ffffff;font-weight:bold;padding:4px 6px;border:1px solid #0f2942;color:#0f2942;">ثانياً: تقييم الوضع التمويني العام: &nbsp; <span style="color:#0d6e6e;">${moitEsc(st.supplyStatus || 'غير مرصود')}</span></td>
               </tr>
               <tr>
-                <td style="padding:5px 6px;border:1px solid #cbd5e1;">${st.supplyDetails || '• .......................................................................................................................................................'}</td>
+                <td style="padding:5px 6px;border:1px solid #cbd5e1;">${moitEsc(st.supplyDetails || '• .......................................................................................................................................................')}</td>
               </tr>
             </table>
 
@@ -5275,8 +5398,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                 <th colspan="2" style="${thStyle}">إعداد واعتماد التقرير الميداني</th>
               </tr>
               <tr style="background:#ffffff;font-weight:bold;">
-                <td width="50%" style="border:1px solid #0f2942;padding:6px 8px;width:50%;">▪ معد التقرير (المراقب الميداني):<br><span style="color:#0d6e6e;">الاسم: ${st.inspectorName || '................................................................'}</span></td>
-                <td width="50%" style="border:1px solid #0f2942;padding:6px 8px;width:50%;">▪ مدير مكتب الصناعة والتجارة بالمديرية:<br><span style="color:#0d6e6e;">الاسم: ${st.directorName || '................................................................'}</span></td>
+                <td width="50%" style="border:1px solid #0f2942;padding:6px 8px;width:50%;">▪ معد التقرير (المراقب الميداني):<br><span style="color:#0d6e6e;">الاسم: ${moitEsc(st.inspectorName || '................................................................')}</span></td>
+                <td width="50%" style="border:1px solid #0f2942;padding:6px 8px;width:50%;">▪ مدير مكتب الصناعة والتجارة بالمديرية:<br><span style="color:#0d6e6e;">الاسم: ${moitEsc(st.directorName || '................................................................')}</span></td>
               </tr>
             </table>
 
@@ -5298,10 +5421,10 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
                     ${evs.map((r, i) => {
                       const imgs = r.photos.slice(0, 2);
                       const imgW = imgs.length === 2 ? 170 : 230;
-                      const imgsHtml = imgs.map((src, pi) => `<img src="${src}" width="${imgW}" style="max-width:${imgW}px;height:auto;border:1px solid #cbd5e1;margin:2px 4px;" alt="صورة ${pi + 1}" />`).join('');
+                      const imgsHtml = imgs.map((src, pi) => `<img src="${MoitClosure.safeImageSrc(src)}" width="${imgW}" style="max-width:${imgW}px;height:auto;border:1px solid #cbd5e1;margin:2px 4px;" alt="صورة ${pi + 1}" />`).join('');
                       return `<tr>
                       <td style="border:1px solid #cbd5e1;padding:4px;text-align:center;font-weight:bold;background:#ffffff;">${i + 1}</td>
-                      <td style="border:1px solid #cbd5e1;padding:5px;vertical-align:top;"><b>${r.firm || 'منشأة مخالفة'}</b><br><span style="color:#9b1c1c;">${r.type || ''}</span><br><span style="color:#475569;font-size:8pt;">${r.proc || ''}</span></td>
+                      <td style="border:1px solid #cbd5e1;padding:5px;vertical-align:top;"><b>${moitEsc(r.firm || 'منشأة مخالفة')}</b><br><span style="color:#9b1c1c;">${moitEsc(r.type || '')}</span><br><span style="color:#475569;font-size:8pt;">${moitEsc(r.proc || '')}</span></td>
                       <td style="border:1px solid #cbd5e1;padding:5px;text-align:center;">${imgsHtml}</td>
                     </tr>`;
                     }).join('')}
@@ -5339,11 +5462,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
 
       document.getElementById('exportWordBtn').addEventListener('click', () => {
-        const htmlContent = generateFormattedWordHtml();
+        const htmlContent = generateFormattedWordHtml().replace(/(<body\b[^>]*>)([\s\S]*?)(<\/body>)/i,(_,a,b,c)=>a+MoitClosure.safeReportHtml(b,document)+c);
         const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
         const dir = (document.getElementById('directorateSelect').value || 'عدن').replace(/[\\/:*?"<>|()]/g, '').replace(/\s+/g, '_');
         const dt = document.getElementById('visitDateInput').value || getLocalTodayIso();
         const fname = `تقرير_النزول_الميداني_${dir}_${dt}.doc`;
+        if(confirm('تنزيل DOCX أصلي قابل للتحرير (نص وجداول وصور PNG/JPEG المضمنة)؟ إلغاء لاختيار Word القديم كامل التنسيق.')){try{MoitClosure.downloadDocx(htmlContent,fname,document);showToast('تم استخراج DOCX أصلي','📝');}catch(e){showToast('تعذر استخراج DOCX؛ اختر Word القديم','⚠️');}return;}
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -5391,7 +5515,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           if (typeof html2canvas !== 'undefined' && jsPDFCtor) {
             const pdf = new jsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             for (let i = 0; i < pagesHtml.length; i++) {
-              mountBox.innerHTML = pagesHtml[i];
+              mountBox.innerHTML = MoitClosure.safeReportHtml(pagesHtml[i],document);
               const pageEl = mountBox.firstElementChild;
               const canvas = await html2canvas(pageEl, {
                 scale: 2,
@@ -5414,7 +5538,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             pdf.save(fname);
             showToast(`تم حفظ ملف الـ PDF (${fname}) بتوزيع متوازن وواضح!`, '📄');
           } else if (typeof html2pdf !== 'undefined') {
-            mountBox.innerHTML = pagesHtml.join('');
+            mountBox.innerHTML = MoitClosure.safeReportHtml(pagesHtml.join(''),document);
             const opt = {
               margin: 0,
               filename: fname,
@@ -5455,7 +5579,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
 
       document.getElementById('printFormBtn').addEventListener('click', () => {
-        printPreviewSheet.innerHTML = getA4ReportInnerHtml();
+        printPreviewSheet.innerHTML = MoitClosure.safeReportHtml(getA4ReportInnerHtml(),document);
         printPreviewModal.classList.remove('hidden');
         printPreviewModal.classList.add('flex');
         document.body.classList.add('print-modal-open');
@@ -5474,7 +5598,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       });
 
       document.getElementById('openStandalonePrintTabBtn').addEventListener('click', () => {
-        const st = collectFullFormState();
+        const st = collectFullFormState(false);
         const pagesHtml = buildFourA4PagesArray().join('');
         const fullHtml = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -5616,6 +5740,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         resetModal.classList.remove('flex');
       });
       document.getElementById('confirmResetBtn').addEventListener('click', () => {
+        document.getElementById('v54GasZeroConfirmed').checked=false;
         document.querySelectorAll('input[type="number"], input[type="text"], textarea').forEach(inp => {
           if (inp.id !== 'quickSearchInput') inp.value = inp.classList.contains('viol-input') || inp.classList.contains('act-input') ? '0' : '';
         });
@@ -5655,55 +5780,24 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
     function getRadarBaselinePrices() {
       const dir = document.getElementById('directorateSelect')?.value || '';
-      // 1. Check saved phone reports history for the most recent saved report (prefer same directorate)
-      try {
-        const histRaw = localStorage.getItem('moit_aden_saved_reports_v1');
-        if (histRaw) {
-          const hist = JSON.parse(histRaw);
-          if (Array.isArray(hist) && hist.length > 0) {
-            const match = hist.find(h => h.state && h.state.prices && Object.keys(h.state.prices).length > 0 && (!dir || h.directorate === dir))
-                       || hist.find(h => h.state && h.state.prices && Object.keys(h.state.prices).length > 0);
-            if (match) {
-              const map = {};
-              Object.entries(match.state.prices).forEach(([k, v]) => {
-                const n = parseNum(v);
-                if (n > 0) map[k] = n;
-              });
-              if (Object.keys(map).length > 0) {
-                return { map, label: `مقارنة بآخر تقرير محفوظ (${match.directorate || 'عدن'} - ${match.visitDate || ''})` };
-              }
-            }
-          }
-        }
-      } catch (e) {}
-
-      // 2. Check last saved report key
-      try {
-        const lastRaw = localStorage.getItem('moit_aden_last_saved_report_v1');
-        if (lastRaw) {
-          const last = JSON.parse(lastRaw);
-          if (last && last.prices) {
-            const map = {};
-            Object.entries(last.prices).forEach(([k, v]) => {
-              const n = parseNum(v);
-              if (n > 0) map[k] = n;
-            });
-            if (Object.keys(map).length > 0) {
-              return { map, label: `مقارنة بآخر تقرير محفوظ (${last.directorate || 'عدن'} - ${last.visitDate || ''})` };
-            }
-          }
-        }
-      } catch (e) {}
-
-      // 3. Fallback to directorate baseline or DEFAULT_YESTERDAY_PRICES
-      try {
-        const rawDir = localStorage.getItem('moit_aden_prices_v2_' + (dir || 'default'));
-        if (rawDir) {
-          return { map: JSON.parse(rawDir), label: 'مقارنة بأسعار الأمس المحفوظة بالجوال' };
-        }
-      } catch (e) {}
-
-      return { map: {}, label: 'بانتظار حفظ أول تقرير مرجعي' };
+      const date = document.getElementById('visitDateInput')?.value || '';
+      const missing = {map:{}, label:'لا يوجد تقرير سابق مؤرخ لهذه المديرية'};
+      if (!dir || !date) return missing;
+      const candidates = [];
+      const add = value => {
+        const st = value?.state || value;
+        if (st?.directorate === dir && /^\d{4}-\d{2}-\d{2}$/.test(st.visitDate || '') && st.visitDate < date && st.prices) candidates.push(st);
+      };
+      for (const key of ['moit_aden_saved_history_v1','moit_aden_saved_reports_v1','moit_aden_last_saved_report_v2','moit_aden_last_saved_report_v1','moit_aden_radar_reference_v1_'+dir]) {
+        try { const v=JSON.parse(localStorage.getItem(key)||'null'); if(Array.isArray(v))v.forEach(add);else add(v); } catch (_) {}
+      }
+      candidates.sort((a,b)=>b.visitDate.localeCompare(a.visitDate));
+      for(const st of candidates){
+        const map={};
+        Object.entries(st.prices).forEach(([k,v])=>{const q=parseNumStrict(v,{nonNegative:true});if(q.ok&&q.value>0)map[k]=q.value;});
+        if(Object.keys(map).length)return {map,label:`مقارنة بتقرير ${dir} بتاريخ ${st.visitDate}`};
+      }
+      return missing;
     }
 
     function updatePriceChangeRadar() {
@@ -5720,6 +5814,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       const changes = [];
       let upCount = 0;
       let downCount = 0;
+      let comparableCount = 0;
 
       catalog.forEach(item => {
         const inp = document.querySelector(`[data-price-id="${item.id}"]`);
@@ -5728,6 +5823,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         const cur = parseNum(inp.value);
         const base = parseNum(baseMap[item.id]);
 
+        if (cur > 0 && base > 0) comparableCount++;
         if (cur > 0 && base > 0 && cur !== base) {
           const diff = cur - base;
           const isUp = diff > 0;
@@ -5753,7 +5849,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       if (downBadge) downBadge.textContent = `🔻 هبوط: ${downCount}`;
 
       if (changes.length === 0) {
-        container.innerHTML = '<span class="text-emerald-700 font-bold">✅ جميع الأسعار مستقرة اليوم دون أي تغيّر عن التقرير المرجعي.</span>';
+        container.textContent = comparableCount ? `لا تغير في ${comparableCount} صنف قابل للمقارنة من أصل ${catalog.length}.` : 'لا توجد بيانات سعرية كافية للمقارنة.';
       } else {
         container.innerHTML = changes.map(c => `
           <button type="button" data-jump-price="${c.item.id}" class="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[11px] font-extrabold border transition hover:scale-[1.02] ${c.isUp ? 'bg-rose-50 border-rose-300 text-rose-900 hover:bg-rose-100' : 'bg-emerald-50 border-emerald-300 text-emerald-900 hover:bg-emerald-100'}">
@@ -6070,7 +6166,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             s1Rows.push([i + 1, r.directorate, r.visitDate, r.firmsCovered, r.gasTotal, r.violTotal, r.actTotal, r.supplyStatus, r.inspectorName]);
           });
           s1Rows.push(['', `الإجمالي العام (${data.opsReports.length} مديريات)`, '', data.sumFirms, data.sumGas, data.sumViol, data.sumAct, `متوسط الصرف: $ ${data.avgUsd} | ر.س ${data.avgSar}`, '']);
-          const ws1 = XLSX.utils.aoa_to_sheet(s1Rows);
+          const ws1 = XLSX.utils.aoa_to_sheet(s1Rows.map(row=>row.map(v54FieldExportCell)));
           ws1['!views'] = [{ RTL: true }];
           ws1['!cols'] = [{ wch: 5 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 15 }, { wch: 15 }, { wch: 16 }, { wch: 18 }, { wch: 22 }];
           XLSX.utils.book_append_sheet(wb, ws1, 'مقارنة_المديريات');
@@ -6084,7 +6180,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           data.priceStats.forEach((s, i) => {
             s2Rows.push([i + 1, s.item.group, s.item.name, s.item.unit || '-', s.minE.val, s.minE.dir, s.maxE.val, s.maxE.dir, s.avgVal, s.spread]);
           });
-          const ws2 = XLSX.utils.aoa_to_sheet(s2Rows);
+          const ws2 = XLSX.utils.aoa_to_sheet(s2Rows.map(row=>row.map(v54FieldExportCell)));
           ws2['!views'] = [{ RTL: true }];
           ws2['!cols'] = [{ wch: 5 }, { wch: 16 }, { wch: 22 }, { wch: 11 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 10 }];
           XLSX.utils.book_append_sheet(wb, ws2, 'متوسط_أسعار_العاصمة');
@@ -6544,11 +6640,11 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
         tbody.innerHTML = pendingCampaignRows.map((r, i) => `
           <tr class="${i % 2 === 1 ? 'bg-slate-50' : 'bg-white'}">
-            <td class="py-1.5 px-2 font-extrabold text-[#0f2942]">${r.product}<span class="block text-[10px] text-slate-500">${r.campaignName}</span></td>
-            <td class="py-1.5 px-2 text-rose-800 font-bold">${r.reason}</td>
-            <td class="py-1.5 px-2 font-bold">${r.firm}<span class="block text-[10px] text-teal-700">${r.directorate} (${r.date})</span></td>
-            <td class="py-1.5 px-2 text-center font-mono font-black text-slate-900">${Number(r.qty).toLocaleString('en-US')} ${r.unit}</td>
-            <td class="py-1.5 px-2 text-center"><span class="rounded bg-amber-100 text-amber-900 px-1.5 py-0.5 text-[10px] font-bold">${r.action}</span></td>
+            <td class="py-1.5 px-2 font-extrabold text-[#0f2942]">${moitEsc(r.product)}<span class="block text-[10px] text-slate-500">${moitEsc(r.campaignName)}</span></td>
+            <td class="py-1.5 px-2 text-rose-800 font-bold">${moitEsc(r.reason)}</td>
+            <td class="py-1.5 px-2 font-bold">${moitEsc(r.firm)}<span class="block text-[10px] text-teal-700">${moitEsc(r.directorate)} (${moitEsc(r.date)})</span></td>
+            <td class="py-1.5 px-2 text-center font-mono font-black text-slate-900">${Number(r.qty).toLocaleString('en-US')} ${moitEsc(r.unit)}</td>
+            <td class="py-1.5 px-2 text-center"><span class="rounded bg-amber-100 text-amber-900 px-1.5 py-0.5 text-[10px] font-bold">${moitEsc(r.action)}</span></td>
             <td class="py-1.5 px-2 text-center"><button type="button" data-rm-camp="${i}" class="text-rose-700 hover:text-rose-900 font-black px-1">✕</button></td>
           </tr>
         `).join('');
@@ -6761,7 +6857,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         setVal('sarBuy', fmtFxExact(rec.sarBuy));
         setVal('summaryFirmsCovered', rec.firmsCovered !== undefined ? rec.firmsCovered : '0');
         setVal('violatingFirmsInput', rec.violatingFirms !== undefined ? rec.violatingFirms : '0');
-        setVal('supplyStatusSelect', rec.supplyStatus || 'مستقر بوفرة');
+        setVal('supplyStatusSelect', rec.supplyStatus || '');
         setVal('notesTextarea', rec.notes || '');
         setVal('visitIntroTextarea', rec.visitIntro || '');
         // استعادة الحقول الإضافية الكاملة (extraDataJson: supplyDetails, poultry, violations, actions, seizRows)
@@ -6783,7 +6879,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             const tr = sTrs[si]; if (!tr) return;
             if (tr.querySelector('.seiz-item')) tr.querySelector('.seiz-item').value = sr.item || '';
             if (tr.querySelector('.seiz-size')) tr.querySelector('.seiz-size').value = sr.size || '';
-            if (tr.querySelector('.seiz-qty')) tr.querySelector('.seiz-qty').value = sr.qty || '';
+            if (tr.querySelector('.seiz-qty')) tr.querySelector('.seiz-qty').value = sr.qty ?? '';
             if (tr.querySelector('.seiz-action') && sr.action) tr.querySelector('.seiz-action').value = sr.action;
             if (tr.querySelector('.seiz-date') && sr.date) tr.querySelector('.seiz-date').value = sr.date;
             if (tr.querySelector('.seiz-firm')) tr.querySelector('.seiz-firm').value = sr.firm || '';
@@ -6795,6 +6891,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (document.getElementById('gasStationSelect')) {
           document.getElementById('gasStationSelect').value = rec.gasStation || '';
         }
+        document.getElementById('v54GasZeroConfirmed').checked=rec.gasTotal===0&&extraD?.observationStates?.gasTotal==='observedZero';
         const parsedCloudGas = Array.isArray(rec.gasRows) ? rec.gasRows : (typeof rec.gasRows === 'string' && rec.gasRows.trim().startsWith('[') ? (() => { try { return JSON.parse(rec.gasRows); } catch(e) { return []; } })() : []);
         if (typeof renderGasRows === 'function') {
           renderGasRows(Math.max(7, parsedCloudGas.length));
@@ -6819,8 +6916,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           try { parsedPrices = JSON.parse(parsedPrices); } catch (_e) { parsedPrices = {}; }
         }
         let filledPricesCnt = 0;
+        document.querySelectorAll('.price-input').forEach(inp => { inp.value = ''; });
         if (parsedPrices && typeof parsedPrices === 'object') {
-          document.querySelectorAll('.price-input').forEach(inp => { inp.value = ''; });
           Object.entries(parsedPrices).forEach(([pid, pval]) => {
             const inp = document.querySelector(`[data-price-id="${pid}"]`);
             const num = parseNum(pval);
@@ -6847,6 +6944,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             if (tr.querySelector('.log-status') && ev.status) tr.querySelector('.log-status').value = ev.status;
           });
         }
+        for(const id of ['directorateSelect','visitDateInput']){const el=document.getElementById(id);el._moitPreviousScope=el.value;}
         if (typeof recalculateKPIs === 'function') recalculateKPIs();
         if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
         const modal = document.getElementById('dirCloudHistoryModal');
@@ -6868,7 +6966,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           return;
         }
 
-        const catMap = {};
+        const catMap = Object.create(null);
         if (typeof getAllCommoditiesCatalog === 'function') {
           getAllCommoditiesCatalog().forEach(it => { catMap[it.id] = `${it.name}${it.unit ? ' (' + it.unit + ')' : ''}`; });
         }
@@ -6877,21 +6975,21 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           const pEntries = r.prices ? Object.entries(r.prices).filter(([, v]) => Number(String(v).replace(/[^0-9.]/g, '')) > 0) : [];
           const pCount = pEntries.length;
           const origIdx = cachedCloudReports.indexOf(r);
-          const previewPrices = pEntries.slice(0, 12).map(([k, v]) => `<span class="inline-block bg-slate-100 border border-slate-200 rounded-md px-2 py-0.5 text-[10px]"><b>${catMap[k] || k}:</b> ${Number(String(v).replace(/[^0-9.]/g, '')).toLocaleString('en-US')}</span>`).join(' ');
+          const previewPrices = pEntries.slice(0, 12).map(([k, v]) => `<span class="inline-block bg-slate-100 border border-slate-200 rounded-md px-2 py-0.5 text-[10px]"><b>${moitEsc(catMap[k] || k)}:</b> ${Number(String(v).replace(/[^0-9.]/g, '')).toLocaleString('en-US')}</span>`).join(' ');
           return `<div class="rounded-xl bg-white border border-slate-200 hover:border-sky-400 p-3.5 shadow-sm space-y-2 transition">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="space-y-1 min-w-[200px]">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-black text-sm text-[#0f2942]">📍 ${r.directorate}</span>
-                  <span class="rounded-md bg-sky-100 text-sky-900 px-2 py-0.5 text-[11px] font-mono font-extrabold">📅 ${r.visitDate}</span>
-                  <span class="rounded-md bg-teal-50 text-teal-800 px-2 py-0.5 text-[10px] font-bold">${r.supplyStatus || 'مستقر'}</span>
+                  <span class="font-black text-sm text-[#0f2942]">📍 ${moitEsc(r.directorate)}</span>
+                  <span class="rounded-md bg-sky-100 text-sky-900 px-2 py-0.5 text-[11px] font-mono font-extrabold">📅 ${moitEsc(r.visitDate)}</span>
+                  <span class="rounded-md bg-teal-50 text-teal-800 px-2 py-0.5 text-[10px] font-bold">${moitEsc(r.supplyStatus || 'غير محدد')}</span>
                 </div>
                 <div class="text-[11px] text-slate-600 font-semibold flex flex-wrap gap-3">
                   <span>🌾 السلع: <b>${pCount} صنف</b></span>
-                  <span>🔥 الغاز: <b>${r.gasTotal || 0}</b></span>
-                  <span>⚠️ المخالفات: <b class="text-rose-700">${r.violTotal || 0}</b></span>
-                  <span>💵 الصرف: <b>${r.usdSell || '-'} / ${r.sarSell || '-'}</b></span>
-                  <span>👤 المعد: <b>${r.inspectorName || '-'}</b></span>
+                  <span>🔥 الغاز: <b>${r.gasTotal == null ? 'غير مرصود' : moitEsc(r.gasTotal)}</b></span>
+                  <span>⚠️ المخالفات: <b class="text-rose-700">${moitEsc(r.violTotal ?? 'غير مرصود')}</b></span>
+                  <span>💵 الصرف: <b>${moitEsc(r.usdSell || '-')} / ${moitEsc(r.sarSell || '-')}</b></span>
+                  <span>👤 المعد: <b>${moitEsc(r.inspectorName || '-')}</b></span>
                 </div>
               </div>
               <div class="flex flex-wrap items-center gap-2">
@@ -6900,7 +6998,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               </div>
             </div>
             <div id="cloudPrevBox_${idx}" class="hidden pt-2 border-t border-slate-100 text-[11px] space-y-1.5">
-              ${r.notes ? `<div class="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-amber-950"><b>💡 الملاحظات:</b> ${r.notes}</div>` : ''}
+              ${r.notes ? `<div class="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-amber-950"><b>💡 الملاحظات:</b> ${moitEsc(r.notes)}</div>` : ''}
               <div class="flex flex-wrap gap-1">${previewPrices || '<span class="text-slate-400">لا توجد أسعار مسجلة في هذا السجل.</span>'}${pCount > 12 ? `<span class="text-[10px] font-bold text-sky-700 px-1">+ ${pCount - 12} صنف آخر...</span>` : ''}</div>
             </div>
           </div>`;
@@ -6933,6 +7031,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (refBtn) { refBtn.disabled = true; refBtn.textContent = '⏳ جارٍ السحب...'; }
         if (badge) badge.textContent = '⏳ جارٍ الاتصال بـ Google Sheets...';
 
+        const requestDir=document.getElementById('directorateSelect')?.value||'';const requestToken=moitDirSession(requestDir);
         let data = null;
         try {
           const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'days=60&t=' + Date.now(), { method: 'GET' });
@@ -6944,7 +7043,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 
         if (refBtn) { refBtn.disabled = false; refBtn.textContent = '🔄 تحديث من Google Sheets'; }
 
-        if (data && data.status === 'success' && Array.isArray(data.reports)) {
+        if(requestDir!==document.getElementById('directorateSelect')?.value||!requestToken||requestToken!==moitDirSession(requestDir))return;
+        if (data && data.status === 'success' && Array.isArray(data.reports) && data.reports.every(r=>r.directorate===requestDir)) {
           window.__CACHED_CLOUD_EVIDENCE = Array.isArray(data.evidenceRows) ? data.evidenceRows : [];
           cachedCloudReports = data.reports.map(r => {
             let pObj = r.prices;
@@ -7473,6 +7573,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (e.key === 'Enter') { e.preventDefault(); addCustomVisitAreaFromInput(); }
       });
       document.getElementById('visitAreasCustom')?.addEventListener('input', updateVisitAreasCountBadge);
+      document.getElementById('v54RefreshAgents')?.addEventListener('click',()=>refreshCentralGasAgents(true));
+      document.getElementById('v54GasZeroConfirmed')?.addEventListener('change',recalculateKPIs);
+      for(const id of ['directorateSelect','visitDateInput'])document.getElementById(id)?.addEventListener('change',()=>{v54DirRegistry=null;v54DirRegistrySeq++;document.getElementById('v54GasZeroConfirmed').checked=false;refreshGasAgentsDatalist();recalculateKPIs();});
       // New Gas Agent Modal & Showroom Quick Add
       const ngModal = document.getElementById('newGasAgentModal');
       const closeNgModal = () => { ngModal?.classList.add('hidden'); ngModal?.classList.remove('flex'); };
@@ -7501,7 +7604,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         refreshGasAgentsDatalist();
         // Insert into first empty row or append a new row
         let targetTr = Array.from(document.querySelectorAll('#gasTbody tr')).find(tr => !(tr.querySelector('.gas-agent')?.value || '').trim());
-        const pre = { agent: name, loc: addr, phone, qty: type === 'showroom' ? 200 : 100, status: type === 'showroom' ? 'معرض الشركة' : 'صرف طبيعي', notes: '' };
+        const pre = { agent: name, loc: addr, phone, qty: '', status: type === 'showroom' ? 'معرض الشركة' : 'صرف طبيعي', notes: '' };
         if (targetTr) {
           targetTr.querySelector('.gas-agent').value = pre.agent;
           targetTr.querySelector('.gas-loc').value = pre.loc;
@@ -7515,7 +7618,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         recalculateKPIs();
         updateGasStatusSummaries();
         closeNgModal();
-        showToast(`تم حفظ الوكيل «${name}» لمديرية ${dir} وإدراجه في الكشف`, '🔥');
+        showToast(`تم حفظ الوكيل «${name}» محليًا كمرشح غير معتمد وإدراجه في الكشف`, '🔥');
       });
       document.getElementById('addShowroomGasRowBtn')?.addEventListener('click', () => {
         const dir = document.getElementById('directorateSelect')?.value || '';
@@ -7527,7 +7630,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           const exists = Array.from(document.querySelectorAll('#gasTbody tr')).some(tr => (tr.querySelector('.gas-agent')?.value || '').trim() === sh.name);
           if (exists) return;
           let targetTr = Array.from(document.querySelectorAll('#gasTbody tr')).find(tr => !(tr.querySelector('.gas-agent')?.value || '').trim());
-          const pre = { agent: sh.name, loc: sh.addr, phone: sh.phone || '', qty: 200, status: 'معرض الشركة', notes: 'بيع مباشر' };
+          const pre = { agent: sh.name, loc: sh.addr, phone: sh.phone || '', qty: '', status: 'معرض الشركة', notes: 'بيع مباشر' };
           if (targetTr) {
             targetTr.querySelector('.gas-agent').value = pre.agent;
             targetTr.querySelector('.gas-loc').value = pre.loc;
@@ -7543,7 +7646,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         });
         recalculateKPIs();
         updateGasStatusSummaries();
-        showToast(added ? `تم إدراج معرض الشركة لمديرية ${dir} (200 أسطوانة)` : 'معرض الشركة مدرج بالفعل في الكشف', '🏢');
+        showToast(added ? `تم إدراج معرض الشركة لمديرية ${dir} (أدخل الكمية المرصودة)` : 'معرض الشركة مدرج بالفعل في الكشف', '🏢');
       });
       refreshGasAgentsDatalist();
       document.getElementById('autoDraftIntroBtn')?.addEventListener('click', () => {
@@ -7657,8 +7760,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       } else {
         html = filtered.map((a, idx) => `
           <div class="ga-item" data-ga-idx="${idx}">
-            <div class="ga-name">${a.type === 'showroom' ? '🏢 ' : '👤 '}${a.name}</div>
-            <div class="ga-meta">${a.addr ? '📍 ' + a.addr : ''}${a.phone ? ' &nbsp;|&nbsp; 📱 ' + a.phone : ''}</div>
+            <div class="ga-name">${a.type === 'showroom' ? '🏢 ' : '👤 '}${moitEsc(a.name)}</div>
+            <div class="ga-meta">${a.addr ? '📍 ' + moitEsc(a.addr) : ''}${a.phone ? ' &nbsp;|&nbsp; 📱 ' + moitEsc(a.phone) : ''}</div>
           </div>
         `).join('');
       }
@@ -7702,10 +7805,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           if (phInp) phInp.value = a.phone || '';
           if (a.type === 'showroom') {
             if (stSel) stSel.value = 'معرض الشركة';
-            if (qtyInp && (!qtyInp.value || Number(qtyInp.value) === 0)) qtyInp.value = 200;
           } else {
             if (stSel && stSel.value === 'معرض الشركة') stSel.value = 'صرف طبيعي';
-            if (qtyInp && (!qtyInp.value || Number(qtyInp.value) === 0)) qtyInp.value = 100;
           }
           applyGasRowVisualStyle(tr);
           recalculateKPIs();
@@ -7766,7 +7867,25 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         try { localStorage.setItem(SYNCED_KEYS_LS, JSON.stringify(map)); } catch (_e) { /* quota safe */ }
       } catch (e) {}
     }
-    function enqueueOfflineReport(payload, webhookUrl) {
+    async function moitPromoteMatchingReceipt(receipt,payload,digest){
+      if(!digest||typeof window.collectFullFormState!=='function')return false;
+      const current=window.collectFullFormState();
+      if(await moitFormDigest(current)!==digest||moitFormComparable(current)!==moitFormComparable(window.collectFullFormState()))return false;
+      if(getReportSyncKey(current.directorate,current.visitDate)!==getReportSyncKey(payload.directorate,payload.visitDate))return false;
+      if(window.__loadedCloudKey===getReportSyncKey(payload.directorate,payload.visitDate)&&Number(window.__loadedCloudRevision)>receipt.revision)return false;
+      window.__loadedCloudRevision=receipt.revision;window.__loadedCloudKey=getReportSyncKey(payload.directorate,payload.visitDate);
+      const fresh=window.collectFullFormState();
+      // Persist revision with the exact accepted snapshot; do not overwrite a different locally saved report.
+      try{const key='moit_aden_last_saved_report_v2',old=JSON.parse(localStorage.getItem(key)||'null');
+        if(!old||getReportSyncKey(old.directorate,old.visitDate)===window.__loadedCloudKey){localStorage.setItem(key,JSON.stringify({...fresh,_savedAt:old?._savedAt||new Date().toISOString(),_savedAtIso:new Date().toISOString()}));}
+        const draftKey='MOIT_DIR_AUTODRAFT_V40',draft=JSON.parse(localStorage.getItem(draftKey)||'null');
+        if(draft?.fullState&&moitFormComparable(draft.fullState)===moitFormComparable(current)){draft.fullState.cloudRevision=receipt.revision;draft.fullState.cloudKey=window.__loadedCloudKey;localStorage.setItem(draftKey,JSON.stringify(draft));}
+      }catch(_){showToast('تم الحفظ سحابياً؛ تعذر حفظ الإصدار محلياً. افتح التقرير من السجل السحابي قبل تعديله','⚠️');}
+      return true;
+    }
+    function outboxReviewRequired(code){return ['REVISION_CONFLICT','REVISION_REQUIRED','VALIDATION_ERROR','TOTAL_MISMATCH','INCOMPLETE_GAS','RECONCILIATION_REQUIRED','DUPLICATE_VIOLATION','OPERATION_CONFLICT','OPERATION_CANCELLED','EVIDENCE_OWNER_MISMATCH','INVALID_PHOTO','LIMIT'].includes(code);}
+    function recordOutboxFailure(operationId,code,message){const list=getOfflineOutbox(),item=list.find(x=>x.operationId===operationId);if(!item)return;item.lastErrorCode=code;item.lastError=String(message||code).slice(0,300);item.needsReview=outboxReviewRequired(code);saveOfflineOutbox(list);}
+    function enqueueOfflineReport(payload, webhookUrl, formDigest='', supersedeId=null) {
       const list = getOfflineOutbox();
       const key = getReportSyncKey(payload.directorate, payload.visitDate);
       // [P0 - D20] عدم تخزين رمز PIN داخل Outbox في localStorage أبداً
@@ -7780,11 +7899,12 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         visitDate: safePayload.visitDate || '',
         queuedAt: new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
         webhookUrl: webhookUrl || (document.getElementById('bakedGsUrlMeta')?.getAttribute('content') || '').trim(),
-        payload: safePayload
+        payload: safePayload, formDigest
       };
       const idx = list.findIndex(x => x.operationId === safePayload.operationId);
       if (idx >= 0) list[idx] = entry; else list.push(entry);
-      saveOfflineOutbox(list);
+      // Single durable storage write: never discard the old snapshot unless its reviewed replacement is stored.
+      saveOfflineOutbox(supersedeId?list.filter(x=>x.operationId!==supersedeId):list);
     }
     function removeFromOfflineOutbox(dir, dt, operationId) {
       const key = getReportSyncKey(dir, dt);
@@ -7806,14 +7926,20 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       }
       banner.classList.remove('hidden');
       if (titleEl) {
-        titleEl.textContent = `⏳ لديك (${list.length}) تقرير محفوظ بانتظار المزامنة — سيُرفع تلقائياً فور توفر الإنترنت (مع منع التكرار)`;
+        titleEl.textContent = `⏳ لديك (${list.length}) تقرير محفوظ بانتظار المزامنة${list.some(x=>x.needsReview)?' — يوجد طلب يحتاج مراجعة السجل السحابي قبل الاستبدال':' — سيُرفع بعد توفر الاتصال والجلسة الموثقة'}`;
       }
       if (listEl) {
         listEl.innerHTML = list.map(item => `
           <span class="inline-flex items-center gap-1 rounded-full bg-white border border-amber-300 px-2.5 py-0.5 text-amber-900">
-            📍 ${item.directorate} — 📅 ${item.visitDate ? fmtDateDMY(item.visitDate) : '-'} (${item.queuedAt || ''})
+            📍 ${moitEsc(item.directorate)} — 📅 ${moitEsc(item.visitDate ? fmtDateDMY(item.visitDate) : '-')} (${moitEsc(item.queuedAt || '')})
+            ${item.lastErrorCode?`<small class="text-rose-800">${moitEsc(item.lastErrorCode)} — ${moitEsc(item.lastError||'')}</small>`:''}
+            ${item.needsReview?`<button type="button" data-pending-export="${moitEsc(item.operationId)}" class="underline font-bold">تنزيل نسخة للمراجعة</button>`:''}
           </span>
         `).join('');
+        listEl.querySelectorAll('[data-pending-export]').forEach(btn=>btn.addEventListener('click',()=>{
+          const item=getOfflineOutbox().find(x=>x.operationId===btn.dataset.pendingExport);if(!item)return;
+          const blob=new Blob([JSON.stringify(item.payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MOIT-pending-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
+        }));
       }
     }
 
@@ -7832,7 +7958,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
     }
 
     async function processOfflineOutbox(isManual = false, forceUploadKey = null) {
-      if (_outboxSyncRunning) return;
+      if (_outboxSyncRunning||window.__moitDirectSubmitBusy) return;
       const list = getOfflineOutbox();
       if (!list.length) {
         if (isManual) showToast('لا توجد تقارير معلّقة بانتظار الرفع', '✅');
@@ -7855,6 +7981,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         for (const item of list) {
           const url = item.webhookUrl || defaultUrl;
           if (forceUploadKey && item.key !== forceUploadKey) {remaining.push(item);continue;}
+          if(item.needsReview&&!isManual){remaining.push(item);continue;}
           let session = moitDirSession(item.directorate);
           if (!session && isManual) { await window.promptCloudPinBeforeSubmit(item.directorate,'تأكيد الجلسة لمزامنة التقرير المعلق'); session=moitDirSession(item.directorate); }
           if (!session) { remaining.push(item); continue; }
@@ -7864,35 +7991,31 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             delete outboxPayload.dirPin; outboxPayload.sessionToken = session;
             if (!outboxPayload.operationId) outboxPayload.operationId = item.operationId || ('OP-'+moitUUID());
             item.operationId=outboxPayload.operationId; item.payload.operationId=outboxPayload.operationId;
-            if (outboxPayload.baseRevision == null) outboxPayload.baseRevision=0;
-            const postRes = await fetch(url, {
-              method: 'POST',
+            if (!Number.isSafeInteger(outboxPayload.baseRevision)||outboxPayload.baseRevision<0){item.lastErrorCode='REVISION_REQUIRED';item.lastError='إصدار الأساس مفقود؛ راجع التقرير السحابي';item.needsReview=true;remaining.push(item);continue;}
+            const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),30000);
+            let postRes;try{postRes = await fetch(url, {
+              signal:ctrl.signal,method: 'POST',
               redirect: 'follow',
               credentials: 'omit',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(outboxPayload)
-            });
+            });}finally{clearTimeout(tm);}
             let resJson = null;
             try { resJson = await postRes.json(); } catch (_e) { resJson = null; }
-            if (moitReceiptOK(resJson,outboxPayload)) {
+            if (postRes.ok && session===moitDirSession(item.directorate) && moitReceiptOK(resJson,outboxPayload)) {
               markReportSyncedLocal(item.directorate, item.visitDate);
               uploadedCount++;
-              // Never promote an open form revision from a different queued snapshot.
-            } else if (resJson && (resJson.code === 'INVALID_PIN' || resJson.code === 'LOCKED_OUT' || resJson.code === 'AUTH_REQUIRED')) {
-              remaining.push(item);
-              if (isManual) showToast(resJson.error || 'يلزم تأكيد رمز قفل المديرية لرفع التقرير المعلّق', '🔐');
-            } else if (resJson && resJson.code === 'REVISION_CONFLICT') {
-              remaining.push(item);
-              if (isManual) showToast(resJson.error || 'تعارض نسخ — يوجد تقرير أحدث في السحابة', '⚠️');
-            } else if (resJson && resJson.code === 'SERVER_BUSY') {
-              remaining.push(item);
-              if (isManual) showToast('الخادم مشغول لحظياً — سيتم إعادة المحاولة تلقائياً', '⏳');
+              await moitPromoteMatchingReceipt(resJson,outboxPayload,item.formDigest); // only the exact queued snapshot
             } else {
+              item.lastErrorCode=resJson?.code||'UNVERIFIED_RESPONSE';
+              item.lastError=String(resJson?.error||'لم يصل إيصال اعتماد موثوق من الخادم').slice(0,300);
+              item.needsReview=outboxReviewRequired(item.lastErrorCode);
               remaining.push(item);
-              if (isManual) showToast('لم يصل إيصال اعتماد موثوق من الخادم — أُبقي التقرير في صندوق الانتظار بأمان', '⚠️');
+              if(isManual)showToast(item.lastError+' — التقرير محفوظ في المعلق','⚠️');
             }
           } catch (err) {
-            remaining.push(item);
+            item.lastErrorCode='TRANSPORT_ERROR';item.lastError=String(err?.message||'تعذر الاتصال').slice(0,300);
+            remaining.push(item);if(isManual)showToast('تعذر تأكيد المزامنة — التقرير محفوظ','⚠️');
           }
         }
 
@@ -7945,6 +8068,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
       renderOfflineOutboxBanner();
       document.getElementById('syncOutboxNowBtn')?.addEventListener('click', () => processOfflineOutbox(true));
       document.getElementById('clearOutboxBtn')?.addEventListener('click', () => {
+        if(_outboxSyncRunning||window.__moitDirectSubmitBusy){showToast('انتظر انتهاء المزامنة أولاً','⚠️');return;}
         if (confirm('هل تريد مسح جميع التقارير المعلّقة في صندوق الانتظار؟')) {
           saveOfflineOutbox([]);
           showToast('تم تفريغ صندوق الانتظار', '🗑️');
@@ -7965,13 +8089,14 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
     // ==================== PHASE 1: LIVE SMART TYPO & RANGE GUARD (DIRECTORATES) ====================
     function getRealBaselineForItem(id) {
       // 1. Directorate's own last saved real prices
-      const dirMap = (typeof getRadarBaselinePrices === "function" ? getRadarBaselinePrices() : {}) || {};
+      const dirMap = (typeof getRadarBaselinePrices === "function" ? getRadarBaselinePrices().map : {}) || {};
       if (Number(dirMap[id]) > 0) return { val: Number(dirMap[id]), src: 'السعر السابق بالمديرية' };
       // 2. Most recent report in local phone history
       try {
         const hist = JSON.parse(localStorage.getItem('moit_aden_saved_reports_v1') || '[]');
         if (Array.isArray(hist)) {
           for (const h of hist) {
+            if(h?.state?.directorate!==document.getElementById('directorateSelect')?.value || !(h?.state?.visitDate < document.getElementById('visitDateInput')?.value)) continue;
             const v = parseNum(h?.state?.prices?.[id]);
             if (v > 0) return { val: v, src: 'آخر تقرير محفوظ' };
           }
@@ -8124,7 +8249,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
     function getDirPinGsUrl() {
       const saved = (localStorage.getItem('moit_aden_gs_url') || localStorage.getItem('moit_gs_webhook_url') || '').trim();
       const baked = (document.getElementById('bakedGsUrlMeta')?.getAttribute('content') || '').trim();
-      return saved || baked || 'https://script.google.com/macros/s/AKfycbyXCIhaQynkJJ3J9xb5sPLXOFMgiu2OcPT4GubAXmQy6gBjDrVVSOzKlDxN8CEhmgTI/exec';
+      return saved || baked || '';
     }
 
     function getPinLockoutState(dir) {
@@ -8178,8 +8303,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (e && e.name === 'AbortError') throw new Error('انتهت مهلة التحقق بسبب بطء الإنترنت — أعد المحاولة');
         throw new Error('تعذر الاتصال بالسيرفر للتحقق من رمز القفل — تحقق من الإنترنت');
       } finally { clearTimeout(tm); }
+      if(!res.ok)throw new Error('تعذر الوصول إلى خادم التحقق؛ راجع صلاحية النشر.');
       const raw = await res.text();
-      if (!raw || raw.trim().startsWith('<')) throw new Error('تأكد من نشر Code.gs v10 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
+      if (!raw || raw.trim().startsWith('<')) throw new Error('استجابة غير صالحة من خادم التحقق؛ راجع رابط النشر وصلاحياته.');
       return JSON.parse(raw);
     }
 
@@ -8204,7 +8330,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         modal.classList.remove('hidden');
         modal.classList.add('flex');
 
-        let lockInterval = null;
+        let lockInterval = null, pending=false, closed=false;
         const startCountdownIfNeeded = () => {
           const st = getPinLockoutState(directorate);
           const rem = (st.lockUntil || 0) - Date.now();
@@ -8240,6 +8366,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (!startCountdownIfNeeded()) setTimeout(() => inp.focus(), 100);
 
         const finish = (pinVal) => {
+          if(closed)return;closed=true;inp.value='';
           if (lockInterval) { clearInterval(lockInterval); lockInterval = null; }
           modal.classList.add('hidden');
           modal.classList.remove('flex');
@@ -8251,7 +8378,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         btnClose.onclick = () => finish(null);
 
         const validateAndSubmit = async () => {
-          if (startCountdownIfNeeded()) return;
+          if (closed || pending || startCountdownIfNeeded()) return;
           const entered = normalizeDirPinStr(inp.value);
           if (entered.length < 4) {
             errEl.textContent = '⚠️ أدخل رمز القفل السري (4 أرقام على الأقل).';
@@ -8263,14 +8390,16 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             finish('offline-draft');
             return;
           }
-          btnOk.disabled = true;
+          pending=true;btnOk.disabled = true;
           btnOk.textContent = '⏳ جارٍ التحقق السحابي...';
           try {
             const j = await verifyDirPinOnServer(directorate, entered);
+            if(closed)return;
             if (j && j.status === 'success' && j.valid && j.sessionToken) {
               window.__moitDirSessions[directorate]=j.sessionToken; window.__dirSessionToken=j.sessionToken;
               savePinLockoutState(directorate, { fails: 0, lockUntil: 0 });
               finish(entered);
+              if(typeof refreshCentralGasAgents==='function')void refreshCentralGasAgents(false);
               return;
             }
             if (j && j.code === 'LOCKED_OUT') {
@@ -8279,23 +8408,15 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               startCountdownIfNeeded();
               return;
             }
-            const st = getPinLockoutState(directorate);
-            const fails = (st.fails || 0) + 1;
-            if (fails >= DIR_PIN_MAX_ATTEMPTS) {
-              savePinLockoutState(directorate, { fails, lockUntil: Date.now() + DIR_PIN_LOCKOUT_MS });
-              startCountdownIfNeeded();
-            } else {
-              savePinLockoutState(directorate, { fails, lockUntil: 0 });
-              errEl.textContent = '❌ ' + (j?.error || `رمز القفل غير صحيح — تبقى لك (${DIR_PIN_MAX_ATTEMPTS - fails}) محاولة.`);
-              errEl.classList.remove('hidden');
-              btnOk.disabled = false; btnOk.textContent = '✅ تحقق وإرسال';
-              inp.select();
-            }
+            if(j?.code!=='INVALID_PIN')throw new Error('تعذر التحقق من الخادم؛ لم تُحتسب محاولة خاطئة محليًا.');
+            errEl.textContent='❌ '+(j.error||'رمز القفل غير صحيح')+(Number.isInteger(j.remainingAttempts)?' — المحاولات المتبقية: '+j.remainingAttempts:'');
+            errEl.classList.remove('hidden');btnOk.disabled=false;btnOk.textContent='✅ تحقق وإرسال';inp.select();
           } catch (err) {
+            if(closed)return;
             errEl.textContent = '⚠️ ' + explainDirErrorSmart(err, 'تعذر التحقق من الرمز — تأكد من الإنترنت وأعد المحاولة');
             errEl.classList.remove('hidden');
             btnOk.disabled = false; btnOk.textContent = '✅ تحقق وإرسال';
-          }
+          } finally {pending=false;}
         };
 
         btnOk.onclick = validateAndSubmit;
@@ -8576,19 +8697,19 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           : (r.level === 'review'
             ? '<span class="inline-block px-2 py-0.5 rounded-full bg-amber-500 text-[#0f2942] text-[10px] font-black">🟡 يحتاج مراجعة</span>'
             : '<span class="inline-block px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black">🟢 مؤكد</span>');
-        const reasonTxt = r.reasons.length ? `<div class="text-[10.5px] font-bold text-slate-600 mt-0.5">${r.reasons.join(' • ')}</div>` : '';
+        const reasonTxt = r.reasons.length ? `<div class="text-[10.5px] font-bold text-slate-600 mt-0.5">${moitEsc(r.reasons.join(' • '))}</div>` : '';
         return `
-          <tr class="${rowCls}" data-ocr-item-id="${r.id}">
+          <tr class="${rowCls}" data-ocr-item-id="${moitEsc(r.id)}">
             <td class="p-2 text-center">
-              <input type="checkbox" class="ocr-row-chk w-4 h-4 accent-emerald-600" ${r.checked ? 'checked' : ''} onchange="togglePriceOcrRow('${r.id}', this.checked)" />
+              <input type="checkbox" class="ocr-row-chk w-4 h-4 accent-emerald-600" ${r.checked ? 'checked' : ''} data-v54-ocr-check />
             </td>
             <td class="p-2">
-              <div class="font-black text-[#0f2942]">${r.name} <span class="text-slate-500 font-bold">(${r.unit || 'كجم'})</span></div>
-              <div class="text-[10px] font-bold text-slate-400">${r.cat}</div>
+              <div class="font-black text-[#0f2942]">${moitEsc(r.name)} <span class="text-slate-500 font-bold">(${moitEsc(r.unit || 'كجم')})</span></div>
+              <div class="text-[10px] font-bold text-slate-400">${moitEsc(r.cat)}</div>
             </td>
             <td class="p-2 text-center">
               <input type="text" inputmode="numeric" dir="ltr" value="${r.price > 0 ? r.price : ''}" placeholder="${r.level === 'unclear' ? 'أدخل السعر يدوياً' : '0'}"
-                oninput="updatePriceOcrRowVal('${r.id}', this.value)"
+                data-v54-ocr-price
                 class="w-28 text-center font-black rounded-lg border ${r.level === 'unclear' ? 'border-rose-400 bg-white' : (r.level === 'review' ? 'border-amber-400 bg-white' : 'border-slate-300 bg-white')} px-2 py-1 text-xs" />
             </td>
             <td class="p-2 text-center font-bold text-slate-500" dir="ltr">${r.baseline > 0 ? fmtNum(r.baseline) : '—'}</td>
@@ -8596,6 +8717,8 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           </tr>`;
       }).join('');
 
+      tbody.querySelectorAll('[data-v54-ocr-check]').forEach(el=>el.addEventListener('change',()=>window.togglePriceOcrRow(el.closest('[data-ocr-item-id]').dataset.ocrItemId,el.checked)));
+      tbody.querySelectorAll('[data-v54-ocr-price]').forEach(el=>el.addEventListener('input',()=>window.updatePriceOcrRowVal(el.closest('[data-ocr-item-id]').dataset.ocrItemId,el.value)));
       if (applyBtn) {
         const validChecked = _priceOcrRows.filter(r => r.checked && r.price > 0).length;
         applyBtn.disabled = validChecked === 0 && !parseNum(document.getElementById('ocrFxUsdSell')?.value) && !parseNum(document.getElementById('ocrFxSarSell')?.value);
@@ -8700,7 +8823,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
           thumbsEl.innerHTML = _priceOcrPreparedFiles.map((f, idx) => f.isPdf
             ? `<div class="px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-black text-[11px]">📄 PDF (${idx + 1}): ${f.name.slice(0, 22)}</div>`
             : `<button type="button" onclick="openPriceOcrZoom(${idx})" class="group relative rounded-xl overflow-hidden border-2 border-slate-300 hover:border-amber-500 h-16 w-20 bg-white" title="اضغط للتكبير">
-                 <img src="${f.dataUrl}" class="h-full w-full object-cover" />
+                 <img src="${MoitClosure.safeImageSrc(f.dataUrl)}" class="h-full w-full object-cover" />
                  <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] font-bold">🔍 صفحة ${idx + 1}</span>
                </button>`
           ).join('');
@@ -8884,7 +9007,7 @@ ${catalogText}`;
           if (fxWarns.length) showToast('⚠️ راجع أسعار الصرف المستخرجة: ' + fxWarns.join(' • '), '💱');
 
           const catMap = new Map(catalog.map(c => [c.id, c]));
-          const baselineMap = (typeof getRadarBaselinePrices === 'function' ? getRadarBaselinePrices() : {}) || {};
+          const baselineMap = (typeof getRadarBaselinePrices === 'function' ? getRadarBaselinePrices().map : {}) || {};
 
           _priceOcrRows = [];
           const seenIds = new Set();
@@ -10045,8 +10168,8 @@ ${catalogText}`;
       const gasRows = [];
       document.querySelectorAll('#gasTbody tr').forEach(tr => {
         const agent = tr.querySelector('.gas-agent')?.value?.trim() || '';
-        const qty = parseNum(tr.querySelector('.gas-qty')?.value);
-        if (agent || qty > 0) {
+        const qty = tr.querySelector('.gas-qty')?.value??'';
+        if (agent || qty!=='' || tr.querySelector('.gas-status')?.value==='موقف') {
           gasRows.push({
             agent,
             loc: tr.querySelector('.gas-loc')?.value?.trim() || '',
@@ -10069,6 +10192,8 @@ ${catalogText}`;
       });
       return {
         savedAt: new Date().toISOString(),
+        fullState: typeof window.collectFullFormState === 'function' ? window.collectFullFormState() : null,
+        gasObservationVersion:1,gasZeroConfirmed:document.getElementById('v54GasZeroConfirmed')?.checked===true,
         directorate: document.getElementById('directorateSelect')?.value || '',
         visitDate: document.getElementById('visitDateInput')?.value || '',
         usdSell: document.getElementById('usdSell')?.value || '',
@@ -10093,7 +10218,20 @@ ${catalogText}`;
 
     function restoreDirAutoDraftV40(d) {
       if (!d) return;
-      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== '') el.value = v; };
+      if (d.fullState && typeof window.applyFullFormState === 'function') {
+        if(!confirm('استعادة المسودة ستستبدل محتويات النموذج الحالي. هل تريد المتابعة؟'))return;
+        window.applyFullFormState(d.fullState);
+        document.querySelector('main').dispatchEvent(new Event('change'));
+        document.getElementById('dirAutoDraftRestoreBar')?.remove();
+        showToast('♻️ تم استعادة المسودة الكاملة','✅');
+        return;
+      }
+      // Legacy draft contains only a subset; never merge it into a different report.
+      if (d.directorate !== document.getElementById('directorateSelect')?.value || d.visitDate !== document.getElementById('visitDateInput')?.value) {
+        showToast('مسودة قديمة جزئية تخص تقريراً آخر؛ استخدم سجل الحفظ الكامل لاستعادتها دون خلط البيانات.','⚠️');return;
+      }
+      if(!confirm('هذه مسودة جزئية قديمة. هل تريد استعادة حقولها المتاحة في التقرير الحالي؟'))return;
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null) el.value = v; };
       setVal('directorateSelect', d.directorate);
       setVal('visitDateInput', d.visitDate);
       setVal('usdSell', d.usdSell);
@@ -10108,22 +10246,21 @@ ${catalogText}`;
       if (d.prices) {
         document.querySelectorAll('.price-input').forEach(inp => {
           const id = inp.getAttribute('data-price-id') || inp.getAttribute('data-id') || inp.id;
-          if (id && d.prices[id] > 0) inp.value = Number(d.prices[id]).toLocaleString('en-US');
+          inp.value = id && d.prices[id] > 0 ? Number(d.prices[id]).toLocaleString('en-US') : '';
         });
       }
-      if (Array.isArray(d.gasRows) && d.gasRows.length) {
+      document.getElementById('v54GasZeroConfirmed').checked=d.gasObservationVersion===1&&d.gasZeroConfirmed===true;
+      if (Array.isArray(d.gasRows)) {
         const tb = document.getElementById('gasTbody');
         if (tb) {
-          while (tb.children.length < d.gasRows.length && typeof appendGasRow === 'function') {
-            appendGasRow(tb.children.length + 1);
-          }
+          renderGasRows(Math.max(7,d.gasRows.length));
           d.gasRows.forEach((g, idx) => {
             const tr = tb.children[idx];
             if (!tr) return;
             if (tr.querySelector('.gas-agent')) tr.querySelector('.gas-agent').value = g.agent || '';
             if (tr.querySelector('.gas-loc')) tr.querySelector('.gas-loc').value = g.loc || '';
             if (tr.querySelector('.gas-phone')) tr.querySelector('.gas-phone').value = g.phone || '';
-            if (tr.querySelector('.gas-qty')) tr.querySelector('.gas-qty').value = g.qty || '';
+            if (tr.querySelector('.gas-qty')) tr.querySelector('.gas-qty').value = d.gasObservationVersion===1?(g.qty??''):(Number(g.qty)>0?g.qty:'');
             if (tr.querySelector('.gas-status') && g.status) tr.querySelector('.gas-status').value = g.status;
             if (tr.querySelector('.gas-notes')) tr.querySelector('.gas-notes').value = g.notes || '';
             if (typeof applyGasRowVisualStyle === 'function') applyGasRowVisualStyle(tr);
@@ -10133,13 +10270,13 @@ ${catalogText}`;
       if (d.viols) {
         document.querySelectorAll('.viol-input').forEach((inp, idx) => {
           const k = inp.id || ('v_' + idx);
-          if (d.viols[k] > 0) inp.value = d.viols[k];
+          inp.value = d.viols[k] ?? 0;
         });
       }
       if (d.acts) {
         document.querySelectorAll('.act-input').forEach((inp, idx) => {
           const k = inp.id || ('a_' + idx);
-          if (d.acts[k] > 0) inp.value = d.acts[k];
+          inp.value = d.acts[k] ?? 0;
         });
       }
       if (typeof updateGasStatusSummaries === 'function') updateGasStatusSummaries();
@@ -10156,8 +10293,13 @@ ${catalogText}`;
         saveTimer = setTimeout(() => {
           try {
             const d = collectDirAutoDraftV40();
-            const hasContent = Object.keys(d.prices).length > 0 || d.gasRows.length > 0 || Object.keys(d.viols).length > 0 || Boolean(d.usdSell);
-            if (hasContent) localStorage.setItem(DIR_AUTODRAFT_KEY_V40, JSON.stringify(d));
+            if(!d.fullState?.directorate && !d.directorate)return;
+            const primary=JSON.parse(localStorage.getItem('moit_aden_last_saved_report_v2')||'null');
+            if(primary && d.fullState){
+              const {_savedAt,_savedAtIso,...saved}=primary;
+              if(JSON.stringify(saved)===JSON.stringify(d.fullState))return; // primary already holds a complete copy, including photos
+            }
+            localStorage.setItem(DIR_AUTODRAFT_KEY_V40, JSON.stringify(d));
           } catch (_e) { /* quota safe */ }
         }, 2000);
       };
@@ -10170,14 +10312,14 @@ ${catalogText}`;
           const raw = localStorage.getItem(DIR_AUTODRAFT_KEY_V40);
           if (!raw) return;
           const d = JSON.parse(raw);
-          // v41: Auto-expire drafts older than 48 hours
-          if (d && d.savedAt && (Date.now() - new Date(d.savedAt).getTime()) > 48 * 3600 * 1000) {
-            clearDirAutoDraftV40();
-            return;
-          }
+          // The primary full snapshot is restored on startup. Do not let an older partial draft overwrite it.
+          const primary=JSON.parse(localStorage.getItem('moit_aden_last_saved_report_v2')||'null');
+          if(primary && primary.directorate===d.directorate && primary.visitDate===d.visitDate &&
+             (!d.fullState || (primary._savedAtIso && primary._savedAtIso>=d.savedAt)))return;
+          // Do not silently delete an unsent draft solely because it is old.
           const pCnt = d && d.prices ? Object.keys(d.prices).length : 0;
           const gCnt = d && Array.isArray(d.gasRows) ? d.gasRows.length : 0;
-          if (pCnt === 0 && gCnt === 0 && !d.usdSell) return;
+          if (!d.fullState && pCnt === 0 && gCnt === 0 && !d.usdSell && !d.gasZeroConfirmed && !Object.keys(d.viols||{}).length && !Object.keys(d.acts||{}).length) return;
 
           const todayIso = new Date().toISOString().slice(0, 10);
           const isOldDay = Boolean(d.visitDate && d.visitDate !== todayIso);
@@ -10185,9 +10327,9 @@ ${catalogText}`;
           const bar = document.createElement('div');
           bar.id = 'dirAutoDraftRestoreBar';
           bar.className = 'no-print fixed top-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-lg z-[88] flex flex-wrap items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border backdrop-blur-md ' + (isOldDay ? 'border-amber-400/70 bg-amber-950/95 text-amber-100' : 'border-emerald-400/60 bg-[#0f2942]/95 text-white');
-          const dirTxt = d.directorate ? `لمديرية ${d.directorate}` : 'غير مرسلة';
+          const dirTxt = d.directorate ? `لمديرية ${moitEsc(d.directorate)}` : 'غير مرسلة';
           bar.innerHTML = `
-            <span>${isOldDay ? '⚠️ مسودة من يوم سابق (' + dateLabel + ')' : '💾 لديك مسودة تلقائية'} ${dirTxt} (${pCnt} سلعة • ${gCnt} وكيل غاز)</span>
+            <span>${isOldDay ? '⚠️ مسودة من يوم سابق (' + moitEsc(dateLabel) + ')' : '💾 لديك مسودة تلقائية'} ${dirTxt} (${pCnt} سلعة • ${gCnt} وكيل غاز)</span>
             <div class="flex items-center gap-1.5">
               <button id="dirRestoreDraftNowBtn" type="button" class="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#0b1c36] font-black text-xs transition">♻️ استعادة</button>
               <button id="dirDismissDraftNowBtn" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition">تجاهل</button>
