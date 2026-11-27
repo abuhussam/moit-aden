@@ -744,7 +744,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 </script>
 </head>
 <body class="min-h-screen flex flex-col">
-  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54.1 RC — نسخة اختبار معزولة، غير معتمدة للنشر الإنتاجي</div>
+  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54.1 — مرشح الاعتماد النهائي (LAB)، غير معتمد للإنتاج</div>
 
 
   <!-- ==================== OFFICIAL HEADER ==================== -->
@@ -1936,11 +1936,11 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         <!-- 4 Gas KPIs -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div class="rounded-xl border border-amber-200 bg-amber-50 p-3">
-            <div class="text-[11px] font-extrabold text-amber-800">🔥 إجمالي الأسطوانات المُشرف عليها</div>
+            <div class="text-[11px] font-extrabold text-amber-800">🔥 إجمالي الأسطوانات المُشرف عليها (التاريخ والمديرية)</div>
             <div id="gasKpiTotalCyl" class="text-xl font-black text-[#0b1c36] mt-1">0</div>
           </div>
           <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-            <div class="text-[11px] font-extrabold text-emerald-800">👤 الوكلاء المصروف لهم / مرات الصرف</div>
+            <div class="text-[11px] font-extrabold text-emerald-800">👤 الوكلاء المصروف لهم / مرات الصرف (حسب مرشحات الكشف)</div>
             <div id="gasKpiActiveAgents" class="text-xl font-black text-emerald-900 mt-1">0 / 0</div>
           </div>
           <div class="rounded-xl border border-rose-200 bg-rose-50 p-3">
@@ -1953,6 +1953,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           </div>
         </div>
 
+        <div id="gasDetailsCoverageNote" class="text-[11px] font-bold text-amber-800" role="status"></div>
         <!-- Repeat Stopped Gas Agents Alert Card -->
         <div id="gasRepeatStoppedCard" class="hidden rounded-xl border-2 border-rose-300 bg-rose-50/80 p-3 space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -3267,7 +3268,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         showToast(`تمت المزامنة: ${allReports.length} تقرير`, '✅');
         refreshAllViews();
       } else {
-        setSyncStatus('error', 'استجابة غير متوقعة من Google Sheets.');
+        setSyncStatus('error', data?.status==='error' ? String(data.error||data.code||'رفض الخادم المزامنة')+' — لم تُستبدل البيانات السابقة' : 'استجابة غير متوقعة من Google Sheets — لم تُستبدل البيانات السابقة.');
       }
       btn.disabled = false; btn.innerHTML = '<span>🔄</span><span>مزامنة فورية</span>';
     }
@@ -4166,7 +4167,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       });
       // Auto-learn any new agents coming from directorate reports
       allReports.forEach(r => {
-        (r.gasRows || []).forEach(g => {
+        (r.gasRows || []).forEach((g,rowIndex) => {
           const nm = (g.agent || '').trim();
           if (!nm) return;
           const key = r.directorate + '|' + v54AgentNameKey(nm);
@@ -4204,14 +4205,13 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           const nm = (g.agent || '').trim();
           const loc = (g.loc || '').trim();
           const phone = (g.phone || '').trim();
-          const qty = MoitAnalytics.number(g.qty,{integer:true}).value;
-          const status = (g.status || (qty === 0 && (g.notes || '').includes('موقف') ? 'موقف' : 'صرف طبيعي')).trim();
+          const {qty,status,used}=MoitAnalytics.gasRowInfo(g);
           const notes = (g.notes || '').trim();
-          if (!nm && !loc && qty===null && status === 'صرف طبيعي') return;
+          if (!used) return;
           if (stF && status !== stF) return;
           if (q && !(nm + ' ' + loc + ' ' + phone + ' ' + r.directorate + ' ' + notes).toLowerCase().includes(q)) return;
 
-          const key = r.directorate + '|' + (nm || loc);
+          const key = MoitAnalytics.gasAgentKey(r.directorate,g)||JSON.stringify([r.directorate,r.reportId||r.visitDate,rowIndex,'unidentified']);
           if (!agentMap.has(key)) {
             agentMap.set(key, { dir: r.directorate, name: nm || '(غير مسمى)', addr: loc, phone, dispatches: 0, totalCyl: null, missingQty:0, stopCount: 0, coverCount: 0, lastDate: r.visitDate || '', lastStatus: status, lastNotes: notes });
           }
@@ -4222,9 +4222,9 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           if (status === 'موقف') {
             rec.stopCount++;
             stoppedEvents.push({ date: r.visitDate || '-', dir: r.directorate, name: nm || loc, addr: loc, phone, notes: notes || 'موقف' });
-            if (dStat) dStat.stoppedSet.add(nm || loc);
-          } else if (qty > 0 && dStat) {
-            dStat.activeSet.add(nm || loc);
+            if (dStat&&status!=='معرض الشركة'&&MoitAnalytics.gasAgentKey(r.directorate,g)) dStat.stoppedSet.add(key);
+          } else if (qty > 0 && dStat&&status!=='معرض الشركة'&&MoitAnalytics.gasAgentKey(r.directorate,g)) {
+            dStat.activeSet.add(key);
           }
           if (status === 'تغطية مربع وكيل') { rec.coverCount++; if (dStat) dStat.coverCnt++; }
           if (status === 'معرض الشركة' && dStat && qty!==null) dStat.showroomCyl=(dStat.showroomCyl??0)+qty;
@@ -4237,23 +4237,26 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       });
 
       const agentLedger = Array.from(agentMap.values()).sort((a, b) => b.totalCyl - a.totalCyl || b.stopCount - a.stopCount);
-      const dirSummary = Array.from(dirMap.values()).map(x => ({
-        dir: x.dir, reports: x.reports, totalCyl:MoitAnalytics.aggregate(reps.filter(r=>r.directorate===x.dir),'gasTotal').value, activeAgents: x.activeSet.size, stoppedAgents: x.stoppedSet.size, coverCnt: x.coverCnt, showroomCyl: x.showroomCyl
-      }));
+      const detailFilter=(r,g,z)=>(!stF||z.status===stF)&&(!q||[g.agent,g.loc,g.phone,r.directorate,g.notes].map(v=>String(v||'').trim()).join(' ').toLowerCase().includes(q));
+      const gasDetails=MoitAnalytics.gasDetails(reps,detailFilter);
+      const dirSummary = Array.from(dirMap.values()).map(x => {const scoped=reps.filter(r=>r.directorate===x.dir),detail=MoitAnalytics.gasDetails(scoped,detailFilter);return {
+        dir: x.dir, reports: x.reports, totalCyl:MoitAnalytics.aggregate(scoped,'gasTotal').value, activeAgents: detail.active, stoppedAgents: detail.stopped, coverCnt: x.coverCnt, showroomCyl: x.showroomCyl
+      };});
       const allDb = getAllOpsGasAgentsFlat();
       const filteredDb = allDb.filter(a => (!dirF || a.dir === dirF) && (!q || (a.name + ' ' + a.addr + ' ' + a.phone + ' ' + a.dir).toLowerCase().includes(q)));
       const totCyl=MoitAnalytics.aggregate(reps,'gasTotal').value;
-      const totDispatches = agentLedger.reduce((s, a) => s + a.dispatches, 0);
-      return { f, t, dirF, stF, q, reps, agentLedger, stoppedEvents, dirSummary, allDb, filteredDb, totCyl, totDispatches, registrySource:v54AgentRegistry.enabled?'سجل مركزي اختباري + مرشحون من التقارير والجهاز (غير معتمدين).':'سجل الوكلاء يجمع التقارير وإضافات هذا الجهاز؛ السجل المركزي غير مهيأ.' };
+      const totDispatches = gasDetails.dispatches;
+      return { f, t, dirF, stF, q, reps, agentLedger, stoppedEvents, dirSummary, allDb, filteredDb, totCyl, totDispatches, gasDetails, registrySource:v54AgentRegistry.enabled?'سجل مركزي اختباري + مرشحون من التقارير والجهاز (غير معتمدين).':'سجل الوكلاء يجمع التقارير وإضافات هذا الجهاز؛ السجل المركزي غير مهيأ.' };
     }
 
     function renderGasAnalyticsPanel() {
       const d = computeGasAnalyticsData();
       const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
       setTxt('gasKpiTotalCyl', fmtNum(d.totCyl));
-      setTxt('gasKpiActiveAgents', `${fmtNum(d.agentLedger.filter(a => a.totalCyl > 0).length)} / ${fmtNum(d.totDispatches)}`);
-      setTxt('gasKpiStoppedAgents', fmtNum(d.agentLedger.filter(a => a.stopCount > 0).length));
+      setTxt('gasKpiActiveAgents', `${fmtNum(d.gasDetails.active)} / ${fmtNum(d.totDispatches)}`);
+      setTxt('gasKpiStoppedAgents', fmtNum(d.gasDetails.stopped));
       setTxt('gasKpiDbCount', fmtNum(d.allDb.length));
+      setTxt('gasDetailsCoverageNote', [d.gasDetails.unidentified?`${d.gasDetails.unidentified} صفاً دون هوية وكيل كافية؛ لم تدخل عد الوكلاء المتميزين.`:'',d.gasDetails.missingQty?`${d.gasDetails.missingQty} كمية غير مرصودة.`:''].filter(Boolean).join(' '));
       setTxt('gasDbFilteredCount', `${fmtNum(d.filteredDb.length)} وكيل/معرض — ${d.registrySource}`);
       if (typeof renderGasRepeatStoppedCard === 'function') renderGasRepeatStoppedCard(d);
 
@@ -4306,16 +4309,16 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       return `
         ${buildKpiCardsRow([
           { label: 'إجمالي الأسطوانات', value: fmtNum(d.totCyl), tone: 'amber' },
-          { label: 'الوكلاء المصروف لهم', value: fmtNum(d.agentLedger.filter(a => a.totalCyl > 0).length), tone: 'emerald' },
-          { label: 'الوكلاء الموقفين ⛔', value: fmtNum(d.agentLedger.filter(a => a.stopCount > 0).length), tone: 'rose' },
+          { label: 'الوكلاء المصروف لهم', value: fmtNum(d.gasDetails.active), tone: 'emerald' },
+          { label: 'الوكلاء الموقفين ⛔', value: fmtNum(d.gasDetails.stopped), tone: 'rose' },
           { label: 'سجل الوكلاء (مركزي/مرشحون)', value: fmtNum(d.allDb.length), tone: 'indigo' }
         ])}
-        <p>${escHtml(d.registrySource)}</p><p>إجمالي الغاز حسب التقارير في نطاق التاريخ والمديرية؛ تفاصيل الوكلاء حسب مرشحات الحالة والبحث. الكمية غير المرصودة لا تُحتسب صفرًا؛ المجاميع التفصيلية للمتوفر فقط.</p>
+        <p>${escHtml(d.registrySource)}</p><p>إجمالي الغاز حسب التقارير في نطاق التاريخ والمديرية؛ تفاصيل الوكلاء حسب مرشحات الحالة والبحث. الكمية غير المرصودة لا تُحتسب صفرًا؛ المجاميع التفصيلية للمتوفر فقط. ${d.gasDetails.unidentified?escHtml(String(d.gasDetails.unidentified))+" صفاً دون هوية كافية لا تدخل في عد الوكلاء المتميزين.":""} ${d.gasDetails.missingQty?escHtml(String(d.gasDetails.missingQty))+" كمية غير مرصودة.":""}</p>
         ${buildSecTitle('01', 'ملخص الإشراف على توزيع الغاز حسب المديريات الثمان')}
         <table class="rep">
           <tr><th>المديرية</th><th>التقارير</th><th>إجمالي الأسطوانات</th><th>وكلاء نشطين</th><th>موقفين</th><th>تغطية مربع</th><th>معارض الشركة</th></tr>
           ${d.dirSummary.map(x => `<tr><td><strong>${escHtml(x.dir)}</strong></td><td>${fmtNum(x.reports)}</td><td><strong>${fmtNum(x.totalCyl)}</strong></td><td>${fmtNum(x.activeAgents)}</td><td>${fmtNum(x.stoppedAgents)}</td><td>${fmtNum(x.coverCnt)}</td><td>${fmtNum(x.showroomCyl)}</td></tr>`).join('')}
-          <tr class="total-row"><td>الإجمالي العام</td><td>${fmtNum(d.reps.length)}</td><td>${fmtNum(d.totCyl)}</td><td>${fmtNum(d.agentLedger.filter(a => a.totalCyl > 0).length)}</td><td>${fmtNum(d.agentLedger.filter(a => a.stopCount > 0).length)}</td><td>${fmtNum(d.dirSummary.reduce((s,x)=>s+x.coverCnt,0))}</td><td>${fmtNum(d.dirSummary.some(x=>x.showroomCyl!==null)?d.dirSummary.reduce((s,x)=>s+(x.showroomCyl??0),0):null)}</td></tr>
+          <tr class="total-row"><td>الإجمالي العام</td><td>${fmtNum(d.reps.length)}</td><td>${fmtNum(d.totCyl)}</td><td>${fmtNum(d.gasDetails.active)}</td><td>${fmtNum(d.gasDetails.stopped)}</td><td>${fmtNum(d.dirSummary.reduce((s,x)=>s+x.coverCnt,0))}</td><td>${fmtNum(d.dirSummary.some(x=>x.showroomCyl!==null)?d.dirSummary.reduce((s,x)=>s+(x.showroomCyl??0),0):null)}</td></tr>
         </table>
         ${buildSecTitle('02', 'كشف الصرف التراكمي للوكلاء ورصد الموقفين خلال الفترة')}
         <table class="rep">
