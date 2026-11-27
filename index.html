@@ -812,6 +812,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
  const method=String(init.method||'GET').toUpperCase(); let body;
  if(method==='GET'){body={action:'read_data',days:u.searchParams.get('days')||'all'};}
  else {try{body=JSON.parse(init.body);}catch(_){return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});}}
+ if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});
  const dir=body.directorate||document.getElementById('directorateSelect')?.value||'';
  if(!['verify_dir_pin','change_dir_pin'].includes(body.action)){body.sessionToken=moitDirSession(dir); delete body.dirPin;}
  if(!body.sessionToken&&!['verify_dir_pin','change_dir_pin'].includes(body.action))return new Response(JSON.stringify({status:'error',code:'AUTH_REQUIRED',error:'يلزم توثيق جلسة المديرية'}),{headers:{'Content-Type':'application/json'}});
@@ -821,7 +822,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
 </script>
 </head>
 <body class="min-h-screen pb-12">
-  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54 RC — نسخة اختبار معزولة، غير معتمدة للنشر الإنتاجي</div>
+  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54.1 RC — نسخة اختبار معزولة، غير معتمدة للنشر الإنتاجي</div>
 
 
   <!-- Toast Notification -->
@@ -7889,16 +7890,17 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             if (!outboxPayload.operationId) outboxPayload.operationId = item.operationId || ('OP-'+moitUUID());
             item.operationId=outboxPayload.operationId; item.payload.operationId=outboxPayload.operationId;
             if (outboxPayload.baseRevision == null) outboxPayload.baseRevision=0;
-            const postRes = await fetch(url, {
-              method: 'POST',
+            const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),30000);
+            let postRes;try{postRes = await fetch(url, {
+              signal:ctrl.signal,method: 'POST',
               redirect: 'follow',
               credentials: 'omit',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(outboxPayload)
-            });
+            });}finally{clearTimeout(tm);}
             let resJson = null;
             try { resJson = await postRes.json(); } catch (_e) { resJson = null; }
-            if (postRes.ok && moitReceiptOK(resJson,outboxPayload)) {
+            if (postRes.ok && session===moitDirSession(item.directorate) && moitReceiptOK(resJson,outboxPayload)) {
               markReportSyncedLocal(item.directorate, item.visitDate);
               uploadedCount++;
               // Never promote an open form revision from a different queued snapshot.
@@ -8202,8 +8204,9 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (e && e.name === 'AbortError') throw new Error('انتهت مهلة التحقق بسبب بطء الإنترنت — أعد المحاولة');
         throw new Error('تعذر الاتصال بالسيرفر للتحقق من رمز القفل — تحقق من الإنترنت');
       } finally { clearTimeout(tm); }
+      if(!res.ok)throw new Error('تعذر الوصول إلى خادم التحقق؛ راجع صلاحية النشر.');
       const raw = await res.text();
-      if (!raw || raw.trim().startsWith('<')) throw new Error('تأكد من نشر Code.gs v10 عبر «الإصدار الجديد» بصلاحية «أي شخص»');
+      if (!raw || raw.trim().startsWith('<')) throw new Error('استجابة غير صالحة من خادم التحقق؛ راجع رابط النشر وصلاحياته.');
       return JSON.parse(raw);
     }
 
@@ -8228,7 +8231,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         modal.classList.remove('hidden');
         modal.classList.add('flex');
 
-        let lockInterval = null;
+        let lockInterval = null, pending=false, closed=false;
         const startCountdownIfNeeded = () => {
           const st = getPinLockoutState(directorate);
           const rem = (st.lockUntil || 0) - Date.now();
@@ -8264,6 +8267,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         if (!startCountdownIfNeeded()) setTimeout(() => inp.focus(), 100);
 
         const finish = (pinVal) => {
+          if(closed)return;closed=true;inp.value='';
           if (lockInterval) { clearInterval(lockInterval); lockInterval = null; }
           modal.classList.add('hidden');
           modal.classList.remove('flex');
@@ -8275,7 +8279,7 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
         btnClose.onclick = () => finish(null);
 
         const validateAndSubmit = async () => {
-          if (startCountdownIfNeeded()) return;
+          if (closed || pending || startCountdownIfNeeded()) return;
           const entered = normalizeDirPinStr(inp.value);
           if (entered.length < 4) {
             errEl.textContent = '⚠️ أدخل رمز القفل السري (4 أرقام على الأقل).';
@@ -8287,10 +8291,11 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
             finish('offline-draft');
             return;
           }
-          btnOk.disabled = true;
+          pending=true;btnOk.disabled = true;
           btnOk.textContent = '⏳ جارٍ التحقق السحابي...';
           try {
             const j = await verifyDirPinOnServer(directorate, entered);
+            if(closed)return;
             if (j && j.status === 'success' && j.valid && j.sessionToken) {
               window.__moitDirSessions[directorate]=j.sessionToken; window.__dirSessionToken=j.sessionToken;
               savePinLockoutState(directorate, { fails: 0, lockUntil: 0 });
@@ -8304,23 +8309,15 @@ function moitReceiptOK(j,p){return !!(j&&j.status==='success'&&j.state==='COMMIT
               startCountdownIfNeeded();
               return;
             }
-            const st = getPinLockoutState(directorate);
-            const fails = (st.fails || 0) + 1;
-            if (fails >= DIR_PIN_MAX_ATTEMPTS) {
-              savePinLockoutState(directorate, { fails, lockUntil: Date.now() + DIR_PIN_LOCKOUT_MS });
-              startCountdownIfNeeded();
-            } else {
-              savePinLockoutState(directorate, { fails, lockUntil: 0 });
-              errEl.textContent = '❌ ' + (j?.error || `رمز القفل غير صحيح — تبقى لك (${DIR_PIN_MAX_ATTEMPTS - fails}) محاولة.`);
-              errEl.classList.remove('hidden');
-              btnOk.disabled = false; btnOk.textContent = '✅ تحقق وإرسال';
-              inp.select();
-            }
+            if(j?.code!=='INVALID_PIN')throw new Error('تعذر التحقق من الخادم؛ لم تُحتسب محاولة خاطئة محليًا.');
+            errEl.textContent='❌ '+(j.error||'رمز القفل غير صحيح')+(Number.isInteger(j.remainingAttempts)?' — المحاولات المتبقية: '+j.remainingAttempts:'');
+            errEl.classList.remove('hidden');btnOk.disabled=false;btnOk.textContent='✅ تحقق وإرسال';inp.select();
           } catch (err) {
+            if(closed)return;
             errEl.textContent = '⚠️ ' + explainDirErrorSmart(err, 'تعذر التحقق من الرمز — تأكد من الإنترنت وأعد المحاولة');
             errEl.classList.remove('hidden');
             btnOk.disabled = false; btnOk.textContent = '✅ تحقق وإرسال';
-          }
+          } finally {pending=false;}
         };
 
         btnOk.onclick = validateAndSubmit;
