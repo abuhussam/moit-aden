@@ -1,7 +1,7 @@
 /* v54 phase 1/2: pure deterministic analytics. No network, DOM or writes. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MoitAnalytics=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const VERSION='v54-phase2-dev';
+const VERSION='v54.1-repair-phase1';
 const BASKET=Object.freeze({version:'proposal-1',approved:false,items:Object.freeze(['f2','r1','s1','o1','m1','p1'].map(id=>Object.freeze({id,quantity:1})))});
 function number(raw,{integer=false,positive=false}={}){
  if(raw==null||raw==='')return {state:'missing',value:null};
@@ -67,6 +67,18 @@ function snapshot({reports=[],catalog=[],dirs=[],scope={},evidence=[],recalls=[]
 }
 // Rates refer exclusively to distinct reviewed and eligible evidence, not all declared violations.
 function verifiedFollowup(reports,evidence){const byReport=new Map(reports.filter(r=>r.reportId).map(r=>[r.reportId,r]));const groups=new Map();for(const e of evidence){const rep=byReport.get(e.reportId);if(!rep||e.recordState!=='ACTIVE'||!e.violationId||e.directorate!==rep.directorate||e.visitDate!==rep.visitDate)continue;if(!groups.has(e.violationId))groups.set(e.violationId,[]);groups.get(e.violationId).push(e);}let eligible=0,resolved=0,unreviewed=0,excluded=0;for(const rows of groups.values()){if(rows.length!==1){unreviewed++;continue;}const e=rows[0],rep=byReport.get(e.reportId);if(!e.reviewEnabled||!e.reviewReference||Number(e.reviewReportRevision)!==Number(rep.revision)){unreviewed++;continue;}if(e.reviewState==='NON_VIOLATION'){excluded++;continue;}if(!['CONFIRMED_OPEN','CONFIRMED_RESOLVED'].includes(e.reviewState)){unreviewed++;continue;}eligible++;if(e.reviewState==='CONFIRMED_RESOLVED')resolved++;}return {eligible,resolved,unreviewed,excluded,rate:eligible?resolved/eligible*100:null};}
+const AUDIT_LABELS=Object.freeze({missing_dirs:'نقص تقارير المديريات',missing_prices:'نقص رصد الأسعار',usd_missing:'غياب سعر الدولار',gas_unknown:'نقص بيانات الغاز',basket_missing:'نقص مكونات السلة',general_action:'إجراء دون مخالفة مصرح بها',firms_viols:'تعارض المنشآت والمخالفات',evidence_classification:'مراجعة تصنيف الدليل',invalid_numeric:'قيمة رقمية غير صالحة',invalid_price:'سعر غير صالح',duplicate_evidence:'تكرار معرف الدليل',unlinked_evidence:'مراجعة ربط الدليل',outlier_candidate:'انحراف سعري مرشح للمراجعة',missing_counts:'نقص حقول الأعداد'});
+function auditLabel(code){return AUDIT_LABELS[code]||'ملاحظة تحتاج مراجعة';}
+function auditCategory(code){return ['missing_dirs','missing_prices','usd_missing','gas_unknown','basket_missing','missing_counts'].includes(code)?'نقص التغطية والرصد':['invalid_numeric','invalid_price','duplicate_evidence'].includes(code)?'أخطاء رقمية وبنيوية':code==='outlier_candidate'?'مراجعة سعرية':'تعارض أو تصنيف رقابي';}
+function recallWeight(row){const w=number(row.weightKg,{positive:true}),q=number(row.qty);if(w.state==='invalid')return null;if(w.value!==null)return w.value;if(q.value===null)return null;const kg=row.unit==='طن'?q.value*1000:['كيلو','كجم'].includes(row.unit)?q.value:null;return kg===null||!Number.isFinite(kg)||kg>Number.MAX_SAFE_INTEGER?null:kg;}
+function temporalBasketFx(series){
+ const counts=new Map();for(const x of series)counts.set(x.date,(counts.get(x.date)||0)+1);const days=series.filter(x=>validDate(x.date)&&counts.get(x.date)===1).slice().sort((a,b)=>a.date.localeCompare(b.date));
+ const eligible=(test)=>days.filter(test);
+ const baskets=eligible(x=>x.complete&&Number.isFinite(x.basket)&&x.basket>0),fx=eligible(x=>Number.isFinite(x.usd)&&x.usd>0),aligned=eligible(x=>x.complete&&Number.isFinite(x.basket)&&x.basket>0&&Number.isFinite(x.usd)&&x.usd>0);
+ const pct=(a,k)=>{const basis=k==='basket'?'basketBasis':'fxBasis';return a.length<2||!a[0][basis]||a[0][basis]!==a.at(-1)[basis]?null:change(a[0][k],a.at(-1)[k]).pct;};
+ const b=pct(aligned,'basket'),f=pct(aligned,'usd');
+ return {basketCount:baskets.length,fxCount:fx.length,alignedCount:aligned.length,basketPct:pct(baskets,'basket'),fxPct:pct(fx,'usd'),gapPct:b===null||f===null?null:b-f,alignedFrom:aligned[0]?.date||null,alignedTo:aligned.at(-1)?.date||null};
+}
 function auditSnapshot(s){const flags=[];const add=(code,text,refs=[])=>flags.push({code,text,refs});const c=s.coverage;
  if(c.missingDirectorates.length)add('missing_dirs','مديريات بلا تقارير في النطاق: '+c.missingDirectorates.join('، '));
  if(c.items<s.catalog.length)add('missing_prices','أصناف غير مرصودة: '+(s.catalog.length-c.items)+' من '+s.catalog.length);
@@ -84,5 +96,5 @@ function auditSnapshot(s){const flags=[];const add=(code,text,refs=[])=>flags.pu
  for(const p of s.prices){const byDay=new Map();for(const e of p.entries){if(!byDay.has(e.date))byDay.set(e.date,[]);byDay.get(e.date).push(e);}for(const entries of byDay.values()){if(entries.length<5||new Set(entries.map(e=>e.dir)).size<5)continue;const vals=entries.map(e=>e.val).sort((a,b)=>a-b),median=a=>(a[Math.floor((a.length-1)/2)]+a[Math.ceil((a.length-1)/2)])/2;const med=median(vals),mad=median(vals.map(v=>Math.abs(v-med)).sort((a,b)=>a-b));if(mad>0)for(const e of entries)if(Math.abs(e.val-med)*0.67449/mad>3.5)add('outlier_candidate',p.name+' '+p.unit+' — '+e.dir+' '+e.date+': قيمة مرشحة للمراجعة وليست خطأ مثبتًا.',[e.reportId].filter(Boolean));}}
  return flags;
 }
-return Object.freeze({VERSION,BASKET,number,metric,price,stats,aggregate,basket,validDate,validatePeriods,change,coverage,snapshotKey,simulate,REGISTRY,snapshot,inScope,auditSnapshot,verifiedFollowup,canonical});
+return Object.freeze({VERSION,BASKET,number,metric,price,stats,aggregate,basket,validDate,validatePeriods,change,coverage,snapshotKey,simulate,REGISTRY,snapshot,inScope,auditSnapshot,auditLabel,auditCategory,temporalBasketFx,recallWeight,verifiedFollowup,canonical});
 });
