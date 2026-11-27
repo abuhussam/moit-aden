@@ -2383,8 +2383,8 @@
     const MILK_ITEMS = [
       { id: 'm1', name: 'فائق', unit: '2500 جرام' },
       { id: 'm2', name: 'فائق', unit: '1800 جرام' },
-      { id: 'm3', name: 'الصقر', unit: '2500 جرام' },
-      { id: 'm4', name: 'الصقر', unit: '1800 جرام' },
+      { id: 'm3', name: 'صقر', unit: '2500 جرام' },
+      { id: 'm4', name: 'صقر', unit: '1800 جرام' },
       { id: 'm5', name: 'نيدو', unit: '2500 جرام' },
       { id: 'm6', name: 'نيدو', unit: '1800 جرام' },
       { id: 'm7', name: 'دانو', unit: '2500 جرام' },
@@ -2961,34 +2961,16 @@
       document.querySelectorAll('.viol-input').forEach(inp => {
         violSum += parseNum(inp.value);
       });
-      // v45: Also count actual logged violation rows in Section 07 (#logTbody) so a logged violation with photos never uploads as 0!
-      let logViolCnt = 0;
-      let logActCnt = 0;
-      document.querySelectorAll('#logTbody tr').forEach(tr => {
-        const fTxt = tr.querySelector('.log-firm')?.value?.trim() || '';
-        const tTxt = tr.querySelector('.log-type')?.value?.trim() || '';
-        const pTxt = tr.querySelector('.log-proc')?.value?.trim() || '';
-        if (fTxt || tTxt) {
-          logViolCnt++;
-          if (pTxt) logActCnt++;
-        }
-      });
-      const effectiveViolSum = Math.max(violSum, logViolCnt);
-      document.getElementById('kpiViolationsTotal').textContent = effectiveViolSum.toLocaleString('en-US');
-      document.getElementById('totalViolationsBadge').textContent = `${effectiveViolSum.toLocaleString('en-US')} مخالفة`;
-      document.getElementById('summaryViolationsMirror').textContent = effectiveViolSum.toLocaleString('en-US');
+      document.getElementById('kpiViolationsTotal').textContent = violSum.toLocaleString('en-US');
+      document.getElementById('totalViolationsBadge').textContent = `${violSum.toLocaleString('en-US')} مخالفة`;
+      document.getElementById('summaryViolationsMirror').textContent = violSum.toLocaleString('en-US');
 
       let actSum = 0;
       document.querySelectorAll('.act-input').forEach(inp => {
         actSum += parseNum(inp.value);
       });
-      const effectiveActSum = Math.max(actSum, logActCnt);
-      document.getElementById('kpiActionsTotal').textContent = effectiveActSum.toLocaleString('en-US');
-      document.getElementById('summaryActionsMirror').textContent = effectiveActSum.toLocaleString('en-US');
-      const vfInp = document.getElementById('violatingFirmsInput');
-      if (vfInp && parseNum(vfInp.value) === 0 && logViolCnt > 0) {
-        vfInp.value = logViolCnt;
-      }
+      document.getElementById('kpiActionsTotal').textContent = actSum.toLocaleString('en-US');
+      document.getElementById('summaryActionsMirror').textContent = actSum.toLocaleString('en-US');
       if (typeof updatePriceChangeRadar === 'function') updatePriceChangeRadar();
       if (typeof updateModernReadinessProgress === 'function') updateModernReadinessProgress();
       if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
@@ -3488,7 +3470,6 @@
           return;
         }
 
-        if (typeof recalculateKPIs === 'function') recalculateKPIs();
         const pricesMap = {};
         document.querySelectorAll('.price-input').forEach(inp => {
           if (inp.value) pricesMap[inp.getAttribute('data-price-id')] = parseNum(inp.value);
@@ -3526,7 +3507,7 @@
           inspectorName: document.getElementById('inspectorName')?.value || '',
           directorName: document.getElementById('directorName')?.value || '',
           gasStation: document.getElementById('gasStationSelect')?.value || '',
-          gasRows: (fullState.gasRows || []).filter(g => g.agent || g.loc || parseNum(g.qty) > 0 || g.status === 'موقف'),
+          gasRows: (fullState.gasRows || []).filter(g => g.agent || g.loc || Number(g.qty) > 0 || g.status === 'موقف'),
           prices: pricesMap,
           logRows: fullState.logRows || []
         };
@@ -3538,20 +3519,6 @@
 
         if (typeof getActivePriceGuardWarnings === 'function') {
           const guardWarns = getActivePriceGuardWarnings();
-          // v40: Also flag FX buy > sell or extreme outlier prices (<200 or >180,000)
-          const _uS = parseNum(document.getElementById('usdSell')?.value);
-          const _uB = parseNum(document.getElementById('usdBuy')?.value);
-          const _sS = parseNum(document.getElementById('sarSell')?.value);
-          const _sB = parseNum(document.getElementById('sarBuy')?.value);
-          if (_uS > 0 && _uB > 0 && _uB > _uS) guardWarns.unshift({ label: 'صرف الدولار', val: _uB, reason: 'سعر الشراء أعلى من البيع!', el: document.getElementById('usdBuy') });
-          if (_sS > 0 && _sB > 0 && _sB > _sS) guardWarns.unshift({ label: 'صرف السعودي', val: _sB, reason: 'سعر الشراء أعلى من البيع!', el: document.getElementById('sarBuy') });
-          document.querySelectorAll('.price-input').forEach(inp => {
-            const pv = parseNum(inp.value);
-            if (pv > 0 && (pv < 200 || pv > 180000)) {
-              const nm = inp.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim() || 'سلعة';
-              guardWarns.push({ label: nm, val: pv, reason: pv > 180000 ? 'سعر مرتفع جداً (احتمال صفر زائد)' : 'سعر منخفض جداً (احتمال صفر ناقص)', el: inp });
-            }
-          });
           if (guardWarns.length > 0) {
             const listTxt = guardWarns.slice(0, 6).map(w => `• ${w.label}: ${fmtNum(w.val)} ريال (${w.reason}${w.suggest ? ' — ربما تقصد ' + fmtNum(w.suggest) + '؟' : ''})`).join('\n');
             const ok = confirm(`🛡️ تنبيه فحص جودة الأرقام قبل الرفع:\nتم رصد (${guardWarns.length}) قيمة قد تحتوي على خطأ إدخال (صفر زائد أو ناقص):\n\n${listTxt}\n\nاضغط «موافق» للمتابعة بالرفع كما هي، أو «إلغاء» للعودة وتصحيحها.`);
@@ -3638,7 +3605,6 @@
             _upFx.classList.remove('flex');
           }
           if (typeof markReportSyncedLocal === 'function') markReportSyncedLocal(directorate, visitDate);
-          if (typeof clearDirAutoDraftV40 === 'function') clearDirAutoDraftV40();
           if (typeof removeFromOfflineOutbox === 'function') removeFromOfflineOutbox(directorate, visitDate);
           const sentTime = new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
           const detailsEl = document.getElementById('gsSuccessDetails');
@@ -6325,39 +6291,6 @@
       #opsHudQuickPeek { display: none !important; }
     }
 
-  
-    /* ===== v42: GOLD MASTER DARK-MODE CONTRAST & CLEAN PRINT RULES ===== */
-    body.dark-mode .hud-micro-pill {
-      background: rgba(255, 255, 255, 0.12);
-      color: #e2e8f0;
-      border-color: rgba(148, 163, 184, 0.25);
-    }
-    body.dark-mode .hud-pill-ok { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
-    body.dark-mode .hud-pill-warn { background: rgba(245, 158, 11, 0.24); color: #fcd34d; border-color: rgba(245, 158, 11, 0.45); }
-    body.dark-mode .hud-pill-crit { background: rgba(244, 63, 94, 0.24); color: #fda4af; border-color: rgba(244, 63, 94, 0.45); }
-    body.dark-mode .hud-pill-ai { background: rgba(99, 102, 241, 0.24); color: #c7d2fe; border-color: rgba(129, 140, 248, 0.45); }
-    body.dark-mode #arcPaginationBar {
-      background-color: #131f33 !important;
-      border-color: #334155 !important;
-      color: #e2e8f0 !important;
-    }
-    body.dark-mode #arcPaginationBar button {
-      background-color: #1e293b !important;
-      border-color: #475569 !important;
-      color: #f8fafc !important;
-    }
-    body.dark-mode #opsGeminiKeysList > div {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-      color: #f1f5f9 !important;
-    }
-    @media print {
-      #opsHudQuickPeek, #dirCloudUploadFxModal, #dirAutoDraftRestoreBar,
-      #dirLiveNetBanner, #opsLiveNetBanner, #moitSwUpdateBar, .hud-liquid-pill {
-        display: none !important;
-      }
-    }
-
   </style></head><body>
             <div class="no-print"><button onclick="window.print()" style="background:#0f2942;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;">🖨️ طباعة / حفظ PDF</button></div>
             <div class="hdr">
@@ -6750,41 +6683,17 @@
         if (rec.inspectorName && rec.inspectorName !== '-') setVal('inspectorName', rec.inspectorName);
         if (rec.directorName) setVal('directorName', rec.directorName);
 
-        let parsedPrices = rec.prices;
-        if (typeof parsedPrices === 'string') {
-          try { parsedPrices = JSON.parse(parsedPrices); } catch (_e) { parsedPrices = {}; }
-        }
-        let filledPricesCnt = 0;
-        if (parsedPrices && typeof parsedPrices === 'object') {
-          document.querySelectorAll('.price-input').forEach(inp => { inp.value = ''; });
-          Object.entries(parsedPrices).forEach(([pid, pval]) => {
+        if (rec.prices && typeof rec.prices === 'object') {
+          Object.entries(rec.prices).forEach(([pid, pval]) => {
             const inp = document.querySelector(`[data-price-id="${pid}"]`);
-            const num = parseNum(pval);
-            if (inp && num > 0) {
-              inp.value = num.toLocaleString('en-US');
-              filledPricesCnt++;
-            }
-          });
-        }
-        // v45: Restore matching cloud violations into Section 07 (#logTbody)
-        const evPool = Array.isArray(window.__CACHED_CLOUD_EVIDENCE) ? window.__CACHED_CLOUD_EVIDENCE : [];
-        const matchedEvs = evPool.filter(ev => String(ev.directorate || '').trim() === String(rec.directorate || '').trim() && cleanIsoDate(ev.visitDate) === cleanIsoDate(rec.visitDate));
-        if (matchedEvs.length > 0) {
-          const logTrs = document.querySelectorAll('#logTbody tr');
-          matchedEvs.forEach((ev, eIdx) => {
-            const tr = logTrs[eIdx];
-            if (!tr) return;
-            if (tr.querySelector('.log-firm')) tr.querySelector('.log-firm').value = ev.firm || '';
-            if (tr.querySelector('.log-type')) tr.querySelector('.log-type').value = ev.type || '';
-            if (tr.querySelector('.log-proc')) tr.querySelector('.log-proc').value = ev.proc || '';
-            if (tr.querySelector('.log-status') && ev.status) tr.querySelector('.log-status').value = ev.status;
+            const num = Number(String(pval).replace(/[^0-9]/g, ''));
+            if (inp && num > 0) inp.value = num.toLocaleString('en-US');
           });
         }
         if (typeof recalculateKPIs === 'function') recalculateKPIs();
-        if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
         const modal = document.getElementById('dirCloudHistoryModal');
         if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-        showToast(`تم تعبئة سجل ${rec.directorate} (${rec.visitDate}) — ${filledPricesCnt} صنف داخل النموذج بنجاح!`, '✅');
+        showToast(`تم تعبئة بيانات سجل ${rec.directorate} (${rec.visitDate}) داخل النموذج بنجاح!`, '✅');
       }
 
       function renderCloudHistoryList() {
@@ -6878,12 +6787,7 @@
         if (refBtn) { refBtn.disabled = false; refBtn.textContent = '🔄 تحديث من Google Sheets'; }
 
         if (data && data.status === 'success' && Array.isArray(data.reports)) {
-          window.__CACHED_CLOUD_EVIDENCE = Array.isArray(data.evidenceRows) ? data.evidenceRows : [];
-          cachedCloudReports = data.reports.map(r => {
-            let pObj = r.prices;
-            if (typeof pObj === 'string') { try { pObj = JSON.parse(pObj); } catch (_e) { pObj = {}; } }
-            return { ...r, visitDate: cleanIsoDate(r.visitDate), prices: (pObj && typeof pObj === 'object') ? pObj : {} };
-          });
+          cachedCloudReports = data.reports.map(r => ({ ...r, visitDate: cleanIsoDate(r.visitDate) }));
           if (badge) badge.textContent = `✅ تم تحميل ${cachedCloudReports.length} سجل من Google Sheets`;
           renderCloudHistoryList();
         } else {
@@ -7922,7 +7826,7 @@
           if (!reps.length) return;
           const sums = {}, cnts = {};
           reps.slice(-24).forEach(r => {
-            let p = r.prices || {}; if (typeof p === 'string') { try { p = JSON.parse(p); } catch (_e) { p = {}; } }
+            const p = r.prices || {};
             Object.keys(p).forEach(k => {
               const v = parseNum(p[k]);
               if (v > 0) { sums[k] = (sums[k] || 0) + v; cnts[k] = (cnts[k] || 0) + 1; }
@@ -8355,12 +8259,7 @@
                 const sortedYs = Array.from(rowsMap.keys()).sort((a, b) => b - a);
                 pageText = sortedYs.map(y =>
                   rowsMap.get(y).sort((a, b) => b.x - a.x).map(it => it.s).join(' | ')
-                ).filter(line => {
-                  const t = line.trim();
-                  if (!t || /^[0-9٠-٩\|\s\-\.]+$/.test(t)) return false;
-                  if (t.includes('REPUBLIC OF YEMEN') || t.includes('Ministry of Industry') || t.includes('المرجع:') || t.includes('المرفقات:') || t.includes('ا ل ص ف ح ة')) return false;
-                  return true;
-                }).join('\n');
+                ).join('\n');
               } catch (_te) { pageText = ''; }
 
               // If digital text exists on a large PDF (>8 pages), render compact preview canvas so 19+ pages prepare in <1.5 seconds!
@@ -8615,7 +8514,7 @@
         _priceOcrDigitalText = isPureDigitalPdf ? allDigitalChunks.join('\n\n') : '';
         if (countEl) {
           countEl.textContent = isPureDigitalPdf
-            ? `⚡ ملف PDF رقمي (${_priceOcrPreparedFiles.length} صفحات) — استخراج نصي فائق السرعة (استخراج محلي فوري في 0.1 ثانية • 0 استهلاك AI!)`
+            ? `⚡ ملف PDF رقمي (${_priceOcrPreparedFiles.length} صفحات) — استخراج نصي فائق السرعة (6–14 ثانية بدقة كاملة!)`
             : `✅ جاهز للتحليل: (${_priceOcrPreparedFiles.length}) صفحة مضغوطة (~${totalKb} KB)`;
         }
         if ((window.location.protocol === 'content:' || window.location.protocol === 'file:') && typeof showToast === 'function') {
@@ -8740,27 +8639,15 @@ ${catalogText}`;
           };
 
           if (_priceOcrDigitalText && _priceOcrDigitalText.length >= 120) {
-            // PATH A (LAYER 1): Zero-AI Local Deterministic Parser (0.1s, 100% accuracy, 0 Gemini quota!)
-            if (scanTitle) scanTitle.textContent = `⚡ استخراج محلي فوري لجميع الصفحات (${_priceOcrPreparedFiles.length} صفحات بدون استهلاك حصة AI)...`;
-            const localParsed = typeof parseDigitalPricePdfLocally === 'function'
-              ? parseDigitalPricePdfLocally(_priceOcrDigitalText)
-              : { fx: {}, items: [] };
-            if (localParsed && localParsed.items && localParsed.items.length >= 4) {
-              mergeChunkResult(localParsed);
-              if (statusEl) {
-                statusEl.textContent = `⚡ تم الاستخراج المحلي الفوري بنجاح (${localParsed.items.length} صنف + الصرف) خلال 0.1 ثانية بدقة 100% وبدون استهلاك حصة Gemini!`;
-                statusEl.classList.remove('hidden');
-              }
-            } else {
-              // Fallback to Gemini Multi-Key Turbo if PDF has non-standard layout
-              if (statusEl) {
-                statusEl.textContent = `⚡ تحليل رقمي عبر Gemini Turbo (${_priceOcrPreparedFiles.length} صفحات)...`;
-                statusEl.classList.remove('hidden');
-              }
-              const digitalPrompt = prompt + '\n\n=== النص الرقمي المستخرج حرفياً من جدول ملف PDF (كل سطر يمثل صفاً في الجدول) ===\n' + _priceOcrDigitalText.slice(0, 48000);
-              const digRes = await postGeminiWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digitalPrompt }, 'التحليل الرقمي', 55000);
-              mergeChunkResult(digRes);
+            // PATH A: Instant Digital PDF Text Extraction (1 single ~4KB text request!)
+            if (scanTitle) scanTitle.textContent = `⚡ استخراج رقمي فائق السرعة لجميع الصفحات (${_priceOcrPreparedFiles.length} صفحات دفعة واحدة)...`;
+            if (statusEl) {
+              statusEl.textContent = `⚡ وضع التوربو النصي: تحليل جميع صفحات الـ PDF الرقمي (${_priceOcrPreparedFiles.length} صفحات) في طلب واحد...`;
+              statusEl.classList.remove('hidden');
             }
+            const digitalPrompt = prompt + '\n\n=== النص الرقمي المستخرج حرفياً من جدول ملف PDF (كل سطر يمثل صفاً في الجدول) ===\n' + _priceOcrDigitalText.slice(0, 48000);
+            const digRes = await postGeminiWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digitalPrompt }, 'التحليل الرقمي', 55000);
+            mergeChunkResult(digRes);
           } else {
             // PATH B: Parallel Vision Batches (up to 3 images per batch, all batches in parallel!)
             const batchSize = 3;
@@ -9134,10 +9021,7 @@ ${catalogText}`;
       if ((err && err.name === 'AbortError') || low.includes('aborted') || low.includes('timeout')) {
         return 'استغرق الخادم وقتاً أطول من المعتاد — جرّب إعادة المحاولة الآن أو تقليل حجم المرفقات';
       }
-      if (low.includes('resource_exhausted') || low.includes('429') || low.includes('rate limit') || (low.includes('quota') && !low.includes('quotaexceeded') && !(err && err.name === 'QuotaExceededError'))) {
-        return '⏳ تم بلوغ حد الطلبات المؤقت في مفتاح Gemini المجاني — انتظر 60 ثانية ثم أعد المحاولة';
-      }
-      if ((err && err.name === 'QuotaExceededError') || low.includes('quotaexceeded')) {
+      if (low.includes('quotaexceeded') || low.includes('quota')) {
         return 'ذاكرة المتصفح ممتلئة — أرسل التقرير للسحابة أو خفّض عدد الصور المحفوظة محلياً';
       }
       if (low.includes('unexpected token') || low.includes('json')) {
@@ -9412,20 +9296,11 @@ ${catalogText}`;
               });
             };
 
-            if (_gasDigitalText && _gasDigitalText.length >= 60) {
-              // v39: Try Zero-AI Local Deterministic Gas PDF Parser FIRST (0.1s, 0 Gemini quota, works offline!)
-              const localGas = typeof parseDigitalGasPdfLocally === 'function'
-                ? parseDigitalGasPdfLocally(_gasDigitalText)
-                : { rows: [] };
-              if (localGas && Array.isArray(localGas.rows) && localGas.rows.length >= 2) {
-                mergeGasParsed(localGas);
-                if (statusEl) statusEl.textContent = `⚡ تم الاستخراج المحلي الفوري لكشف الغاز (${localGas.rows.length} وكيل) خلال 0.1 ثانية بدون استهلاك حصة Gemini!`;
-              } else {
-                if (statusEl) statusEl.textContent = `⚡ وضع التوربو النصي: قراءة كشف الغاز الرقمي (${_gasPreparedPages.length} صفحات) عبر مجمّع Gemini...`;
-                const digPrompt = gasPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + _gasDigitalText.slice(0, 48000);
-                const parsed = await postGasWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digPrompt }, 55000);
-                mergeGasParsed(parsed);
-              }
+            if (_gasDigitalText && _gasDigitalText.length >= 80) {
+              if (statusEl) statusEl.textContent = `⚡ وضع التوربو النصي: قراءة كشف الغاز الرقمي (${_gasPreparedPages.length} صفحات) في طلب واحد...`;
+              const digPrompt = gasPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + _gasDigitalText.slice(0, 48000);
+              const parsed = await postGasWithRetry({ action: 'gemini_brief', fastJson: true, prompt: digPrompt }, 55000);
+              mergeGasParsed(parsed);
             } else {
               const batches = [];
               for (let i = 0; i < _gasPreparedPages.length; i += 3) batches.push(_gasPreparedPages.slice(i, i + 3));
@@ -9557,606 +9432,6 @@ ${catalogText}`;
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
       else setTimeout(bind, 60);
-    })();
-
-  
-
-    /* ===== v37: ZERO-AI DETERMINISTIC LOCAL DIGITAL PDF PARSER (0.1s, 100% ACCURACY, 0 GEMINI QUOTA) ===== */
-    function parseDigitalPricePdfLocally(rawText) {
-      const arDigits = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
-      const toEn = (s) => String(s || '').replace(/[٠-٩]/g, d => arDigits[d]).replace(/[٫،]/g, '.');
-      const normAr = (s) => toEn(s)
-        .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
-        .replace(/[أإآ]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/ى/g, 'ي')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const lines = String(rawText || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      const fx = {};
-      const itemsMap = new Map();
-      let currentSec = '';
-
-      const IGNORED_SECTIONS = ['تونه', 'اجبان', 'الصلصه', 'مكرونه', 'الشرب', 'بقوليات', 'سمن', 'فواكه'];
-
-      const detectSection = (nl) => {
-        if (nl.includes('الدجاج المجمد') || nl.includes('دجاج مجمد') && nl.length < 25) return 'frozen_poultry';
-        if (nl.includes('الدجاج الحي') || nl.includes('دجاج حي')) return 'live_poultry';
-        if (nl.includes('الحليب المجفف') || nl.includes('حليب مجفف')) return 'milk';
-        if (nl.includes('الشرب') || nl.includes('المركز')) return 'ignored';
-        if (nl.includes('التونه') || nl.includes('الاجبان') || nl.includes('الصلصه') || nl.includes('المكرونه') || nl.includes('البقوليات') || nl.includes('السمن') || nl.includes('الفواكه')) return 'ignored';
-        if (nl.includes('القمح') && nl.length < 25) return 'wheat';
-        if (nl.includes('الدقيق') && nl.length < 25) return 'flour';
-        if (nl.includes('الارز') && nl.length < 25) return 'rice';
-        if (nl.includes('السكر') && nl.length < 25) return 'sugar';
-        if (nl.includes('الزيوت') && nl.length < 25) return 'oil';
-        if (nl.includes('اللحوم') && nl.length < 40) return 'meat';
-        if (nl.includes('الاسماك') && nl.length < 25) return 'fish';
-        if (nl.includes('الخضروات') && !nl.includes('الفواكه') && nl.length < 25) return 'veg';
-        return null;
-      };
-
-      const extractUnitTag = (nl) => {
-        if (/\b(?:2[.,]5|2500)\b/.test(nl)) return '2500g';
-        if (/\b2226\b/.test(nl)) return '2226g';
-        if (/\b(?:1[.,]80?|1800)\b/.test(nl)) return '1800g';
-        if (/(?:\b1700\b)/.test(nl)) return '1700g';
-        if (/(?:\b1600\b)/.test(nl)) return '1600g';
-        if (/(?:\b1500\b)/.test(nl)) return '1500g';
-        if (/(?:\b1400\b)/.test(nl)) return '1400g';
-        if (/(?:\b1300\b)/.test(nl)) return '1300g';
-        if (/(?:\b1200\b)/.test(nl)) return '1200g';
-        if (/(?:\b1100\b)/.test(nl)) return '1100g';
-        if (/(?:\b1000\b)/.test(nl)) return '1000g';
-        if (/(?:\b900\b)/.test(nl)) return '900g';
-        if (/(?:\b800\b)/.test(nl)) return '800g';
-        if (/(?:\b700\b)/.test(nl)) return '700g';
-        if (/(?:\b600\b)/.test(nl)) return '600g';
-        if (/\b50\s*(?:ك|كجم|كيلو)/.test(nl)) return '50kg';
-        if (/\b25\s*(?:ك|كجم|كيلو)/.test(nl)) return '25kg';
-        if (/\b20\s*(?:ك|كجم|كيلو)/.test(nl)) return '20kg';
-        if (/\b10\s*(?:ك|كجم|كيلو)/.test(nl)) return '10kg';
-        if (/\b5\s*(?:ك|كجم|كيلو)/.test(nl)) return '5kg';
-        if (/\b20\s*لتر/.test(nl)) return '20L';
-        if (/\b8\s*لتر/.test(nl)) return '8L';
-        if (/\b5\s*لتر/.test(nl)) return '5L';
-        if (/\b4\s*لتر/.test(nl)) return '4L';
-        if (/1[.,]5\s*لتر/.test(nl)) return '1.5L';
-        return '';
-      };
-
-      const extractCurrentPrice = (lineRaw) => {
-        const cleaned = toEn(lineRaw);
-        // Split by | if pdf.js row-joined, or whitespace
-        const cells = cleaned.includes('|')
-          ? cleaned.split('|').map(c => c.trim()).filter(Boolean)
-          : cleaned.split(/\s+/).filter(Boolean);
-        if (!cells.length) return null;
-        // Check last cell (leftmost column in RTL table = Current Price)
-        const lastCell = cells[cells.length - 1];
-        if (lastCell === '-' || lastCell === '—' || lastCell === '–') return null;
-        // Extract numeric value from last cell if it's a valid price
-        const lastNumMatch = lastCell.replace(/,/g, '').match(/^(\d+(?:\.\d+)?)$/);
-        if (lastNumMatch) {
-          const v = Math.round(Number(lastNumMatch[1]));
-          if (v >= 200 && v <= 250000) return v;
-        }
-        // Fallback: check last 2 cells for price (avoiding unit/weight numbers like 1000 جرام or 50 ك)
-        for (let i = cells.length - 1; i >= Math.max(0, cells.length - 2); i--) {
-          const c = cells[i];
-          if (c === '-' || c === '—') return null;
-          if (/(?:جرام|كجم|كيلو|لتر|علبه|حبه)/.test(c)) continue;
-          const m = c.replace(/,/g, '').match(/^(\d+)$/);
-          if (m) {
-            const v = Number(m[1]);
-            if (v >= 300 && v <= 250000) return v;
-          }
-        }
-        return null;
-      };
-
-      const putItem = (id, price, note) => {
-        if (!id || !price || price <= 0) return;
-        if (!itemsMap.has(id)) {
-          itemsMap.set(id, { id, price, conf: 'high', note: note || 'استخراج رقمي محلي فوري' });
-        }
-      };
-
-      for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
-        const nl = normAr(raw);
-        if (!nl || nl.startsWith('---')) continue;
-
-        const sec = detectSection(nl);
-        if (sec) { currentSec = sec; continue; }
-
-        // 1) Exchange rates (USD / SAR)
-        if (nl.includes('دولار') && !fx.usdSell) {
-          const nums = (toEn(raw).match(/\b\d{3,4}\b/g) || []).map(Number).filter(n => n >= 500 && n <= 5000);
-          if (nums.length >= 2) {
-            fx.usdBuy = Math.min(nums[0], nums[1]);
-            fx.usdSell = Math.max(nums[0], nums[1]);
-          } else if (nums.length === 1) {
-            fx.usdSell = nums[0];
-          }
-          continue;
-        }
-        if (nl.includes('سعودي') && !fx.sarSell) {
-          const nums = (toEn(raw).match(/\b\d{3,4}\b/g) || []).map(Number).filter(n => n >= 100 && n <= 1500);
-          if (nums.length >= 2) {
-            fx.sarBuy = Math.min(nums[0], nums[1]);
-            fx.sarSell = Math.max(nums[0], nums[1]);
-          } else if (nums.length === 1) {
-            fx.sarSell = nums[0];
-          }
-          continue;
-        }
-
-        if (currentSec === 'ignored' || IGNORED_SECTIONS.some(ig => nl.includes(ig))) continue;
-
-        const price = extractCurrentPrice(raw);
-        if (!price) continue;
-        const unit = extractUnitTag(nl);
-
-        // 2) Wheat & Flour (strict brand isolation!)
-        if ((nl.includes('استرالي') || nl.includes('قمح استرالي')) && unit === '50kg') { putItem('f1', price); continue; }
-        if (nl.includes('دقيق') && nl.includes('سنابل')) {
-          if (unit === '50kg') putItem('f2', price);
-          else if (unit === '25kg') putItem('f3', price);
-          continue;
-        }
-        if (nl.includes('بر') && nl.includes('سنابل')) {
-          if (unit === '50kg') putItem('f4', price);
-          else if (unit === '25kg') putItem('f5', price);
-          else if (unit === '10kg') putItem('f6', price);
-          continue;
-        }
-        if (nl.includes('زادي')) {
-          if (unit === '50kg') putItem('f7', price);
-          else if (unit === '25kg') putItem('f8', price);
-          else if (unit === '10kg') putItem('f9', price);
-          continue;
-        }
-        if (nl.includes('حضرموت')) {
-          if (unit === '50kg') putItem('f10', price);
-          else if (unit === '25kg') putItem('f11', price);
-          else if (unit === '10kg') putItem('f12', price);
-          continue;
-        }
-
-        // 3) Rice
-        if (currentSec === 'rice' || nl.includes('ارز')) {
-          if (nl.includes('فائق')) { if (unit === '20kg') putItem('r1', price); else if (unit === '10kg') putItem('r2', price); continue; }
-          if (nl.includes('سمو')) { if (unit === '20kg') putItem('r3', price); else if (unit === '10kg') putItem('r4', price); continue; }
-          if (nl.includes('شاهين')) { if (unit === '20kg') putItem('r5', price); else if (unit === '10kg') putItem('r6', price); continue; }
-          if (nl.includes('ميراث')) { if (unit === '20kg') putItem('r7', price); else if (unit === '10kg') putItem('r8', price); continue; }
-          if (nl.includes('تيسير')) { if (unit === '20kg') putItem('r9', price); else if (unit === '10kg') putItem('r10', price); continue; }
-        }
-
-        // 4) Sugar
-        if (currentSec === 'sugar' || nl.includes('سكر')) {
-          if (nl.includes('برازيلي')) { if (unit === '50kg') putItem('s1', price); else if (unit === '25kg') putItem('s2', price); else if (unit === '10kg') putItem('s3', price); continue; }
-          if (nl.includes('سعيد')) { if (unit === '50kg') putItem('s4', price); else if (unit === '25kg') putItem('s5', price); else if (unit === '10kg') putItem('s6', price); continue; }
-          if (nl.includes('اسره')) { if (unit === '50kg') putItem('s7', price); else if (unit === '25kg') putItem('s8', price); else if (unit === '10kg') putItem('s9', price); continue; }
-          if (nl.includes('هندي')) { if (unit === '50kg') putItem('s10', price); else if (unit === '25kg') putItem('s11', price); else if (unit === '10kg') putItem('s12', price); continue; }
-        }
-
-        // 5) Cooking Oil
-        if (currentSec === 'oil' || nl.includes('زيت')) {
-          if (nl.includes('ماليزي') || nl.includes('خارجي')) { if (unit === '8L') putItem('o1', price); else if (unit === '4L') putItem('o2', price); continue; }
-          if (nl.includes('صلاله')) { if (unit === '8L') putItem('o3', price); else if (unit === '4L') putItem('o4', price); continue; }
-          if (nl.includes('جزيره')) { if (unit === '8L') putItem('o5', price); else if (unit === '4L') putItem('o6', price); continue; }
-          if (nl.includes('فخامه')) { if (unit === '5L') putItem('o7', price); else if (unit === '4L') putItem('o8', price); continue; }
-          if (nl.includes('نور')) { if (unit === '5L') putItem('o9', price); else if (unit === '4L') putItem('o10', price); continue; }
-        }
-
-        // 6) Powdered Milk
-        if (currentSec === 'milk' || (nl.includes('حليب') && !nl.includes('ممتاز') && !nl.includes('بقري'))) {
-          if (nl.includes('فائق')) { if (unit === '2500g') putItem('m1', price); else if (unit === '1800g') putItem('m2', price); continue; }
-          if (nl.includes('صقر')) { if (unit === '2500g') putItem('m3', price); else if (unit === '1800g') putItem('m4', price); continue; }
-          if (nl.includes('نيدو')) { if (unit === '2500g') putItem('m5', price); else if (unit === '1800g') putItem('m6', price); continue; }
-          if (nl.includes('دانو')) { if (unit === '2500g') putItem('m7', price); else if (unit === '2226g') putItem('m8', price); continue; }
-          if (nl.includes('انكر')) { if (unit === '2500g') putItem('m9', price); else if (unit === '1800g') putItem('m10', price); continue; }
-          if (nl.includes('البان')) { if (unit === '2500g') putItem('m11', price); else if (unit === '1800g') putItem('m12', price); continue; }
-        }
-
-        // 7) Fish
-        if (currentSec === 'fish' || nl.includes('ثمد') || nl.includes('ديرك') || nl.includes('سخله') || nl.includes('صابات')) {
-          if (nl.includes('ثمد') && nl.includes('كبير')) { putItem('fa1', price); continue; }
-          if (nl.includes('ثمد') && nl.includes('صغير')) { putItem('fa2', price); continue; }
-          if (nl.includes('ديرك')) { putItem('fa3', price); continue; }
-          if (nl.includes('سخله')) { putItem('fa4', price); continue; }
-          if (nl.includes('ابو عين')) { putItem('fa5', price); continue; }
-          if (nl.includes('صابات')) { putItem('fb1', price); continue; }
-          if (nl.includes('جرم')) { putItem('fb2', price); continue; }
-          if (nl.includes('صلو')) { putItem('fb3', price); continue; }
-          if (nl.includes('عنفلوص')) { putItem('fb4', price); continue; }
-        }
-
-        // 8) Fresh Vegetables & Red Meat (never tomato paste!)
-        if (currentSec === 'veg' || (nl.includes('بطاط') || nl.includes('بصل') || (nl.includes('طماط') && !nl.includes('فخامه') && !nl.includes('سمو') && !nl.includes('طباخ') && !nl.includes('علبه')))) {
-          if (nl.includes('بطاط')) { putItem('vm1', price); continue; }
-          if (nl.includes('طماط')) { putItem('vm2', price); continue; }
-          if (nl.includes('بصل')) { putItem('vm3', price); continue; }
-        }
-        if (currentSec === 'meat' || nl.includes('لحم')) {
-          if (nl.includes('غنم')) { putItem('vm4', price); continue; }
-          if (nl.includes('بقري') || nl.includes('عجل') || nl.includes('عجول')) { putItem('vm5', price); continue; }
-        }
-
-        // 9) Live Poultry
-        if (currentSec === 'live_poultry' || nl.includes('جامبو') || nl.includes('هامور') || nl.includes('ملكي') || nl.includes('سوبر')) {
-          if (nl.includes('فوق الملكي')) { putItem('p5', price); continue; }
-          if (nl.includes('جامبو')) { putItem('p1', price); continue; }
-          if (nl.includes('هامور')) { putItem('p2', price); continue; }
-          if (nl.includes('ملكي')) { putItem('p3', price); continue; }
-          if (nl.includes('سوبر')) { putItem('p4', price); continue; }
-        }
-
-        // 10) Frozen Poultry (700g - 1300g)
-        if (currentSec === 'frozen_poultry' || nl.includes('دجاج مجمد')) {
-          if (unit === '700g') { putItem('pf1', price); continue; }
-          if (unit === '800g') { putItem('pf2', price); continue; }
-          if (unit === '900g') { putItem('pf3', price); continue; }
-          if (unit === '1000g') { putItem('pf4', price); continue; }
-          if (unit === '1100g') { putItem('pf5', price); continue; }
-          if (unit === '1300g') { putItem('pf6', price); continue; }
-        }
-      }
-
-      return { fx, items: Array.from(itemsMap.values()) };
-    }
-
-  
-
-    /* ===== v39: ZERO-AI DETERMINISTIC LOCAL DIGITAL GAS PDF PARSER (0.1s, 0 GEMINI QUOTA, WORKS OFFLINE) ===== */
-    function parseDigitalGasPdfLocally(rawText) {
-      const arDigits = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
-      const toEn = (s) => String(s || '').replace(/[٠-٩]/g, d => arDigits[d]).replace(/[٫،]/g, '.');
-      const normAr = (s) => toEn(s)
-        .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
-        .replace(/[أإآ]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/ى/g, 'ي')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const lines = String(rawText || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      let station = '';
-      let directorate = '';
-      let visitDate = '';
-      const rows = [];
-      const seenAgents = new Set();
-
-      const STATIONS = ['منشأة البريقة', 'البريقة', 'جعولة', 'العريش', 'بئر أحمد', 'إنماء', 'الحسوة'];
-      const DIRS = [
-        { k: 'صيرة', v: 'صيرة (كريتر)' }, { k: 'كريتر', v: 'صيرة (كريتر)' },
-        { k: 'خور مكسر', v: 'خور مكسر' }, { k: 'خورمكسر', v: 'خور مكسر' },
-        { k: 'المعلا', v: 'المعلا' }, { k: 'التواهي', v: 'التواهي' },
-        { k: 'الشيخ عثمان', v: 'الشيخ عثمان' }, { k: 'المنصورة', v: 'المنصورة' },
-        { k: 'دار سعد', v: 'دار سعد' }, { k: 'البريقة', v: 'البريقة' }
-      ];
-
-      const HEADER_SKIP = ['اسم المسوق', 'اسم الوكيل', 'الكميه', 'الكمية', 'رقم الجوال', 'الاجمالي', 'الإجمالي', 'المجموع', 'الشركه اليمنيه', 'الشركة اليمنية', 'الجمهوريه اليمنيه', 'الجمهورية اليمنية', 'وزاره الصناعه', 'وزارة الصناعة', 'توقيع', 'المدير العام', 'كشف صرف', 'كشف توزيع'];
-
-      for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
-        const en = toEn(raw);
-        const nl = normAr(raw);
-        if (!nl || nl.startsWith('---')) continue;
-
-        // Detect station, directorate, and date from header lines
-        if (!station) {
-          const stHit = STATIONS.find(st => nl.includes(normAr(st)));
-          if (stHit && (nl.includes('محطه') || nl.includes('منشاه') || nl.includes('تعبئه') || nl.includes('غاز'))) {
-            station = stHit === 'البريقة' ? 'منشأة البريقة' : stHit;
-          }
-        }
-        if (!directorate) {
-          const dHit = DIRS.find(d => nl.includes(normAr(d.k)));
-          if (dHit && (nl.includes('مديريه') || nl.includes('كشف') || nl.includes('توزيع') || nl.includes('صرف') || nl.length < 30)) {
-            directorate = dHit.v;
-          }
-        }
-        if (!visitDate) {
-          const dm1 = en.match(/\b(202\d)[-\/](0?\d|1[0-2])[-\/](0?\d|[12]\d|3[01])\b/);
-          const dm2 = en.match(/\b(0?\d|[12]\d|3[01])[-\/](0?\d|1[0-2])[-\/](202\d)\b/);
-          if (dm1) visitDate = `${dm1[1]}-${dm1[2].padStart(2, '0')}-${dm1[3].padStart(2, '0')}`;
-          else if (dm2) visitDate = `${dm2[3]}-${dm2[2].padStart(2, '0')}-${dm2[1].padStart(2, '0')}`;
-        }
-
-        if (HEADER_SKIP.some(h => nl.includes(normAr(h)))) continue;
-        if (/^[0-9\|\s\-\.\/]+$/.test(en)) continue;
-
-        // Split row into cells
-        const cells = en.includes('|')
-          ? en.split('|').map(c => c.trim()).filter(Boolean)
-          : en.split(/\s{2,}/).map(c => c.trim()).filter(Boolean);
-        if (cells.length < 2) continue;
-
-        // Drop leading serial number (1..150)
-        const workCells = [...cells];
-        if (/^\d{1,3}$/.test(workCells[0]) && Number(workCells[0]) <= 150) {
-          workCells.shift();
-        }
-        if (!workCells.length) continue;
-
-        // Extract Yemeni mobile phone (77/78/73/71/70 + 7 digits)
-        let phone = '';
-        const phoneRe = /(?:\+?967)?\s*(7[01378]\d{7})\b/;
-        let qty = 0;
-        let status = '';
-        const textParts = [];
-
-        workCells.forEach(cell => {
-          const cNorm = normAr(cell);
-          const pm = cell.replace(/[\s\-]/g, '').match(phoneRe);
-          if (pm && !phone) {
-            phone = pm[1];
-            const rem = cell.replace(/[\s\-]/g, '').replace(pm[0], '').trim();
-            if (!rem) return;
-          }
-          if (cNorm.includes('موقف') || cNorm.includes('توقيف') || cNorm.includes('ايقاف') || cNorm.includes('متوقف')) {
-            status = 'موقف';
-            if (cNorm.length < 18) return;
-          } else if (cNorm.includes('تغطيه')) {
-            status = 'تغطية مربع وكيل';
-            if (cNorm.length < 22) return;
-          } else if (cNorm.includes('معرض')) {
-            if (!status) status = 'معرض الشركة';
-          } else if (cNorm.includes('صرف طبيعي') || cNorm === 'طبيعي' || cNorm === 'منصرف' || cNorm === 'مستلم') {
-            if (!status) status = 'صرف طبيعي';
-            return;
-          }
-
-          // Pure integer cell = cylinder quantity (10..5000, or 0 if stopped)
-          const cleanNum = cell.replace(/[,\s]/g, '').replace(/اسطوان[ةه]/g, '');
-          if (/^\d{1,4}$/.test(cleanNum)) {
-            const v = Number(cleanNum);
-            if (v >= 0 && v <= 5000 && qty === 0) {
-              qty = v;
-              return;
-            }
-          }
-          if (cell !== '-' && cell !== '—' && /[\u0600-\u06FF]/.test(cell)) {
-            textParts.push(cell);
-          }
-        });
-
-        const agent = (textParts[0] || '').trim();
-        if (!agent || agent.length < 3) continue;
-        // Must have either a quantity, phone, or explicit gas status to be a real agent row
-        if (qty === 0 && !phone && !status) continue;
-
-        const key = normAr(agent);
-        if (seenAgents.has(key)) continue;
-        seenAgents.add(key);
-
-        const loc = (textParts[1] || '').trim();
-        const notes = textParts.slice(2).join(' — ').trim();
-        const finalStatus = status || (qty === 0 ? 'موقف' : 'صرف طبيعي');
-
-        rows.push({ agent, loc, phone, qty, status: finalStatus, notes });
-      }
-
-      return { station: station || 'منشأة البريقة', directorate, visitDate, rows };
-    }
-
-  
-
-    /* ===== v40: MOBILE AUTO-DRAFT RECOVERY + PRE-SAVE FX/EXTREME SANITY LOCK ===== */
-    const DIR_AUTODRAFT_KEY_V40 = 'MOIT_DIR_AUTODRAFT_V40';
-
-    function collectDirAutoDraftV40() {
-      const prices = {};
-      document.querySelectorAll('.price-input').forEach(inp => {
-        const id = inp.getAttribute('data-price-id') || inp.getAttribute('data-id') || inp.id;
-        const v = parseNum(inp.value);
-        if (id && v > 0) prices[id] = v;
-      });
-      const gasRows = [];
-      document.querySelectorAll('#gasTbody tr').forEach(tr => {
-        const agent = tr.querySelector('.gas-agent')?.value?.trim() || '';
-        const qty = parseNum(tr.querySelector('.gas-qty')?.value);
-        if (agent || qty > 0) {
-          gasRows.push({
-            agent,
-            loc: tr.querySelector('.gas-loc')?.value?.trim() || '',
-            phone: tr.querySelector('.gas-phone')?.value?.trim() || '',
-            qty,
-            status: tr.querySelector('.gas-status')?.value || '',
-            notes: tr.querySelector('.gas-notes')?.value?.trim() || ''
-          });
-        }
-      });
-      const viols = {};
-      document.querySelectorAll('.viol-input').forEach((inp, idx) => {
-        const v = parseNum(inp.value);
-        if (v > 0) viols[inp.id || ('v_' + idx)] = v;
-      });
-      const acts = {};
-      document.querySelectorAll('.act-input').forEach((inp, idx) => {
-        const v = parseNum(inp.value);
-        if (v > 0) acts[inp.id || ('a_' + idx)] = v;
-      });
-      return {
-        savedAt: new Date().toISOString(),
-        directorate: document.getElementById('directorateSelect')?.value || '',
-        visitDate: document.getElementById('visitDateInput')?.value || '',
-        usdSell: document.getElementById('usdSell')?.value || '',
-        usdBuy: document.getElementById('usdBuy')?.value || '',
-        sarSell: document.getElementById('sarSell')?.value || '',
-        sarBuy: document.getElementById('sarBuy')?.value || '',
-        gasStation: document.getElementById('gasStationSelect')?.value || '',
-        firmsCovered: document.getElementById('summaryFirmsCovered')?.value || '',
-        inspectorName: document.getElementById('inspectorName')?.value || '',
-        notes: document.getElementById('notesTextarea')?.value || '',
-        prices,
-        gasRows,
-        viols,
-        acts
-      };
-    }
-
-    function clearDirAutoDraftV40() {
-      try { localStorage.removeItem(DIR_AUTODRAFT_KEY_V40); } catch (_e) {}
-      document.getElementById('dirAutoDraftRestoreBar')?.remove();
-    }
-
-    function restoreDirAutoDraftV40(d) {
-      if (!d) return;
-      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== '') el.value = v; };
-      setVal('directorateSelect', d.directorate);
-      setVal('visitDateInput', d.visitDate);
-      setVal('usdSell', d.usdSell);
-      setVal('usdBuy', d.usdBuy);
-      setVal('sarSell', d.sarSell);
-      setVal('sarBuy', d.sarBuy);
-      setVal('gasStationSelect', d.gasStation);
-      setVal('summaryFirmsCovered', d.firmsCovered);
-      setVal('inspectorName', d.inspectorName);
-      setVal('notesTextarea', d.notes);
-
-      if (d.prices) {
-        document.querySelectorAll('.price-input').forEach(inp => {
-          const id = inp.getAttribute('data-price-id') || inp.getAttribute('data-id') || inp.id;
-          if (id && d.prices[id] > 0) inp.value = Number(d.prices[id]).toLocaleString('en-US');
-        });
-      }
-      if (Array.isArray(d.gasRows) && d.gasRows.length) {
-        const tb = document.getElementById('gasTbody');
-        if (tb) {
-          while (tb.children.length < d.gasRows.length && typeof appendGasRow === 'function') {
-            appendGasRow(tb.children.length + 1);
-          }
-          d.gasRows.forEach((g, idx) => {
-            const tr = tb.children[idx];
-            if (!tr) return;
-            if (tr.querySelector('.gas-agent')) tr.querySelector('.gas-agent').value = g.agent || '';
-            if (tr.querySelector('.gas-loc')) tr.querySelector('.gas-loc').value = g.loc || '';
-            if (tr.querySelector('.gas-phone')) tr.querySelector('.gas-phone').value = g.phone || '';
-            if (tr.querySelector('.gas-qty')) tr.querySelector('.gas-qty').value = g.qty || '';
-            if (tr.querySelector('.gas-status') && g.status) tr.querySelector('.gas-status').value = g.status;
-            if (tr.querySelector('.gas-notes')) tr.querySelector('.gas-notes').value = g.notes || '';
-            if (typeof applyGasRowVisualStyle === 'function') applyGasRowVisualStyle(tr);
-          });
-        }
-      }
-      if (d.viols) {
-        document.querySelectorAll('.viol-input').forEach((inp, idx) => {
-          const k = inp.id || ('v_' + idx);
-          if (d.viols[k] > 0) inp.value = d.viols[k];
-        });
-      }
-      if (d.acts) {
-        document.querySelectorAll('.act-input').forEach((inp, idx) => {
-          const k = inp.id || ('a_' + idx);
-          if (d.acts[k] > 0) inp.value = d.acts[k];
-        });
-      }
-      if (typeof updateGasStatusSummaries === 'function') updateGasStatusSummaries();
-      if (typeof recalculateKPIs === 'function') recalculateKPIs();
-      if (typeof updateDirHudTelemetry === 'function') updateDirHudTelemetry();
-      document.getElementById('dirAutoDraftRestoreBar')?.remove();
-      if (typeof showToast === 'function') showToast('♻️ تم استعادة المسودة التلقائية بنجاح!', '✅');
-    }
-
-    (function initDirV40AutoDraftEngine() {
-      let saveTimer = null;
-      const scheduleSave = () => {
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => {
-          try {
-            const d = collectDirAutoDraftV40();
-            const hasContent = Object.keys(d.prices).length > 0 || d.gasRows.length > 0 || Object.keys(d.viols).length > 0 || Boolean(d.usdSell);
-            if (hasContent) localStorage.setItem(DIR_AUTODRAFT_KEY_V40, JSON.stringify(d));
-          } catch (_e) { /* quota safe */ }
-        }, 2000);
-      };
-
-      const mountCheck = () => {
-        document.addEventListener('input', scheduleSave, { passive: true });
-        document.addEventListener('change', scheduleSave, { passive: true });
-
-        try {
-          const raw = localStorage.getItem(DIR_AUTODRAFT_KEY_V40);
-          if (!raw) return;
-          const d = JSON.parse(raw);
-          // v41: Auto-expire drafts older than 48 hours
-          if (d && d.savedAt && (Date.now() - new Date(d.savedAt).getTime()) > 48 * 3600 * 1000) {
-            clearDirAutoDraftV40();
-            return;
-          }
-          const pCnt = d && d.prices ? Object.keys(d.prices).length : 0;
-          const gCnt = d && Array.isArray(d.gasRows) ? d.gasRows.length : 0;
-          if (pCnt === 0 && gCnt === 0 && !d.usdSell) return;
-
-          const todayIso = new Date().toISOString().slice(0, 10);
-          const isOldDay = Boolean(d.visitDate && d.visitDate !== todayIso);
-          const dateLabel = d.visitDate ? (typeof fmtDateDMY === 'function' ? fmtDateDMY(d.visitDate) : d.visitDate) : '';
-          const bar = document.createElement('div');
-          bar.id = 'dirAutoDraftRestoreBar';
-          bar.className = 'no-print fixed top-3 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-lg z-[88] flex flex-wrap items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5 text-xs font-extrabold shadow-2xl border backdrop-blur-md ' + (isOldDay ? 'border-amber-400/70 bg-amber-950/95 text-amber-100' : 'border-emerald-400/60 bg-[#0f2942]/95 text-white');
-          const dirTxt = d.directorate ? `لمديرية ${d.directorate}` : 'غير مرسلة';
-          bar.innerHTML = `
-            <span>${isOldDay ? '⚠️ مسودة من يوم سابق (' + dateLabel + ')' : '💾 لديك مسودة تلقائية'} ${dirTxt} (${pCnt} سلعة • ${gCnt} وكيل غاز)</span>
-            <div class="flex items-center gap-1.5">
-              <button id="dirRestoreDraftNowBtn" type="button" class="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#0b1c36] font-black text-xs transition">♻️ استعادة</button>
-              <button id="dirDismissDraftNowBtn" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition">تجاهل</button>
-            </div>`;
-          document.body.appendChild(bar);
-          document.getElementById('dirRestoreDraftNowBtn')?.addEventListener('click', () => restoreDirAutoDraftV40(d));
-          document.getElementById('dirDismissDraftNowBtn')?.addEventListener('click', () => clearDirAutoDraftV40());
-        } catch (_e) {}
-      };
-
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(mountCheck, 500));
-      else setTimeout(mountCheck, 500);
-    })();
-
-
-    /* ===== v40: AUTOMATIC PWA SERVICE WORKER UPDATE NOTIFICATION BANNER ===== */
-    (function initV40SwAutoUpdateWatcher() {
-      if (!('serviceWorker' in navigator)) return;
-      const showUpdateBar = () => {
-        if (document.getElementById('moitSwUpdateBar')) return;
-        const bar = document.createElement('div');
-        bar.id = 'moitSwUpdateBar';
-        bar.className = 'no-print fixed bottom-14 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[99] flex items-center justify-between gap-2.5 rounded-2xl px-4 py-2.5 text-xs font-extrabold shadow-2xl border border-amber-400/60 bg-[#0b1c36]/95 text-white backdrop-blur-md';
-        bar.innerHTML = '<span>✨ يتوفر إصدار أحدث للمنظومة</span><button type="button" onclick="window.location.reload()" class="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0b1c36] font-black text-xs shrink-0 transition">🔄 تحديث فوري</button>';
-        document.body.appendChild(bar);
-      };
-      let hadController = Boolean(navigator.serviceWorker.controller);
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (hadController) showUpdateBar();
-        hadController = true;
-      });
-      navigator.serviceWorker.getRegistration().then(reg => {
-        if (!reg) return;
-        reg.addEventListener('updatefound', () => {
-          const nw = reg.installing;
-          if (!nw) return;
-          nw.addEventListener('statechange', () => {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar();
-          });
-        });
-      }).catch(() => {});
-    })();
-
-  
-    /* v45-log-live */
-    (function bindV45LogTbodyLiveKpi() {
-      const bind = () => {
-        const ltb = document.getElementById('logTbody');
-        if (ltb && ltb.dataset.v45Bound !== '1') {
-          ltb.dataset.v45Bound = '1';
-          ltb.addEventListener('input', () => { if (typeof recalculateKPIs === 'function') recalculateKPIs(); });
-          ltb.addEventListener('change', () => { if (typeof recalculateKPIs === 'function') recalculateKPIs(); });
-        }
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-      else setTimeout(bind, 80);
     })();
 
   </script>

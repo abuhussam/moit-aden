@@ -1037,7 +1037,7 @@
         <div class="pt-2 border-t border-slate-100">
           <div class="text-xs font-extrabold text-slate-600 mb-2 flex items-center justify-between">
             <span>رادار التزام المديريات الثمان (اضغط على أي مديرية لعرض أرشيفها):</span>
-            <div class="flex items-center gap-2"><span id="ovComplianceRatio" class="text-emerald-700 font-black">0 / 8 مديريات</span><button id="btnCopyMissingDirsWa" type="button" onclick="copyMissingDirsWhatsAppV47()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black shadow-sm transition">📲 تذكير المتأخرين واتساب</button></div>
+            <span id="ovComplianceRatio" class="text-emerald-700 font-black">0 / 8 مديريات</span>
           </div>
           <div id="ovRadarGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2"></div>
         </div>
@@ -1849,18 +1849,6 @@
             <button id="opsOpenAddGasAgentBtn" type="button" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-400 text-[#0b1c36] text-xs font-black px-3 py-2 rounded-xl shadow">➕ إضافة وكيل للقاعدة</button>
           </div>
         </div>
-        <!-- v47: بطاقة الوكلاء الموقفين والتغطيات المجمّعة لعموم عدن -->
-        <div class="rounded-2xl border border-rose-200 bg-rose-50/50 p-3.5 space-y-2.5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h4 class="font-black text-rose-900 text-xs sm:text-sm">🚫 كشف الوكلاء الموقفين والتغطيات على مستوى العاصمة عدن</h4>
-              <span id="opsGasStoppedCountV47" class="text-[11px] font-extrabold text-rose-700">🚫 موقفين: 0 • 🔁 تغطيات: 0</span>
-            </div>
-            <button type="button" onclick="copyGasStoppedForCompanyV47()" class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-black shadow-sm transition">📲 نسخ الكشف للشركة اليمنية للغاز</button>
-          </div>
-          <div id="opsGasStoppedListV47" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
-        </div>
-
 
         <!-- Quick Period Presets for Gas Reports -->
         <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -2442,9 +2430,8 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-base font-black text-[#102a4e]">مقارن السلع المتقدم (حسب السلعة، التاريخ، والمديرية)</h2>
-            <p class="text-xs text-slate-500">قارن أي سلعة من الأصناف الـ 81 بين جميع المديريات في تاريخ محدد، أو تتبّع مسار سعرها عبر الزمن، مع إمكانية تبديل نوع الرسم البياني.</p>
+            <p class="text-xs text-slate-500">قارن أي سلعة من الأصناف الـ 75 بين جميع المديريات في تاريخ محدد، أو تتبّع مسار سعرها عبر الزمن، مع إمكانية تبديل نوع الرسم البياني.</p>
           </div>
-          <button id="btnCopyCompInquiryWa" type="button" onclick="copyComparatorInquiryWaV47()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition shrink-0">📲 استيضاح واتساب للمديرية الأغلى</button>
           <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button id="cmpExportExcelBtn" type="button" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm px-3 py-2 rounded-xl shadow-sm transition">📊 إكسل المقارنة</button>
             <button id="cmpExportWordBtn" type="button" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm px-3 py-2 rounded-xl shadow-sm transition">📝 وورد المقارنة</button>
@@ -2694,17 +2681,6 @@
     <!-- TAB 6: VIOLATIONS & GOOGLE DRIVE EVIDENCE GALLERY          -->
     <!-- ========================================================== -->
     <section id="tab-evidence" class="tab-panel moit-reveal hidden space-y-4">
-      <!-- v47: فلتر سريع لحالة متابعة المخالفات والأدلة -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="font-black text-[#102a4e] ml-1">🔎 تصفية حالة المخالفات:</span>
-          <button type="button" data-v47-ev-st="all" onclick="applyEvidenceStatusFilterV47('all')" class="px-3 py-1 rounded-xl border border-slate-300 bg-[#102a4e] text-white font-extrabold transition">الكل</button>
-          <button type="button" data-v47-ev-st="pending" onclick="applyEvidenceStatusFilterV47('pending')" class="px-3 py-1 rounded-xl border border-slate-300 bg-white text-slate-700 font-extrabold transition">⏳ قيد المتابعة فقط</button>
-          <button type="button" data-v47-ev-st="done" onclick="applyEvidenceStatusFilterV47('done')" class="px-3 py-1 rounded-xl border border-slate-300 bg-white text-slate-700 font-extrabold transition">✅ أُنجز فقط</button>
-        </div>
-        <span id="evStatusStatsV47" class="text-xs font-black text-slate-600"></span>
-      </div>
-
       <!-- Phase 3: Repeat Offenders Radar (ملف المخالفين المتكررين والتصعيد القانوني) -->
       <div class="bg-white rounded-2xl border-2 border-rose-200 shadow-sm p-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
@@ -2941,8 +2917,8 @@ if (data.action === 'gemini_brief' && data.prompt) {
       { key: 'milk', label: 'الحليب المجفف', items: [
         { id: 'm1', name: 'فائق', unit: '2500 جرام' },
         { id: 'm2', name: 'فائق', unit: '1800 جرام' },
-        { id: 'm3', name: 'الصقر', unit: '2500 جرام' },
-        { id: 'm4', name: 'الصقر', unit: '1800 جرام' },
+        { id: 'm3', name: 'صقر', unit: '2500 جرام' },
+        { id: 'm4', name: 'صقر', unit: '1800 جرام' },
         { id: 'm5', name: 'نيدو', unit: '2500 جرام' },
         { id: 'm6', name: 'نيدو', unit: '1800 جرام' },
         { id: 'm7', name: 'دانو', unit: '2500 جرام' },
@@ -3235,7 +3211,9 @@ if (data.action === 'gemini_brief' && data.prompt) {
           allReports.sort((a, b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
           window.__OPS_SYNC_META = data.syncMeta || null;
           if (typeof saveOpsEmergencySnapshot === 'function') setTimeout(saveOpsEmergencySnapshot, 250);
-
+          if (data.syncMeta && data.syncMeta.truncated) {
+            setSyncStatus('ok', `تم سحب آخر ${data.syncMeta.days} يوماً (${fmtNum(data.syncMeta.returnedReports)} من أصل ${fmtNum(data.syncMeta.totalReportsInSheet)} تقرير)`);
+          }
         }
         if (Array.isArray(data.evidenceRows)) allEvidence = data.evidenceRows.map(e => ({ ...e, directorate: cleanDirName(e.directorate), visitDate: cleanIsoDate(e.visitDate) }));
         if (Array.isArray(data.campaignRows)) allCampaignRows = data.campaignRows.map(c => ({ ...c, directorate: cleanDirName(c.directorate), date: cleanIsoDate(c.date) }));
@@ -3262,32 +3240,8 @@ if (data.action === 'gemini_brief' && data.prompt) {
           try {
             if (isJson) {
               const parsed = JSON.parse(ev.target.result);
-              if (parsed && Array.isArray(parsed.reports)) {
-                // v42: Full Local PC Backup (.json) Restore (reports + evidence + campaigns + recalls)
-                parsed.reports.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
-                if (Array.isArray(parsed.evidenceRows) && parsed.evidenceRows.length) {
-                  const existingEv = new Set(allEvidence.map(x => `${x.directorate}|${x.visitDate}|${x.firm}|${x.type}`));
-                  parsed.evidenceRows.forEach(evRow => {
-                    const k = `${evRow.directorate}|${evRow.visitDate}|${evRow.firm}|${evRow.type}`;
-                    if (!existingEv.has(k)) { allEvidence.push(evRow); existingEv.add(k); }
-                  });
-                }
-                if (Array.isArray(parsed.campaigns) && parsed.campaigns.length) {
-                  const existingC = new Set(managedCampaigns.map(x => x.id));
-                  parsed.campaigns.forEach(c => { if (c.id && !existingC.has(c.id)) { managedCampaigns.push(c); existingC.add(c.id); } });
-                }
-                if (Array.isArray(parsed.campaignRows) && parsed.campaignRows.length) {
-                  const existingRc = new Set(allCampaignRows.map(x => `${x.directorate}|${x.date}|${x.firm}|${x.product}|${x.qty}`));
-                  parsed.campaignRows.forEach(rc => {
-                    const k = `${rc.directorate}|${rc.date}|${rc.firm}|${rc.product}|${rc.qty}`;
-                    if (!existingRc.has(k)) { allCampaignRows.push(rc); existingRc.add(k); }
-                  });
-                }
-              } else if (Array.isArray(parsed)) {
-                parsed.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
-              } else if (upsertReport({ ...parsed, _source: 'local' })) {
-                loaded++;
-              }
+              if (Array.isArray(parsed)) parsed.forEach(item => { if (upsertReport({ ...item, _source: 'local' })) loaded++; });
+              else if (upsertReport({ ...parsed, _source: 'local' })) loaded++;
             } else {
             const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
             const jsonSheetName = wb.SheetNames.find(n => n.includes('بيانات') || n.includes('JSON') || n.includes('Data'));
@@ -3332,8 +3286,6 @@ if (data.action === 'gemini_brief' && data.prompt) {
       renderCampaignAnalytics();
       renderEvidence();
       if (typeof updateOpsHudTelemetry === 'function') updateOpsHudTelemetry();
-      if (typeof renderGasStoppedSummaryCardV47 === 'function') renderGasStoppedSummaryCardV47();
-      if (typeof applyEvidenceStatusFilterV47 === 'function') applyEvidenceStatusFilterV47(window.__V47_EV_STATUS_FILTER || 'all');
     }
 
     function populateDynamicDateSelectors() {
@@ -3407,20 +3359,16 @@ if (data.action === 'gemini_brief' && data.prompt) {
           if (v > 0) entries.push({ dir: r.directorate, date: r.visitDate, val: v });
         });
         let min = 0, max = 0, minDir = '-', maxDir = '-';
-        let minDirs = [], maxDirs = [], uniqueDirCount = 0;
         if (entries.length) {
           const minObj = entries.reduce((a, b) => b.val < a.val ? b : a);
           const maxObj = entries.reduce((a, b) => b.val > a.val ? b : a);
           min = minObj.val; minDir = minObj.dir;
           max = maxObj.val; maxDir = maxObj.dir;
-          minDirs = [...new Set(entries.filter(e => e.val === min).map(e => e.dir))];
-          maxDirs = [...new Set(entries.filter(e => e.val === max).map(e => e.dir))];
-          uniqueDirCount = new Set(entries.map(e => e.dir)).size;
         }
         const avg = entries.length ? Math.round(entries.reduce((a, b) => a + b.val, 0) / entries.length) : 0;
         const spread = max - min;
         const spreadPct = min > 0 ? Math.round((spread / min) * 100) : 0;
-        const allDirs = [...new Set(entries.map(e => e.dir))]; return { ...item, count: entries.length, min, max, minDir, maxDir, minDirs, maxDirs, allDirs, entries, uniqueDirCount, avg, spread, spreadPct };
+        return { ...item, count: entries.length, min, max, minDir, maxDir, avg, spread, spreadPct };
       });
     }
 
@@ -3570,22 +3518,11 @@ if (data.action === 'gemini_brief' && data.prompt) {
             <td class="font-extrabold text-[#102a4e]">${escHtml(it.name)}</td>
             <td class="text-xs text-slate-600">${escHtml(it.unit)}</td>
             <td class="text-center font-bold">${it.count}</td>
-            <td class="font-bold text-emerald-700">
-              ${it.min ? `<div>${fmtNum(it.min)}</div><div class="text-[10px] font-bold text-emerald-800/80 whitespace-nowrap" title="${escHtml((it.minDirs || []).join('، '))}">📍 ${escHtml(formatDirNamesShortV46(it.minDirs))}</div>` : '-'}
-            </td>
-            <td class="font-bold text-rose-700">
-              ${it.max ? `<div>${fmtNum(it.max)}</div><div class="text-[10px] font-bold text-rose-800/80 whitespace-nowrap" title="${escHtml((it.maxDirs || []).join('، '))}">📍 ${escHtml(formatDirNamesShortV46(it.maxDirs))}</div>` : '-'}
-            </td>
-            <td class="font-black text-[#102a4e]">
-              ${it.avg ? `<div>${fmtNum(it.avg)}</div>${it.uniqueDirCount >= 3 ? `<button type="button" onclick="openItemDirsBreakdownV46('${it.id}')" class="mt-0.5 text-[10px] font-extrabold text-sky-700 hover:text-sky-900 underline decoration-dotted whitespace-nowrap">📍 متوسط ${it.uniqueDirCount} مديريات ▾</button>` : `<div class="text-[10px] font-bold text-slate-500 whitespace-nowrap">📍 ${escHtml(formatDirNamesShortV46(it.allDirs))}</div>`}` : '-'}
-            </td>
+            <td class="font-bold text-emerald-700">${it.min ? fmtNum(it.min) : '-'}</td>
+            <td class="font-bold text-rose-700">${it.max ? fmtNum(it.max) : '-'}</td>
+            <td class="font-black text-[#102a4e]">${it.avg ? fmtNum(it.avg) : '-'}</td>
             <td class="text-center">${badge}</td>
-            <td class="text-center">
-              <div class="flex flex-wrap items-center justify-center gap-1">
-                <button type="button" onclick="openItemInComparator('${it.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-2 py-1 rounded-lg text-[11px] font-extrabold">⚖️ قارن</button>
-                ${(it.count >= 2 && it.spreadPct >= 100) ? `<button type="button" onclick="switchMainTab('reports'); setTimeout(() => switchSubReport('data_auditor'), 60);" title="قيمة شاذة تسببت بتفاوت حاد — اضغط لاستبعادها في مدقق الجودة" class="bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 px-2 py-1 rounded-lg text-[10px] font-black">🛡️ استبعاد شاذ</button>` : ''}
-              </div>
-            </td>
+            <td class="text-center"><button type="button" onclick="openItemInComparator('${it.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-2.5 py-1 rounded-lg text-[11px] font-extrabold">⚖️ قارن</button></td>
           </tr>`;
       }).join('');
     }
@@ -5538,39 +5475,6 @@ if (data.action === 'gemini_brief' && data.prompt) {
       #opsHudQuickPeek { display: none !important; }
     }
 
-  
-    /* ===== v42: GOLD MASTER DARK-MODE CONTRAST & CLEAN PRINT RULES ===== */
-    body.dark-mode .hud-micro-pill {
-      background: rgba(255, 255, 255, 0.12);
-      color: #e2e8f0;
-      border-color: rgba(148, 163, 184, 0.25);
-    }
-    body.dark-mode .hud-pill-ok { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
-    body.dark-mode .hud-pill-warn { background: rgba(245, 158, 11, 0.24); color: #fcd34d; border-color: rgba(245, 158, 11, 0.45); }
-    body.dark-mode .hud-pill-crit { background: rgba(244, 63, 94, 0.24); color: #fda4af; border-color: rgba(244, 63, 94, 0.45); }
-    body.dark-mode .hud-pill-ai { background: rgba(99, 102, 241, 0.24); color: #c7d2fe; border-color: rgba(129, 140, 248, 0.45); }
-    body.dark-mode #arcPaginationBar {
-      background-color: #131f33 !important;
-      border-color: #334155 !important;
-      color: #e2e8f0 !important;
-    }
-    body.dark-mode #arcPaginationBar button {
-      background-color: #1e293b !important;
-      border-color: #475569 !important;
-      color: #f8fafc !important;
-    }
-    body.dark-mode #opsGeminiKeysList > div {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-      color: #f1f5f9 !important;
-    }
-    @media print {
-      #opsHudQuickPeek, #dirCloudUploadFxModal, #dirAutoDraftRestoreBar,
-      #dirLiveNetBanner, #opsLiveNetBanner, #moitSwUpdateBar, .hud-liquid-pill {
-        display: none !important;
-      }
-    }
-
   </style></head><body>${currentPdfHtml}</body></html>`);
       doc.close();
       iframe.contentWindow.focus();
@@ -5610,11 +5514,11 @@ if (data.action === 'gemini_brief' && data.prompt) {
       const sumAoa = [['المديرية', 'التاريخ', 'المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'دولار بيع', 'سعودي بيع', 'الوضع التمويني', 'رئيس الفريق'],
         ...filteredOvReports.map(r => [r.directorate, fmtDateDMY(r.visitDate), r.firmsCovered, r.gasTotal, r.violTotal, r.actTotal, r.usdSell, r.sarSell, r.supplyStatus, r.inspectorName]),
         ['الإجمالي العام', `${filteredOvReports.length} تقرير`, filteredOvReports.reduce((s,r)=>s+r.firmsCovered,0), filteredOvReports.reduce((s,r)=>s+r.gasTotal,0), filteredOvReports.reduce((s,r)=>s+r.violTotal,0), filteredOvReports.reduce((s,r)=>s+r.actTotal,0), '-', '-', 'العاصمة عدن', 'غرفة العمليات']];
-      const prAoa = [['#', 'المجموعة', 'السلعة', 'العبوة', 'عدد الرصد', 'أدنى سعر', 'مديرية أدنى سعر', 'أعلى سعر', 'مديرية أعلى سعر', 'المتوسط', 'الفارق السعري', 'نسبة التفاوت %'],
-        ...computeConsolidatedPrices(filteredOvReports).map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.min ? (p.minDir || '-') : '-', p.max, p.max ? (p.maxDir || '-') : '-', p.avg, p.spread, p.count >= 2 ? p.spreadPct + '%' : '-'])];
+      const prAoa = [['#', 'المجموعة', 'السلعة', 'العبوة', 'عدد الرصد', 'أدنى سعر', 'أعلى سعر', 'المتوسط', 'الفارق السعري'],
+        ...computeConsolidatedPrices(filteredOvReports).map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.max, p.avg, p.spread])];
       saveStyledWorkbook([
         { name: 'ملخص_المديريات', aoa: sumAoa, widths: [18, 13, 12, 12, 12, 12, 12, 12, 14, 18] },
-        { name: 'متوسطات_الأسعار_81', aoa: prAoa, widths: [6, 18, 22, 13, 10, 12, 16, 12, 16, 12, 14, 12] }
+        { name: 'متوسطات_الأسعار_81', aoa: prAoa, widths: [6, 18, 22, 13, 10, 12, 12, 12, 14] }
       ], `التقرير_الموحد_العاصمة_عدن_${todayIso()}.xlsx`);
     }
 
@@ -7426,21 +7330,11 @@ ${ctx}`;
 {"directorate":"اسم المديرية من القائمة (صيرة (كريتر) أو خور مكسر أو المعلا أو التواهي أو الشيخ عثمان أو المنصورة أو دار سعد أو البريقة)","visitDate":"YYYY-MM-DD","station":"اسم المحطة مثل منشأة البريقة أو جعولة أو العريش أو بئر أحمد","rows":[{"agent":"اسم المسوق أو المعرض","loc":"العنوان","phone":"رقم الجوال بأرقام إنجليزية فقط","qty":100,"status":"صرف طبيعي أو موقف أو تغطية مربع وكيل أو معرض الشركة","notes":"الملاحظات إن وجدت"}]}`;
 
         try {
-          let parsed = null;
-          if (window.__OPS_GAS_OCR_DIGITAL_TEXT && typeof parseDigitalGasPdfLocally === 'function') {
-            const localGas = parseDigitalGasPdfLocally(window.__OPS_GAS_OCR_DIGITAL_TEXT);
-            if (localGas && Array.isArray(localGas.rows) && localGas.rows.length >= 2) {
-              parsed = localGas;
-              stEl.textContent = `⚡ تم الاستخراج المحلي الفوري لكشف الغاز (${localGas.rows.length} وكيل) خلال 0.1 ثانية بدون استهلاك حصة Gemini!`;
-            }
-          }
-          if (!parsed) {
-            const vTxt = window.__OPS_GAS_OCR_DIGITAL_TEXT
-              ? await callAppsScriptGemini({ action: 'gemini_brief', fastJson: true, prompt: ocrPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + window.__OPS_GAS_OCR_DIGITAL_TEXT.slice(0, 48000) })
-              : await callAppsScriptGemini({ action: 'gemini_vision', prompt: ocrPrompt, imageBase64: _gasOcrCompressedB64, mimeType: _gasOcrMimeType || 'image/jpeg' });
-            const rawJson = vTxt.replace(/```json/gi, '').replace(/```/g, '').trim();
-            parsed = JSON.parse(rawJson);
-          }
+          const vTxt = window.__OPS_GAS_OCR_DIGITAL_TEXT
+            ? await callAppsScriptGemini({ action: 'gemini_brief', fastJson: true, prompt: ocrPrompt + '\n\n=== النص الرقمي المستخرج من كشف الغاز ===\n' + window.__OPS_GAS_OCR_DIGITAL_TEXT.slice(0, 48000) })
+            : await callAppsScriptGemini({ action: 'gemini_vision', prompt: ocrPrompt, imageBase64: _gasOcrCompressedB64, mimeType: _gasOcrMimeType || 'image/jpeg' });
+          const rawJson = vTxt.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(rawJson);
           const dir = cleanDirName(parsed.directorate || 'المنصورة');
           const dirSel = document.getElementById('gasOcrDirSelect');
           if (dirSel && ADEN_8_DIRS.includes(dir)) dirSel.value = dir;
@@ -8033,7 +7927,6 @@ ${ctx}`;
         document.getElementById('opsAdminGateView')?.classList.add('hidden');
         document.getElementById('opsPinsUnlockedView')?.classList.remove('hidden');
         renderOpsPinsTable();
-        if (typeof loadOpsGeminiKeysPool === 'function') loadOpsGeminiKeysPool();
         if (statusEl) statusEl.textContent = '✅ تم فتح لوحة الأقفال بنجاح — السرية الكاملة مفعّلة.';
       } catch (err) {
         if (errEl) { errEl.textContent = '❌ ' + explainOpsErrorSmart(err, 'الرمز الإداري غير صحيح أو تعذر الاتصال بالخادم'); errEl.classList.remove('hidden'); }
@@ -8782,7 +8675,6 @@ ${ctx}`;
       if (!document.getElementById('opsHudQuickPeek')) {
         const peek = document.createElement('div');
         peek.id = 'opsHudQuickPeek';
-        peek.className = 'no-print';
         document.body.appendChild(peek);
       }
 
@@ -9211,10 +9103,7 @@ ${ctx}`;
       if ((err && err.name === 'AbortError') || low.includes('aborted') || low.includes('timeout')) {
         return 'استغرق الخادم وقتاً أطول من المعتاد — أعد المحاولة الآن أو اختر نطاق «آخر 30 يوم» لسرعة أعلى';
       }
-      if (low.includes('resource_exhausted') || low.includes('429') || low.includes('rate limit') || (low.includes('quota') && !low.includes('quotaexceeded') && !(err && err.name === 'QuotaExceededError'))) {
-        return '⏳ تم بلوغ حد الطلبات المؤقت في مفتاح Gemini المجاني — انتظر 60 ثانية ثم أعد المحاولة';
-      }
-      if ((err && err.name === 'QuotaExceededError') || low.includes('quotaexceeded')) {
+      if (low.includes('quotaexceeded') || low.includes('quota')) {
         return 'ذاكرة المتصفح ممتلئة — يمكنك مواصلة العمل السحابي دون التأثير على البيانات في Google Sheets';
       }
       if (low.includes('unexpected token') || low.includes('json')) {
@@ -9335,668 +9224,6 @@ ${ctx}`;
       }
     })();
 
-  
-
-    /* ===== v38: OPS ADMIN GEMINI MULTI-KEY POOL MANAGER ===== */
-    function renderOpsGeminiKeysList(keys, count, pools, activeModel) {
-      const badge = document.getElementById('opsGeminiKeysBadge');
-      const listEl = document.getElementById('opsGeminiKeysList');
-      if (badge) badge.textContent = `🔑 ${count || 0} مفتاح • ${pools || 0} حصة مستقلة`;
-      if (!listEl) return;
-      if (!Array.isArray(keys) || !keys.length) {
-        listEl.innerHTML = '<div class="text-slate-500 font-bold bg-white/80 rounded-xl p-2.5 border border-dashed border-slate-300">لا توجد مفاتيح مسجلة بعد — أضف أول مفتاح Gemini أدناه.</div>';
-        return;
-      }
-      listEl.innerHTML = keys.map(k => `
-        <div class="flex items-center justify-between gap-2 bg-white rounded-xl px-3 py-2 border border-indigo-200/80 shadow-sm">
-          <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-black text-[10px]">مفتاح #${k.idx + 1}</span>
-            <span class="font-mono font-bold text-slate-800" dir="ltr">${escHtml(k.masked)}</span>
-          </div>
-          <button type="button" onclick="removeOpsGeminiKey(${k.idx})" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-black transition">🗑️ حذف</button>
-        </div>`).join('') + (activeModel ? `<div class="text-[10.5px] text-slate-600 font-bold pt-0.5">🤖 النموذج النشط حالياً: <span class="font-mono text-indigo-800">${escHtml(activeModel)}</span></div>` : '');
-    }
-
-    async function loadOpsGeminiKeysPool() {
-      if (!opsSessionAdminPin) return;
-      const st = document.getElementById('opsGeminiKeysStatus');
-      if (st) st.textContent = '⏳ جارٍ تحميل مجمّع المفاتيح من الخادم...';
-      try {
-        const res = await fetch(getBakedUrl(), {
-          method: 'POST', redirect: 'follow', credentials: 'omit',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'admin_get_gemini_keys', adminPin: opsSessionAdminPin })
-        });
-        const raw = await res.text();
-        if (!raw || raw.trim().startsWith('<')) throw new Error('حدّث Code.gs إلى الإصدار v20 لتفعيل إدارة المفاتيح من اللوحة');
-        const j = JSON.parse(raw);
-        if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر جلب المفاتيح');
-        renderOpsGeminiKeysList(j.keys, j.count, j.pools, j.activeModel);
-        if (st) st.textContent = j.count >= 2 ? `✅ مجمّع المفاتيح يعمل بكفاءة (${j.count} مفاتيح = ${j.pools} حصص مستقلة).` : '💡 يمكنك إضافة مفتاح ثانٍ وثالث من حسابات Gmail أخرى لمضاعفة السعة إلى 9 حصص.';
-      } catch (err) {
-        if (st) st.textContent = '⚠️ ' + explainOpsErrorSmart(err, 'تعذر تحميل المفاتيح — تأكد من نشر Code.gs v20');
-      }
-    }
-
-    window.removeOpsGeminiKey = async function removeOpsGeminiKey(idx) {
-      if (!opsSessionAdminPin) return;
-      const st = document.getElementById('opsGeminiKeysStatus');
-      if (st) st.textContent = '⏳ جارٍ حذف المفتاح...';
-      try {
-        const res = await fetch(getBakedUrl(), {
-          method: 'POST', redirect: 'follow', credentials: 'omit',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'admin_remove_gemini_key', adminPin: opsSessionAdminPin, idx })
-        });
-        const j = await res.json();
-        if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر حذف المفتاح');
-        renderOpsGeminiKeysList(j.keys, j.count, j.pools);
-        if (st) st.textContent = '✅ تم حذف المفتاح وتحديث المجمّع سحابياً.';
-        showToast('تم حذف المفتاح بنجاح', '🗑️');
-      } catch (err) {
-        if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر حذف المفتاح');
-      }
-    };
-
-    (function bindOpsV38GeminiKeysUi() {
-      const init = () => {
-        const addBtn = document.getElementById('opsAddGeminiKeyBtn');
-        const testBtn = document.getElementById('opsTestGeminiKeysBtn');
-        const inp = document.getElementById('opsNewGeminiKeyInput');
-        const st = document.getElementById('opsGeminiKeysStatus');
-
-        if (addBtn && addBtn.dataset.v38Bound !== '1') {
-          addBtn.dataset.v38Bound = '1';
-          addBtn.addEventListener('click', async () => {
-            const val = (inp?.value || '').trim();
-            if (!val || !val.startsWith('AIza') || val.length < 20) {
-              if (st) st.textContent = '⚠️ الصق مفتاح Gemini صحيح يبدأ بـ AIzaSy...';
-              return;
-            }
-            addBtn.disabled = true; addBtn.textContent = '⏳ جارٍ الحفظ...';
-            try {
-              const res = await fetch(getBakedUrl(), {
-                method: 'POST', redirect: 'follow', credentials: 'omit',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'admin_add_gemini_key', adminPin: opsSessionAdminPin, apiKey: val })
-              });
-              const j = await res.json();
-              if (!j || j.status !== 'success') throw new Error(j?.error || 'تعذر حفظ المفتاح');
-              if (inp) inp.value = '';
-              renderOpsGeminiKeysList(j.keys, j.count, j.pools);
-              if (st) st.textContent = `✅ تمت إضافة المفتاح بنجاح! المجمّع الآن: ${j.count} مفاتيح (${j.pools} حصص مستقلة).`;
-              showToast(`تمت إضافة مفتاح Gemini #${j.count} سحابياً!`, '🔑');
-            } catch (err) {
-              if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر حفظ المفتاح');
-            } finally {
-              addBtn.disabled = false; addBtn.textContent = '➕ إضافة وحفظ سحابياً';
-            }
-          });
-        }
-
-        if (testBtn && testBtn.dataset.v38Bound !== '1') {
-          testBtn.dataset.v38Bound = '1';
-          testBtn.addEventListener('click', async () => {
-            testBtn.disabled = true; testBtn.textContent = '⏳ جارٍ الفحص...';
-            if (st) st.textContent = '⏳ جارٍ اختبار الاتصال الفعلي مع خوادم Gemini...';
-            try {
-              const res = await fetch(getBakedUrl(), {
-                method: 'POST', redirect: 'follow', credentials: 'omit',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'admin_test_gemini_keys', adminPin: opsSessionAdminPin })
-              });
-              const j = await res.json();
-              if (!j || j.status !== 'success') throw new Error(j?.error || 'فشل الاتصال');
-              if (st) st.textContent = `✅ الاتصال سليم 100%! النموذج النشط: ${j.model} (${j.count} مفاتيح = ${j.pools} حصص مستقلة).`;
-              showToast('مجمّع مفاتيح Gemini متصل ويعمل بكفاءة ✅', '⚡');
-            } catch (err) {
-              if (st) st.textContent = '❌ ' + explainOpsErrorSmart(err, 'تعذر الاتصال بـ Gemini');
-            } finally {
-              testBtn.disabled = false; testBtn.textContent = '⚡ فحص الاتصال';
-            }
-          });
-        }
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-      else setTimeout(init, 80);
-    })();
-
-  
-
-    /* ===== v39: ZERO-AI DETERMINISTIC LOCAL DIGITAL GAS PDF PARSER (0.1s, 0 GEMINI QUOTA, WORKS OFFLINE) ===== */
-    function parseDigitalGasPdfLocally(rawText) {
-      const arDigits = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
-      const toEn = (s) => String(s || '').replace(/[٠-٩]/g, d => arDigits[d]).replace(/[٫،]/g, '.');
-      const normAr = (s) => toEn(s)
-        .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
-        .replace(/[أإآ]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/ى/g, 'ي')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const lines = String(rawText || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      let station = '';
-      let directorate = '';
-      let visitDate = '';
-      const rows = [];
-      const seenAgents = new Set();
-
-      const STATIONS = ['منشأة البريقة', 'البريقة', 'جعولة', 'العريش', 'بئر أحمد', 'إنماء', 'الحسوة'];
-      const DIRS = [
-        { k: 'صيرة', v: 'صيرة (كريتر)' }, { k: 'كريتر', v: 'صيرة (كريتر)' },
-        { k: 'خور مكسر', v: 'خور مكسر' }, { k: 'خورمكسر', v: 'خور مكسر' },
-        { k: 'المعلا', v: 'المعلا' }, { k: 'التواهي', v: 'التواهي' },
-        { k: 'الشيخ عثمان', v: 'الشيخ عثمان' }, { k: 'المنصورة', v: 'المنصورة' },
-        { k: 'دار سعد', v: 'دار سعد' }, { k: 'البريقة', v: 'البريقة' }
-      ];
-
-      const HEADER_SKIP = ['اسم المسوق', 'اسم الوكيل', 'الكميه', 'الكمية', 'رقم الجوال', 'الاجمالي', 'الإجمالي', 'المجموع', 'الشركه اليمنيه', 'الشركة اليمنية', 'الجمهوريه اليمنيه', 'الجمهورية اليمنية', 'وزاره الصناعه', 'وزارة الصناعة', 'توقيع', 'المدير العام', 'كشف صرف', 'كشف توزيع'];
-
-      for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
-        const en = toEn(raw);
-        const nl = normAr(raw);
-        if (!nl || nl.startsWith('---')) continue;
-
-        // Detect station, directorate, and date from header lines
-        if (!station) {
-          const stHit = STATIONS.find(st => nl.includes(normAr(st)));
-          if (stHit && (nl.includes('محطه') || nl.includes('منشاه') || nl.includes('تعبئه') || nl.includes('غاز'))) {
-            station = stHit === 'البريقة' ? 'منشأة البريقة' : stHit;
-          }
-        }
-        if (!directorate) {
-          const dHit = DIRS.find(d => nl.includes(normAr(d.k)));
-          if (dHit && (nl.includes('مديريه') || nl.includes('كشف') || nl.includes('توزيع') || nl.includes('صرف') || nl.length < 30)) {
-            directorate = dHit.v;
-          }
-        }
-        if (!visitDate) {
-          const dm1 = en.match(/\b(202\d)[-\/](0?\d|1[0-2])[-\/](0?\d|[12]\d|3[01])\b/);
-          const dm2 = en.match(/\b(0?\d|[12]\d|3[01])[-\/](0?\d|1[0-2])[-\/](202\d)\b/);
-          if (dm1) visitDate = `${dm1[1]}-${dm1[2].padStart(2, '0')}-${dm1[3].padStart(2, '0')}`;
-          else if (dm2) visitDate = `${dm2[3]}-${dm2[2].padStart(2, '0')}-${dm2[1].padStart(2, '0')}`;
-        }
-
-        if (HEADER_SKIP.some(h => nl.includes(normAr(h)))) continue;
-        if (/^[0-9\|\s\-\.\/]+$/.test(en)) continue;
-
-        // Split row into cells
-        const cells = en.includes('|')
-          ? en.split('|').map(c => c.trim()).filter(Boolean)
-          : en.split(/\s{2,}/).map(c => c.trim()).filter(Boolean);
-        if (cells.length < 2) continue;
-
-        // Drop leading serial number (1..150)
-        const workCells = [...cells];
-        if (/^\d{1,3}$/.test(workCells[0]) && Number(workCells[0]) <= 150) {
-          workCells.shift();
-        }
-        if (!workCells.length) continue;
-
-        // Extract Yemeni mobile phone (77/78/73/71/70 + 7 digits)
-        let phone = '';
-        const phoneRe = /(?:\+?967)?\s*(7[01378]\d{7})\b/;
-        let qty = 0;
-        let status = '';
-        const textParts = [];
-
-        workCells.forEach(cell => {
-          const cNorm = normAr(cell);
-          const pm = cell.replace(/[\s\-]/g, '').match(phoneRe);
-          if (pm && !phone) {
-            phone = pm[1];
-            const rem = cell.replace(/[\s\-]/g, '').replace(pm[0], '').trim();
-            if (!rem) return;
-          }
-          if (cNorm.includes('موقف') || cNorm.includes('توقيف') || cNorm.includes('ايقاف') || cNorm.includes('متوقف')) {
-            status = 'موقف';
-            if (cNorm.length < 18) return;
-          } else if (cNorm.includes('تغطيه')) {
-            status = 'تغطية مربع وكيل';
-            if (cNorm.length < 22) return;
-          } else if (cNorm.includes('معرض')) {
-            if (!status) status = 'معرض الشركة';
-          } else if (cNorm.includes('صرف طبيعي') || cNorm === 'طبيعي' || cNorm === 'منصرف' || cNorm === 'مستلم') {
-            if (!status) status = 'صرف طبيعي';
-            return;
-          }
-
-          // Pure integer cell = cylinder quantity (10..5000, or 0 if stopped)
-          const cleanNum = cell.replace(/[,\s]/g, '').replace(/اسطوان[ةه]/g, '');
-          if (/^\d{1,4}$/.test(cleanNum)) {
-            const v = Number(cleanNum);
-            if (v >= 0 && v <= 5000 && qty === 0) {
-              qty = v;
-              return;
-            }
-          }
-          if (cell !== '-' && cell !== '—' && /[\u0600-\u06FF]/.test(cell)) {
-            textParts.push(cell);
-          }
-        });
-
-        const agent = (textParts[0] || '').trim();
-        if (!agent || agent.length < 3) continue;
-        // Must have either a quantity, phone, or explicit gas status to be a real agent row
-        if (qty === 0 && !phone && !status) continue;
-
-        const key = normAr(agent);
-        if (seenAgents.has(key)) continue;
-        seenAgents.add(key);
-
-        const loc = (textParts[1] || '').trim();
-        const notes = textParts.slice(2).join(' — ').trim();
-        const finalStatus = status || (qty === 0 ? 'موقف' : 'صرف طبيعي');
-
-        rows.push({ agent, loc, phone, qty, status: finalStatus, notes });
-      }
-
-      return { station: station || 'منشأة البريقة', directorate, visitDate, rows };
-    }
-
-  
-
-    /* ===== v40: SMART BACKGROUND LIVE AUTO-POLL RADAR (EVERY 2 MINUTES) ===== */
-    (function initOpsV40SmartAutoPoll() {
-      let autoPollEnabled = true;
-      let pollBusy = false;
-
-      const mountToggle = () => {
-        const syncBtn = document.getElementById('btnCloudSync');
-        if (!syncBtn || document.getElementById('opsAutoPollToggleBtn')) return;
-        const btn = document.createElement('button');
-        btn.id = 'opsAutoPollToggleBtn';
-        btn.type = 'button';
-        btn.title = 'فحص خلفي تلقائي كل دقيقتين لوصول تقارير جديدة من المديريات';
-        btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-emerald-400/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-[11px] font-black transition';
-        btn.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="hidden lg:inline">رادار حي</span>';
-        btn.addEventListener('click', () => {
-          autoPollEnabled = !autoPollEnabled;
-          btn.className = autoPollEnabled
-            ? 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-emerald-400/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-[11px] font-black transition'
-            : 'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-slate-500/40 bg-slate-800/60 hover:bg-slate-700/70 text-slate-300 text-[11px] font-black transition';
-          btn.innerHTML = autoPollEnabled
-            ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="hidden lg:inline">رادار حي</span>'
-            : '<span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span><span class="hidden lg:inline">متوقف</span>';
-          showToast(autoPollEnabled ? '🟢 تم تفعيل الرادار التلقائي (يفحص كل دقيقتين)' : '⏸️ تم إيقاف الفحص التلقائي مؤقتاً', '📡');
-        });
-        syncBtn.parentElement?.insertBefore(btn, syncBtn);
-      };
-
-      const silentCheck = async () => {
-        if (!autoPollEnabled || pollBusy || !navigator.onLine || document.visibilityState !== 'visible') return;
-        const url = typeof getBakedUrl === 'function' ? getBakedUrl() : '';
-        if (!url) return;
-        pollBusy = true;
-        try {
-          const syncDays = document.getElementById('opsSyncDaysSelect')?.value || '30';
-          const reqUrl = url + (url.includes('?') ? '&' : '?') + 'days=' + encodeURIComponent(syncDays) + '&t=' + Date.now();
-          const ctrl = new AbortController();
-          const tm = setTimeout(() => ctrl.abort(), 15000);
-          let res;
-          try { res = await fetch(reqUrl, { signal: ctrl.signal }); } finally { clearTimeout(tm); }
-          if (!res.ok) return;
-          const data = await res.json();
-          if (!data || data.status !== 'success' || !Array.isArray(data.reports)) return;
-
-          // Detect genuinely new or updated cloud reports
-          const oldSigMap = new Map();
-          allReports.forEach(r => oldSigMap.set(`${r.directorate}|${r.visitDate}`, String(r.timestamp || '')));
-          const newlyArrivedDirs = [];
-          data.reports.forEach(r => {
-            const k = `${r.directorate}|${r.visitDate}`;
-            const prevTs = oldSigMap.get(k);
-            if (prevTs === undefined || (r.timestamp && String(r.timestamp) !== prevTs)) {
-              if (r.directorate && !newlyArrivedDirs.includes(r.directorate)) newlyArrivedDirs.push(r.directorate);
-            }
-          });
-
-          if (newlyArrivedDirs.length > 0) {
-            allReports = allReports.filter(r => r._source === 'local');
-            data.reports.forEach(r => upsertReport({ ...r, _source: 'cloud' }));
-            allReports.sort((a, b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
-            if (Array.isArray(data.evidenceRows)) allEvidence = data.evidenceRows.map(e => ({ ...e, directorate: cleanDirName(e.directorate), visitDate: cleanIsoDate(e.visitDate) }));
-            if (Array.isArray(data.campaigns)) managedCampaigns = data.campaigns.map(c => ({ ...c, createdAt: cleanIsoDate(c.createdAt) }));
-            if (Array.isArray(data.campaignRows)) allCampaignRows = data.campaignRows.map(c => ({ ...c, directorate: cleanDirName(c.directorate), date: cleanIsoDate(c.date) }));
-            if (typeof saveOpsEmergencySnapshot === 'function') saveOpsEmergencySnapshot();
-            if (typeof refreshAllViews === 'function') refreshAllViews();
-            const dirNames = newlyArrivedDirs.slice(0, 3).join('، ');
-            showToast(`🔔 وصل تحديث جديد من: ${dirNames} — تم تحديث لوحة القيادة تلقائياً!`, '📡');
-          }
-        } catch (_e) { /* silent background check */ }
-        finally { pollBusy = false; }
-      };
-
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountToggle);
-      else setTimeout(mountToggle, 80);
-      setInterval(silentCheck, 120000);
-    })();
-
-
-    /* ===== v40: AUTOMATIC PWA SERVICE WORKER UPDATE NOTIFICATION BANNER ===== */
-    (function initV40SwAutoUpdateWatcher() {
-      if (!('serviceWorker' in navigator)) return;
-      const showUpdateBar = () => {
-        if (document.getElementById('moitSwUpdateBar')) return;
-        const bar = document.createElement('div');
-        bar.id = 'moitSwUpdateBar';
-        bar.className = 'no-print fixed bottom-14 left-3 right-3 sm:left-auto sm:right-4 sm:max-w-md z-[99] flex items-center justify-between gap-2.5 rounded-2xl px-4 py-2.5 text-xs font-extrabold shadow-2xl border border-amber-400/60 bg-[#0b1c36]/95 text-white backdrop-blur-md';
-        bar.innerHTML = '<span>✨ يتوفر إصدار أحدث للمنظومة</span><button type="button" onclick="window.location.reload()" class="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0b1c36] font-black text-xs shrink-0 transition">🔄 تحديث فوري</button>';
-        document.body.appendChild(bar);
-      };
-      let hadController = Boolean(navigator.serviceWorker.controller);
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (hadController) showUpdateBar();
-        hadController = true;
-      });
-      navigator.serviceWorker.getRegistration().then(reg => {
-        if (!reg) return;
-        reg.addEventListener('updatefound', () => {
-          const nw = reg.installing;
-          if (!nw) return;
-          nw.addEventListener('statechange', () => {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar();
-          });
-        });
-      }).catch(() => {});
-    })();
-
-  
-
-    /* ===== v41: 1-CLICK LOCAL PC FULL ARCHIVE BACKUP (.JSON) + 30-DAY REMINDER ===== */
-    const OPS_LAST_PC_BACKUP_KEY = 'MOIT_OPS_LAST_PC_BACKUP_V41';
-
-    async function downloadFullPcBackupV41() {
-      const btn = document.getElementById('opsPcBackupBtn');
-      const origHtml = btn ? btn.innerHTML : '';
-      if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>جارٍ التجهيز...</span>'; }
-      try {
-        const url = typeof getBakedUrl === 'function' ? getBakedUrl() : '';
-        let payload = null;
-        if (url && navigator.onLine) {
-          const ctrl = new AbortController();
-          const tm = setTimeout(() => ctrl.abort(), 30000);
-          try {
-            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'days=all&t=' + Date.now(), { signal: ctrl.signal });
-            if (res.ok) {
-              const j = await res.json();
-              if (j && j.status === 'success') payload = j;
-            }
-          } finally { clearTimeout(tm); }
-        }
-        const backupObj = {
-          system: 'منظومة النزول الميداني الموحد - مكتب وزارة الصناعة والتجارة عدن',
-          exportedAt: new Date().toISOString(),
-          source: payload ? 'cloud_full_archive' : 'local_loaded_memory',
-          counts: {
-            reports: payload ? (payload.reports || []).length : (allReports || []).length,
-            evidenceRows: payload ? (payload.evidenceRows || []).length : (allEvidence || []).length,
-            campaigns: payload ? (payload.campaigns || []).length : (managedCampaigns || []).length,
-            campaignRows: payload ? (payload.campaignRows || []).length : (allCampaignRows || []).length
-          },
-          reports: payload ? (payload.reports || []) : (allReports || []),
-          evidenceRows: payload ? (payload.evidenceRows || []) : (allEvidence || []),
-          campaigns: payload ? (payload.campaigns || []) : (managedCampaigns || []),
-          campaignRows: payload ? (payload.campaignRows || []) : (allCampaignRows || [])
-        };
-        const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json;charset=utf-8' });
-        const a = document.createElement('a');
-        const todayStr = new Date().toISOString().slice(0, 10);
-        a.href = URL.createObjectURL(blob);
-        a.download = `نسخة_احتياطية_منظومة_عدن_${todayStr}.json`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
-        try { localStorage.setItem(OPS_LAST_PC_BACKUP_KEY, new Date().toISOString()); } catch (_e) {}
-        showToast(`💾 تم حفظ النسخة الاحتياطية الكاملة على جهازك (${fmtNum(backupObj.counts.reports)} تقرير • ${fmtNum(backupObj.counts.evidenceRows)} دليل)`, '✅');
-      } catch (err) {
-        showToast('❌ ' + explainOpsErrorSmart(err, 'تعذر تنزيل النسخة الاحتياطية'), '⚠️');
-      } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
-      }
-    }
-
-    (function initOpsV41PcBackupButton() {
-      const mount = () => {
-        const importBtn = document.getElementById('btnImportExcel');
-        if (!importBtn || document.getElementById('opsPcBackupBtn')) return;
-        const btn = document.createElement('button');
-        btn.id = 'opsPcBackupBtn';
-        btn.type = 'button';
-        btn.title = 'تنزيل نسخة احتياطية كاملة للأرشيف مباشرة على جهاز الكمبيوتر';
-        btn.className = 'inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs sm:text-sm px-3 py-2 rounded-xl transition';
-        btn.innerHTML = '<span>💾</span><span class="hidden xl:inline">نسخ احتياطي للكمبيوتر</span>';
-        btn.addEventListener('click', downloadFullPcBackupV41);
-        importBtn.parentElement?.insertBefore(btn, importBtn.nextSibling);
-
-        // Gentle 30-day reminder if backup is overdue
-        try {
-          const lastIso = localStorage.getItem(OPS_LAST_PC_BACKUP_KEY);
-          if (lastIso) {
-            const daysSince = (Date.now() - new Date(lastIso).getTime()) / 86400000;
-            if (daysSince >= 30 && typeof showToast === 'function') {
-              setTimeout(() => showToast(`💾 تذكير شهري: مرّ ${Math.floor(daysSince)} يوماً على آخر نسخة احتياطية على الكمبيوتر — اضغط زر «💾» للحفظ`, '🛡️'), 4500);
-            }
-          }
-        } catch (_e) {}
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
-      else setTimeout(mount, 90);
-    })();
-
-  
-    /* ===== v46: SMART DIRECTORATE LABELS (1-2 DIRECT NAMES + 3+ CLICKABLE POPUP BREAKDOWN) ===== */
-    function shortDirLabelV46(d) {
-      return String(d || '').replace(/\s*\([^)]*\)/g, '').trim();
-    }
-    function formatDirNamesShortV46(dirsArr) {
-      const list = Array.isArray(dirsArr) ? dirsArr.map(shortDirLabelV46).filter(Boolean) : [];
-      if (!list.length) return '-';
-      if (list.length <= 2) return list.join(' • ');
-      return `${list[0]} • ${list[1]} +${list.length - 2}`;
-    }
-    window.openItemDirsBreakdownV46 = function openItemDirsBreakdownV46(itemId) {
-      const all = computeConsolidatedPrices(filteredOvReports);
-      const it = all.find(x => x.id === itemId);
-      if (!it || !Array.isArray(it.entries) || !it.entries.length) return;
-      document.getElementById('opsItemDirsPopupV46')?.remove();
-      const sorted = it.entries.slice().sort((a, b) => a.val - b.val);
-      const rowsHtml = sorted.map(e => `
-        <div class="flex items-center justify-between gap-3 py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-          <span class="font-extrabold text-[#102a4e]">📍 ${escHtml(e.dir)} <span class="text-[10px] text-slate-400 font-bold">(${escHtml(fmtDateDMY(e.date))})</span></span>
-          <span class="font-black ${e.val === it.min ? 'text-emerald-700' : (e.val === it.max ? 'text-rose-700' : 'text-slate-800')}">${fmtNum(e.val)} ريال</span>
-        </div>`).join('');
-      const modal = document.createElement('div');
-      modal.id = 'opsItemDirsPopupV46';
-      modal.className = 'no-print fixed inset-0 z-[96] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3';
-      modal.innerHTML = `
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
-          <div class="bg-[#102a4e] text-white px-4 py-3 flex items-center justify-between">
-            <div>
-              <div class="font-black text-sm">📍 تفاصيل أسعار: ${escHtml(it.name)} (${escHtml(it.unit)})</div>
-              <div class="text-[11px] text-amber-200 font-bold">المتوسط: ${fmtNum(it.avg)} ريال من ${it.uniqueDirCount} مديريات</div>
-            </div>
-            <button type="button" onclick="document.getElementById('opsItemDirsPopupV46')?.remove()" class="text-white/80 hover:text-white font-black text-lg">✕</button>
-          </div>
-          <div class="p-3.5 space-y-1.5 max-h-[65vh] overflow-y-auto">${rowsHtml}</div>
-          <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-            <button type="button" onclick="document.getElementById('opsItemDirsPopupV46')?.remove(); openItemInComparator('${it.id}')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold">⚖️ فتح في المقارن المتقدم</button>
-            <button type="button" onclick="document.getElementById('opsItemDirsPopupV46')?.remove()" class="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold">إغلاق</button>
-          </div>
-        </div>`;
-      modal.addEventListener('click', (ev) => { if (ev.target === modal) modal.remove(); });
-      document.body.appendChild(modal);
-    };
-
-  
-
-    /* ===== v47: 4 HIGH-IMPACT OPERATIONAL ENHANCEMENTS ===== */
-    // 1) WhatsApp Reminder for Missing Directorates
-    window.copyMissingDirsWhatsAppV47 = async function copyMissingDirsWhatsAppV47() {
-      const reportedSet = new Set((filteredOvReports || []).map(r => r.directorate));
-      const missing = (ADEN_8_DIRS || []).filter(d => !reportedSet.has(d));
-      if (!missing.length) {
-        showToast('🎉 جميع مديريات العاصمة عدن الثمان أتمّت الرفع — لا توجد مديريات متأخرة!', '✅');
-        return;
-      }
-      const nowTime = new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
-      const dateTxt = fmtDateDMY(todayIso());
-      const msg = [
-        '🏛️ *مكتب وزارة الصناعة والتجارة — العاصمة عدن*',
-        '📡 *غرفة العمليات المركزية — متابعة الرفع اليومي*',
-        `📅 التاريخ: ${dateTxt} | 🕒 الساعة: ${nowTime}`,
-        `✅ المديريات التي أتمّت الرفع: (${8 - missing.length} / 8)`,
-        '',
-        '⏳ *المديريات المتبقية بانتظار رفع التقرير اليومي:*',
-        ...missing.map((d, i) => `${i + 1}. مديرية ${d}`),
-        '',
-        'يرجى من الإخوة مديري المكاتب ورؤساء فرق النزول استكمال رفع التقارير عبر المنظومة الموحدة:',
-        'https://moit-aden.web.app/',
-        'شاكرين تعاونكم والتزامكم.'
-      ].join('\n');
-      try {
-        await navigator.clipboard.writeText(msg);
-        showToast(`📲 تم نسخ رسالة تذكير لـ (${missing.length}) مديريات متأخرة — جاهزة للصق في الواتساب!`, '✅');
-      } catch (_e) {
-        prompt('انسخ رسالة التذكير للواتساب:', msg);
-      }
-    };
-
-    // 2) Comparator: Formal WhatsApp Price Disparity Inquiry to Highest-Price Directorate
-    window.copyComparatorInquiryWaV47 = async function copyComparatorInquiryWaV47() {
-      const itemId = document.getElementById('cmpItemSelect')?.value;
-      if (!itemId) { showToast('اختر سلعة أولاً للمقارنة', '⚠️'); return; }
-      const item = (ALL_ITEMS || []).find(x => x.id === itemId);
-      const reps = Array.isArray(filteredOvReports) && filteredOvReports.length ? filteredOvReports : allReports;
-      const entries = [];
-      (reps || []).forEach(r => {
-        const v = toNum(r.prices?.[itemId]);
-        if (v > 0) entries.push({ dir: r.directorate, date: r.visitDate, val: v });
-      });
-      if (entries.length < 2) {
-        showToast('يلزم وجود رصد من مديريتين على الأقل لتوليد مذكرة استيضاح التفاوت', '⚠️');
-        return;
-      }
-      entries.sort((a, b) => a.val - b.val);
-      const lo = entries[0];
-      const hi = entries[entries.length - 1];
-      const avg = Math.round(entries.reduce((s, x) => s + x.val, 0) / entries.length);
-      const diff = hi.val - lo.val;
-      const pct = lo.val > 0 ? Math.round((diff / lo.val) * 100) : 0;
-      const msg = [
-        '🏛️ *مكتب وزارة الصناعة والتجارة — العاصمة عدن*',
-        '⚖️ *استيضاح تفاوت سعري — غرفة العمليات المركزية*',
-        `📅 التاريخ: ${fmtDateDMY(todayIso())}`,
-        '',
-        `📦 *السلعة:* ${item ? item.name + ' (' + (item.unit || '') + ')' : itemId}`,
-        `🔴 *أعلى سعر مرصود:* ${fmtNum(hi.val)} ريال — مديرية *${hi.dir}*`,
-        `🟢 *أدنى سعر مرصود:* ${fmtNum(lo.val)} ريال — مديرية *${lo.dir}*`,
-        `📊 *متوسط العاصمة عدن:* ${fmtNum(avg)} ريال (من ${entries.length} رصد)`,
-        `📈 *الفارق السعري:* ${fmtNum(diff)} ريال (${pct}%)`,
-        '',
-        `يرجى من مكتب الصناعة بمديرية *${hi.dir}* الإفادة حول أسباب ارتفاع السعر مقارنة ببقية المديريات والتأكد من التزام التجار بالتسعيرة السائدة.`
-      ].join('\n');
-      try {
-        await navigator.clipboard.writeText(msg);
-        showToast(`📲 تم نسخ مذكرة استيضاح «${item?.name || ''}» لمديرية ${hi.dir} للواتساب!`, '✅');
-      } catch (_e) {
-        prompt('انسخ نص الاستيضاح للواتساب:', msg);
-      }
-    };
-
-    // 3) Gas Stopped & Coverage Agents Consolidated Card (Ready for Yemen Gas Company)
-    window.__V47_GAS_STOPPED_CACHE = [];
-    function renderGasStoppedSummaryCardV47() {
-      const box = document.getElementById('opsGasStoppedListV47');
-      const cntBadge = document.getElementById('opsGasStoppedCountV47');
-      if (!box) return;
-      const reps = Array.isArray(filteredOvReports) && filteredOvReports.length ? filteredOvReports : allReports;
-      const list = [];
-      (reps || []).forEach(r => {
-        const gRows = Array.isArray(r.gasRows) ? r.gasRows : [];
-        gRows.forEach(g => {
-          const st = String(g.status || '');
-          if (st.includes('موقف') || st.includes('تغطية') || st.includes('تغطيه') || st.includes('معرض')) {
-            list.push({
-              dir: r.directorate,
-              date: r.visitDate,
-              agent: g.agent || g.name || '-',
-              loc: g.loc || '-',
-              phone: g.phone || '-',
-              qty: toNum(g.qty),
-              status: st,
-              notes: g.notes || ''
-            });
-          }
-        });
-      });
-      window.__V47_GAS_STOPPED_CACHE = list;
-      const stoppedCnt = list.filter(x => x.status.includes('موقف')).length;
-      const coverCnt = list.filter(x => x.status.includes('تغطي')).length;
-      if (cntBadge) cntBadge.textContent = `🚫 موقفين: ${stoppedCnt} • 🔁 تغطيات: ${coverCnt} • الإجمالي: ${list.length}`;
-      if (!list.length) {
-        box.innerHTML = '<div class="text-xs text-slate-500 font-bold py-2">✅ لا توجد حالات وكلاء موقفين أو تغطيات مسجلة في النطاق الحالي.</div>';
-        return;
-      }
-      box.innerHTML = list.map(x => `
-        <div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl px-3 py-2 border ${x.status.includes('موقف') ? 'border-rose-200' : 'border-amber-200'} text-xs">
-          <div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-black ${x.status.includes('موقف') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-900'}">${escHtml(x.status)}</span>
-            <span class="font-black text-[#102a4e] mr-1">${escHtml(x.agent)}</span>
-            <span class="text-slate-500 font-bold">— 📍 ${escHtml(x.dir)} (${escHtml(x.loc)})</span>
-          </div>
-          <div class="flex items-center gap-2 text-[11px] font-bold">
-            ${x.phone && x.phone !== '-' ? `<span class="font-mono text-slate-600" dir="ltr">📞 ${escHtml(x.phone)}</span>` : ''}
-            <span class="text-amber-800 font-black">${fmtNum(x.qty)} أسطوانة</span>
-          </div>
-        </div>`).join('');
-    }
-
-    window.copyGasStoppedForCompanyV47 = async function copyGasStoppedForCompanyV47() {
-      const list = window.__V47_GAS_STOPPED_CACHE || [];
-      if (!list.length) { showToast('لا توجد حالات موقفين أو تغطيات لنسخها حالياً', 'ℹ️'); return; }
-      const msg = [
-        '🏛️ *مكتب وزارة الصناعة والتجارة — العاصمة عدن*',
-        '🔥 *كشف الوكلاء الموقفين والتغطيات المرفوع للشركة اليمنية للغاز*',
-        `📅 التاريخ: ${fmtDateDMY(todayIso())} | إجمالي الحالات: ${list.length}`,
-        '',
-        ...list.map((x, i) => `${i + 1}. [${x.status}] *${x.agent}* — مديرية ${x.dir} (${x.loc}) | الكمية: ${fmtNum(x.qty)}${x.phone && x.phone !== '-' ? ' | جوال: ' + x.phone : ''}${x.notes ? ' | ملاحظة: ' + x.notes : ''}`)
-      ].join('\n');
-      try {
-        await navigator.clipboard.writeText(msg);
-        showToast(`📲 تم نسخ كشف (${list.length}) وكيل للشركة اليمنية للغاز بنجاح!`, '✅');
-      } catch (_e) {
-        prompt('انسخ كشف الموقفين للشركة اليمنية للغاز:', msg);
-      }
-    };
-
-    // 4) Evidence Status Quick Filter (All / Pending / Completed)
-    window.__V47_EV_STATUS_FILTER = 'all';
-    window.applyEvidenceStatusFilterV47 = function applyEvidenceStatusFilterV47(mode) {
-      window.__V47_EV_STATUS_FILTER = mode || 'all';
-      document.querySelectorAll('[data-v47-ev-st]').forEach(b => {
-        const act = b.getAttribute('data-v47-ev-st') === window.__V47_EV_STATUS_FILTER;
-        b.classList.toggle('bg-[#102a4e]', act);
-        b.classList.toggle('text-white', act);
-        b.classList.toggle('bg-white', !act);
-        b.classList.toggle('text-slate-700', !act);
-      });
-      const rows = document.querySelectorAll('#evTableBody tr, #evidenceTableBody tr');
-      let openCnt = 0, doneCnt = 0;
-      rows.forEach(tr => {
-        const txt = tr.textContent || '';
-        if (txt.includes('لا توجد')) return;
-        const isDone = txt.includes('أُنجز') || txt.includes('انجز') || txt.includes('مغلق') || txt.includes('تم الصلح');
-        if (isDone) doneCnt++; else openCnt++;
-        const show = mode === 'all' || (mode === 'pending' && !isDone) || (mode === 'done' && isDone);
-        tr.style.display = show ? '' : 'none';
-      });
-      const statEl = document.getElementById('evStatusStatsV47');
-      if (statEl) statEl.textContent = `⏳ قيد المتابعة: ${openCnt} • ✅ أُنجز: ${doneCnt}`;
-    };
-
   </script>
 
   <!-- ==================== OPS DIRECTORATE PIN MANAGER MODAL (ADMIN PIN PROTECTED) ==================== -->
@@ -10025,27 +9252,6 @@ ${ctx}`;
 
       <!-- Unlocked PIN Manager View -->
       <div id="opsPinsUnlockedView" class="hidden p-4 overflow-y-auto space-y-3 text-xs">
-
-        <!-- v38: إدارة مجمّع مفاتيح Gemini AI المتعددة -->
-        <div class="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3.5 space-y-2.5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h4 class="font-black text-[#102a4e] text-xs sm:text-sm">🔑 مجمّع مفاتيح Gemini AI المتعددة (للمديريات الثمان)</h4>
-              <p class="text-[11px] text-slate-600 font-semibold">أضف 2–3 مفاتيح مجانية من حسابات Gmail مختلفة لمضاعفة السعة إلى 9 حصص تلقائياً دون توقف.</p>
-            </div>
-            <span id="opsGeminiKeysBadge" class="px-2.5 py-1 rounded-full bg-indigo-900 text-amber-300 text-[11px] font-black">0 مفتاح • 0 حصة</span>
-          </div>
-
-          <div id="opsGeminiKeysList" class="space-y-1.5 text-xs"></div>
-
-          <div class="flex flex-col sm:flex-row gap-2 pt-1">
-            <input id="opsNewGeminiKeyInput" type="password" dir="ltr" autocomplete="off" placeholder="الصق مفتاح Gemini الجديد هنا (AIzaSy...)" class="flex-1 bg-white border border-indigo-300 rounded-xl px-3 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-indigo-400" />
-            <button id="opsAddGeminiKeyBtn" type="button" class="px-3.5 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-black shadow shrink-0 transition">➕ إضافة وحفظ سحابياً</button>
-            <button id="opsTestGeminiKeysBtn" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow shrink-0 transition">⚡ فحص الاتصال</button>
-          </div>
-          <div id="opsGeminiKeysStatus" class="text-[11px] font-bold text-indigo-900"></div>
-        </div>
-
         <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
           <button id="opsPinsTabManage" type="button" class="px-3 py-1.5 rounded-xl bg-[#102a4e] text-white font-black text-xs">🔐 رموز المديريات (8)</button>
           <button id="opsPinsTabAudit" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs">🛡️ سجل التدقيق الأمني المباشر</button>

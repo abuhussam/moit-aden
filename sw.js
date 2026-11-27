@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moit-aden-gh-v48';
+const CACHE_NAME = 'moit-aden-gh-v35';
 const CORE_ASSETS = ['./', './index.html', './ops.html', './manifest.json', './manifest-ops.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
