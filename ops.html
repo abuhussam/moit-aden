@@ -735,7 +735,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
  if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname)){if(String(init.method||'GET').toUpperCase()!=='GET')return new Response(JSON.stringify({status:'error',code:'LAB_ENDPOINT_REQUIRED',error:'الكتابة مسموحة فقط إلى رابط المختبر'}),{status:403,headers:{'Content-Type':'application/json'}});return original(resource,init);}
  const lab=String(document.querySelector('meta[name=moit-v54-lab-endpoint]')?.content||'').trim();
  if(!lab||u.origin+u.pathname!==lab)return new Response(JSON.stringify({status:'error',code:'LAB_ENDPOINT_REQUIRED',error:'مرشح اختبار v54 — اضبط رابط مشروع Apps Script الاختباري المعزول فقط في meta moit-v54-lab-endpoint'}),{status:403,headers:{'Content-Type':'application/json'}});
- let body;if(String(init.method||'GET').toUpperCase()==='GET'){body={action:'read_data',days:u.searchParams.get('days')||'all'};}else{try{body=JSON.parse(init.body);}catch(_){return original(resource,init);}}
+ let body;if(String(init.method||'GET').toUpperCase()==='GET'){body={action:'read_data',days:u.searchParams.get('days')||'all'};}else{try{body=JSON.parse(init.body);}catch(_){return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});}}
+ if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({status:'error',code:'INVALID_JSON'}),{status:400,headers:{'Content-Type':'application/json'}});
  if(body.action!=='admin_verify_pin'){delete body.adminPin;delete body.currentAdminPin;body.sessionToken=window.__moitOpsToken;if(!body.sessionToken)return new Response(JSON.stringify({status:'error',code:'AUTH_REQUIRED',error:'يلزم تسجيل الدخول إلى غرفة العمليات'}),{headers:{'Content-Type':'application/json'}});}
  const res=await original(u.origin+u.pathname,{...init,method:'POST',mode:'cors',redirect:'follow',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
  try{const j=await res.clone().json();if(j.code==='AUTH_REQUIRED'&&body.action!=='admin_verify_pin'&&body.sessionToken===window.__moitOpsToken){window.__moitOpsToken='';if(typeof showOpsLockOverlay==='function')showOpsLockOverlay();}}catch(_){}return res;
@@ -743,7 +744,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 </script>
 </head>
 <body class="min-h-screen flex flex-col">
-  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54 RC — نسخة اختبار معزولة، غير معتمدة للنشر الإنتاجي</div>
+  <div class="no-print" dir="rtl" style="background:#102a4e;color:#f3d485;text-align:center;font:600 11px Arial,sans-serif;padding:5px 8px;border-bottom:1px solid #c89d3c">MOIT Aden v54.1 RC — نسخة اختبار معزولة، غير معتمدة للنشر الإنتاجي</div>
 
 
   <!-- ==================== OFFICIAL HEADER ==================== -->
@@ -801,7 +802,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         <div class="flex items-center gap-3 text-[11px] text-slate-300 shrink-0">
           <span id="syncCountsBadge" class="font-bold text-[#f3d485]">0 تقرير</span>
           <a href="https://docs.google.com/spreadsheets/d/16p4jIJyvfk9GZKOD5HkNRYGtuInzxCwACk-oXZW5Oy4/edit" target="_blank" rel="noopener" class="underline hover:text-white">الشيت السحابي ↗</a>
-          <a href="https://drive.google.com/drive/folders/1GbuJA-ZAUH89TI3HNMSwLvKn7dUWiv1R" target="_blank" rel="noopener" class="underline hover:text-white hidden sm:inline">مجلد الصور ↗</a>
+          <span class="hidden sm:inline">الأدلة المعزولة في المختبر</span>
         </div>
       </div>
     </div>
@@ -5096,9 +5097,9 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       typeSel.innerHTML = '<option value="all">جميع أنواع المخالفات</option>' + types.map(t => `<option value="${escHtml(t)}" ${t === prevType ? 'selected' : ''}>${escHtml(t)}</option>`).join('');
       const list = getFilteredEvidence();
       document.getElementById('evTableBody').innerHTML = list.length ? list.map((e, i) => {
-        const p1 = e.photo1 && /^https:\/\/drive\.google\.com\//i.test(e.photo1) ? `<a href="${escHtml(e.photo1)}" target="_blank" rel="noopener" class="inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-lg text-[11px] font-extrabold">🖼️ صورة 1</a>` : '';
-        const p2 = e.photo2 && /^https:\/\/drive\.google\.com\//i.test(e.photo2) ? `<a href="${escHtml(e.photo2)}" target="_blank" rel="noopener" class="inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-lg text-[11px] font-extrabold">🖼️ صورة 2</a>` : '';
-        return `<tr><td class="text-center font-bold text-slate-500">${i + 1}</td><td class="whitespace-nowrap font-semibold">${escHtml(fmtDateDMY(e.visitDate) || '-')}</td><td class="font-bold text-[#102a4e]">${escHtml(e.directorate)}</td><td class="font-extrabold">${escHtml(e.firm || '-')}</td><td class="text-xs font-bold text-rose-800">${escHtml(e.type || '-')}</td><td class="text-xs">${escHtml(e.proc || '-')}</td><td class="text-center"><span class="bg-slate-100 px-2 py-0.5 rounded-full text-[11px] font-bold">${escHtml(e.status || '-')}</span>${e.reviewEnabled?`<div class="mt-1 text-[10px]">${escHtml(({CONFIRMED_OPEN:'مراجعة: مؤهلة مفتوحة',CONFIRMED_RESOLVED:'مراجعة: مؤهلة معالجة',NON_VIOLATION:'مراجعة: ليست مخالفة',UNREVIEWED:'غير مراجعة'})[e.reviewState]||'غير مراجعة')}</div><button type="button" data-v54-review-index="${i}" class="text-[10px] text-indigo-700 font-bold underline">مراجعة مرتبطة</button>`:''}</td><td class="text-center space-x-1 space-x-reverse">${(p1 || p2) ? `${p1} ${p2}` : '<span class="text-slate-400 text-xs">بدون صور</span>'}</td></tr>`;
+        const p1 = e.labPhoto1Verified===true && e.photo1 && /^https:\/\/drive\.google\.com\//i.test(e.photo1) ? `<a href="${escHtml(e.photo1)}" target="_blank" rel="noopener" class="inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-lg text-[11px] font-extrabold">🖼️ صورة 1</a>` : '';
+        const p2 = e.labPhoto2Verified===true && e.photo2 && /^https:\/\/drive\.google\.com\//i.test(e.photo2) ? `<a href="${escHtml(e.photo2)}" target="_blank" rel="noopener" class="inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-lg text-[11px] font-extrabold">🖼️ صورة 2</a>` : '';
+        return `<tr><td class="text-center font-bold text-slate-500">${i + 1}</td><td class="whitespace-nowrap font-semibold">${escHtml(fmtDateDMY(e.visitDate) || '-')}</td><td class="font-bold text-[#102a4e]">${escHtml(e.directorate)}</td><td class="font-extrabold">${escHtml(e.firm || '-')}</td><td class="text-xs font-bold text-rose-800">${escHtml(e.type || '-')}</td><td class="text-xs">${escHtml(e.proc || '-')}</td><td class="text-center"><span class="bg-slate-100 px-2 py-0.5 rounded-full text-[11px] font-bold">${escHtml(e.status || '-')}</span>${e.reviewEnabled?`<div class="mt-1 text-[10px]">${escHtml(({CONFIRMED_OPEN:'مراجعة: مؤهلة مفتوحة',CONFIRMED_RESOLVED:'مراجعة: مؤهلة معالجة',NON_VIOLATION:'مراجعة: ليست مخالفة',UNREVIEWED:'غير مراجعة'})[e.reviewState]||'غير مراجعة')}</div><button type="button" data-v54-review-index="${i}" class="text-[10px] text-indigo-700 font-bold underline">مراجعة مرتبطة</button>`:''}</td><td class="text-center space-x-1 space-x-reverse">${(p1 || p2) ? `${p1} ${p2}` : '<span class="text-slate-400 text-xs">'+(e.labPhotoHiddenCount||e.photo1||e.photo2?'روابط غير متحققة في المختبر':'لا توجد صور متاحة')+'</span>'}</td></tr>`;
       }).join('') : '<tr><td colspan="8" class="text-center py-8 text-slate-400 font-bold">لا توجد مخالفات موثقة.</td></tr>';
       document.getElementById('evTableBody').querySelectorAll('[data-v54-review-index]').forEach(btn=>btn.addEventListener('click',()=>v54ReviewEvidence(list[Number(btn.dataset.v54ReviewIndex)],btn)));
     }
@@ -5746,12 +5747,12 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
     function exportEvidenceExcel() {
       const list = getFilteredEvidence();
-      saveStyledWorkbook([{ name: 'سجل_المخالفات', aoa: [['#', 'التاريخ', 'المديرية', 'المنشأة', 'المخالفة', 'الإجراء', 'الحالة', 'صورة 1', 'صورة 2'], ...list.map((e, i) => [i + 1, e.visitDate, e.directorate, e.firm, e.type, e.proc, e.status, e.photo1 || '', e.photo2 || ''])], widths: [6, 12, 16, 22, 20, 20, 14, 30, 30] }], `سجل_المخالفات_عدن_${todayIso()}.xlsx`);
+      saveStyledWorkbook([{ name: 'سجل_المخالفات', aoa: [['#', 'التاريخ', 'المديرية', 'المنشأة', 'المخالفة', 'الإجراء', 'الحالة', 'صورة 1', 'صورة 2'], ...list.map((e, i) => [i + 1, e.visitDate, e.directorate, e.firm, e.type, e.proc, e.status, e.labPhoto1Verified===true?e.photo1||'':'', e.labPhoto2Verified===true?e.photo2||'':''])], widths: [6, 12, 16, 22, 20, 20, 14, 30, 30] }], `سجل_المخالفات_عدن_${todayIso()}.xlsx`);
     }
 
     function exportEvidenceWord() {
       const list = getFilteredEvidence();
-      const withPhotos = list.filter(e => (e.photo1 && e.photo1.startsWith('http')) || (e.photo2 && e.photo2.startsWith('http'))).length;
+      const withPhotos = list.filter(e => (e.labPhoto1Verified===true && e.photo1) || (e.labPhoto2Verified===true && e.photo2)).length;
       const dirsCnt = new Set(list.map(e => e.directorate).filter(Boolean)).size;
       const body = `${buildKpiCardsRow([
         { label: 'إجمالي المخالفات الموثقة', value: fmtNum(list.length), tone: 'rose' },
@@ -8062,7 +8063,7 @@ ${txt}`;
       const entryBtn = document.getElementById('opsEntryUnlockBtn');
       const entryErr = document.getElementById('opsEntryPinErr');
 
-      let entryTimer = null;
+      let entryTimer = null, entryBusy = false;
       const checkEntryLock = () => {
         let until = 0;
         try { until = Number(localStorage.getItem(OPS_ADMIN_LOCKOUT_KEY) || 0); } catch (_) {}
@@ -8092,46 +8093,24 @@ ${txt}`;
       };
       checkEntryLock();
 
-      const recordLocalAdminFail = (customMsg) => {
-        let fails = 0;
-        try { fails = Number(localStorage.getItem(OPS_ADMIN_FAILS_KEY) || 0) + 1; localStorage.setItem(OPS_ADMIN_FAILS_KEY, String(fails)); } catch (_) { fails = 1; }
-        if (fails >= 3) {
-          try { localStorage.setItem(OPS_ADMIN_LOCKOUT_KEY, String(Date.now() + 5 * 60 * 1000)); } catch (_) {}
-          checkEntryLock();
-        } else {
-          if (entryErr) {
-            entryErr.textContent = customMsg || `❌ الرمز الإداري غير صحيح — تبقى لك (${3 - fails}) محاولة قبل الإيقاف لمدة 5 دقائق.`;
-            entryErr.classList.remove('hidden');
-          }
-          if (entryInp) entryInp.select();
-        }
-      };
-
       const attemptEntryUnlock = async () => {
-        if (checkEntryLock()) return;
+        if (entryBusy || checkEntryLock()) return;
         const pin = cleanPinDigitsOps(entryInp?.value || '');
         if (pin.length < 4) {
           if (entryErr) { entryErr.textContent = '⚠️ أدخل الرمز الإداري السري.'; entryErr.classList.remove('hidden'); }
           return;
         }
 
-        // 1) Fast offline check first when offline -> instant entry without waiting for internet!
         if (!navigator.onLine) {
-          if (verifyOpsAdminOffline(pin)) {
-            hideOpsLockOverlay(pin);
-            showToast('يلزم الاتصال لتوثيق الجلسة','⚠️');
-          } else {
-            recordLocalAdminFail();
-          }
+          if(entryErr){entryErr.textContent='يلزم الاتصال بالخادم لتوثيق الدخول؛ لم تُحتسب محاولة خاطئة محليًا.';entryErr.classList.remove('hidden');}
           return;
         }
-
-        // 2) Online: verify with Cloud (fast 6s timeout); if network drops/slow -> seamless local hash fallback!
+        entryBusy=true;
         if (entryBtn) { entryBtn.disabled = true; entryBtn.textContent = '⏳ جارٍ التحقق...'; }
         if (entryErr) entryErr.classList.add('hidden');
         try {
           const ctrl = new AbortController();
-          const tm = setTimeout(() => ctrl.abort(), 6000);
+          const tm = setTimeout(() => ctrl.abort(), 20000);
           let res;
           try {
             res = await fetch(getBakedUrl(), {
@@ -8140,6 +8119,7 @@ ${txt}`;
               body: JSON.stringify({ action: 'admin_verify_pin', adminPin: pin })
             });
           } finally { clearTimeout(tm); }
+          if(!res.ok)throw new Error('AUTH_HTTP_ERROR');
           const raw = await res.text();
           if (!raw || raw.trim().startsWith('<')) throw new Error('NETWORK_FALLBACK');
           const j = JSON.parse(raw);
@@ -8156,20 +8136,14 @@ ${txt}`;
             return;
           }
           if (j && j.code === 'INVALID_ADMIN_PIN') {
-            recordLocalAdminFail('❌ ' + (j.error || 'الرمز الإداري غير صحيح'));
+            if(entryErr){entryErr.textContent='❌ '+(j.error||'الرمز الإداري غير صحيح')+(Number.isInteger(j.remainingAttempts)?' — المحاولات المتبقية: '+j.remainingAttempts:'');entryErr.classList.remove('hidden');}if(entryInp)entryInp.select();
             return;
           }
-          // Old Code.gs without admin_verify_pin -> fallback cleanly to local hash verification
-          throw new Error('NETWORK_FALLBACK');
+          throw new Error('AUTH_SERVICE_UNAVAILABLE');
         } catch (_) {
-          // Network slow/down -> verify locally via secure hash so Operations Room NEVER gets locked out by internet!
-          if (verifyOpsAdminOffline(pin)) {
-            hideOpsLockOverlay(pin);
-            showToast('تم الدخول بنجاح (تحقق محلي سريع — يعمل أوفلاين وأونلاين)', '🔓');
-          } else {
-            recordLocalAdminFail();
-          }
+          if(entryErr){entryErr.textContent='تعذر التحقق من الخادم. تأكد من الاتصال وصلاحية النشر؛ لم تُحتسب محاولة خاطئة محليًا.';entryErr.classList.remove('hidden');}
         } finally {
+          entryBusy=false;
           if (!checkEntryLock() && entryBtn) { entryBtn.disabled = false; entryBtn.textContent = '🔓 دخول غرفة العمليات'; }
         }
       };
