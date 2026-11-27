@@ -889,7 +889,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           <!-- Column 2: 48-Hour Risk Radar -->
           <div class="rounded-xl bg-white/10 border border-amber-300/35 p-3 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-black text-amber-300">🟡 مؤشر المخاطر لـ 48 ساعة قادمة</span>
+              <span class="font-black text-amber-300">🟡 مؤشرات المتابعة والإنذار الرقابي المبكر</span>
               <span id="decRiskBadge" class="rounded-full bg-amber-500/30 text-amber-100 px-2 py-0.5 text-[10px] font-black">0</span>
             </div>
             <ul id="decRiskList" class="space-y-1.5 text-[11.5px] text-slate-100 leading-relaxed"></ul>
@@ -1241,7 +1241,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
             <h3 class="text-xs sm:text-sm font-black">رادار انضباط المديريات الثمان والالتزام بالرفع اليومي</h3>
             <span id="aggCompliancePctPill" class="rounded-lg bg-emerald-500/25 border border-emerald-300/40 text-emerald-200 px-2 py-0.5 text-[10px] font-black">0 / 8</span>
           </div>
-          <button id="aggCopyReminderBtn" type="button" class="hidden rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0f2942] px-3 py-1 text-[11px] font-black transition">📲 نسخ تذكير للمديريات المتأخرة</button>
+          <button id="aggCopyReminderBtn" type="button" class="hidden rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0f2942] px-3 py-1 text-[11px] font-black transition">📲 نسخ تذكير للمديريات غير المرسلة</button>
         </div>
         <div id="aggComplianceGrid" class="p-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"></div>
       </div>
@@ -1774,7 +1774,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
             <div id="auditKpiCritical" class="text-xl font-black text-rose-800 mt-1">0</div>
           </div>
           <div class="rounded-xl border border-amber-200 bg-amber-50 p-3">
-            <div class="text-[11px] font-extrabold text-amber-800">🟠 تفاوتات حادة عن متوسط عدن</div>
+            <div class="text-[11px] font-extrabold text-amber-800">🟠 ملاحظات تحتاج مراجعة</div>
             <div id="auditKpiWarn" class="text-xl font-black text-amber-900 mt-1">0</div>
           </div>
           <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-3">
@@ -1821,7 +1821,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div class="rounded-xl bg-white border border-slate-200 p-3">
-              <div class="text-[11px] font-bold text-slate-500">🧺 كلفة السلة الحالية (متوسط عدن)</div>
+              <div class="text-[11px] font-bold text-slate-500">🧺 كلفة السلة المقترحة في النطاق المحدد</div>
               <div id="basketKpiCurrent" class="text-lg font-black text-[#0b1c36] mt-1">-</div>
             </div>
             <div class="rounded-xl bg-white border border-slate-200 p-3">
@@ -2217,7 +2217,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="border border-slate-200 rounded-xl p-3">
-            <div class="text-xs font-black text-[#102a4e] mb-2">رادار الأداء التشغيلي لأعلى 4 مديريات نشاطاً</div>
+            <div class="text-xs font-black text-[#102a4e] mb-2">رادار النشاط النسبي (حتى 4 مديريات حسب زيارات المنشآت)</div>
             <div class="h-72 relative"><canvas id="repRadarChart"></canvas></div>
           </div>
           <div class="border border-slate-200 rounded-xl p-3">
@@ -2731,8 +2731,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       <div class="bg-white rounded-2xl border-2 border-rose-200 shadow-sm p-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
           <div>
-            <h3 class="text-sm sm:text-base font-black text-rose-900">🚨 رادار المنشآت والتجار المتكرري المخالفة (التصعيد القانوني)</h3>
-            <p class="text-xs text-slate-500">يبني تلقائياً سجلاً تاريخياً لكل منشأة عبر جميع التقارير والحملات ويُطلق تنبيه تصعيد أحمر عند التكرار (مخالفتان = إنذار نهائي | 3+ = إغلاق أو إحالة للنيابة).</p>
+            <h3 class="text-sm sm:text-base font-black text-rose-900">🚨 رادار مرشحي تكرار المخالفات (للمراجعة)</h3>
+            <p class="text-xs text-slate-500">يعرض مرشحي التكرار من الأدلة المؤهلة المراجعة. تطابق الاسم لا يثبت هوية المنشأة؛ يلزم التحقق البشري قبل أي إجراء قانوني.</p>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
             <label class="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold text-rose-900 cursor-pointer">
@@ -2746,15 +2746,15 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         </div>
         <div class="grid grid-cols-3 gap-2.5 text-center">
           <div class="rounded-xl bg-rose-50 border border-rose-200 p-2.5">
-            <div class="text-[11px] font-bold text-rose-800">🔴 تصعيد عاجل (3+ مخالفات)</div>
+            <div class="text-[11px] font-bold text-rose-800">🔴 مراجعة ذات أولوية (3+)</div>
             <div id="repeatKpiUrgent" class="text-lg font-black text-rose-800">0</div>
           </div>
           <div class="rounded-xl bg-amber-50 border border-amber-200 p-2.5">
-            <div class="text-[11px] font-bold text-amber-800">🟠 تكرار مخالفة (مخالفتان)</div>
+            <div class="text-[11px] font-bold text-amber-800">🟠 مرشح تكرار (2)</div>
             <div id="repeatKpiWarning" class="text-lg font-black text-amber-900">0</div>
           </div>
           <div class="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
-            <div class="text-[11px] font-bold text-slate-600">🏪 إجمالي المنشآت المسجلة</div>
+            <div class="text-[11px] font-bold text-slate-600">🏪 أسماء منشآت بأدلة مؤهلة</div>
             <div id="repeatKpiTotalFirms" class="text-lg font-black text-[#0b1c36]">0</div>
           </div>
         </div>
@@ -2765,10 +2765,10 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
                 <th class="p-2 text-center">#</th>
                 <th class="p-2">المنشأة / التاجر</th>
                 <th class="p-2">المديرية</th>
-                <th class="p-2 text-center">عدد المخالفات</th>
+                <th class="p-2 text-center">عدد الأدلة المؤهلة</th>
                 <th class="p-2">أنواع المخالفات المرصودة</th>
                 <th class="p-2 text-center">أول / آخر رصد</th>
-                <th class="p-2 text-center">التصنيف القانوني</th>
+                <th class="p-2 text-center">أولوية المراجعة</th>
                 <th class="p-2 text-center">إجراء</th>
               </tr>
             </thead>
@@ -3017,9 +3017,18 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       if (charts[key]) { charts[key].destroy(); delete charts[key]; }
     }
 
+    function v541Chart(canvasId,config){
+      const cv=document.getElementById(canvasId);if(!cv)return null;
+      const values=(config.data?.datasets||[]).flatMap(d=>d.data||[]).filter(v=>typeof v==='number'&&Number.isFinite(v));
+      const available=values.length>0&&(!['pie','doughnut','polarArea'].includes(config.type)||values.some(v=>v>0));
+      let empty=document.getElementById(canvasId+'-empty');if(!empty){empty=document.createElement('div');empty.id=canvasId+'-empty';empty.className='h-full flex items-center justify-center text-center p-4 text-sm font-bold text-slate-500';empty.setAttribute('role','status');cv.after(empty);}
+      cv.hidden=!available;cv.style.display=available?'':'none';empty.classList.toggle('hidden',available);empty.style.display=available?'none':'';empty.textContent=available?'':'لا تتوفر بيانات كافية لهذا الرسم ضمن النطاق المحدد.';
+      return available?new Chart(cv.getContext('2d'),config):null;
+    }
+
     function chartSnapshotHtml(canvasId, caption) {
       const cv = document.getElementById(canvasId);
-      if (!cv || cv.width < 10 || cv.height < 10) return '';
+      if (!cv || cv.hidden || cv.width < 10 || cv.height < 10) return '';
       try {
         const uri = cv.toDataURL('image/png');
         if (!uri || uri.length < 100) return '';
@@ -3361,7 +3370,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       const cmpDateSel = document.getElementById('cmpDateSelect');
       const prevCmp = cmpDateSel.value || 'latest';
-      cmpDateSel.innerHTML = '<option value="latest">أحدث تاريخ متاح لكل مديرية</option>' +
+      cmpDateSel.innerHTML = `<option value="latest">أحدث تاريخ عام للتقارير (يوم موحد)</option><option value="latest_by_dir" ${prevCmp==='latest_by_dir'?'selected':''}>أحدث رصد لكل مديرية (قد تختلف التواريخ)</option>` +
         dates.map(d => `<option value="${d}" ${d === prevCmp ? 'selected' : ''}>${d}</option>`).join('');
 
       const d1Sel = document.getElementById('cmpDate1Select');
@@ -3557,8 +3566,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-slate-400 font-bold">لا توجد نتائج مطابقة.</td></tr>'; return; }
       tbody.innerHTML = rows.map((it, i) => {
         const badge = it.spreadPct === null ? '<span class="text-slate-400">غير قابل للمقارنة</span>' :
-          it.spreadPct >= 15 ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-extrabold text-[11px]">${fmtNum(it.spread)} (${it.spreadPct}%)</span>` :
-          it.spreadPct >= 7 ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-extrabold text-[11px]">${fmtNum(it.spread)} (${it.spreadPct}%)</span>` :
+          it.spreadPct >= 15 ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-extrabold text-[11px]">${fmtNum(it.spread)} (${fmtNum(it.spreadPct,2)}%)</span>` :
+          it.spreadPct >= 7 ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-extrabold text-[11px]">${fmtNum(it.spread)} (${fmtNum(it.spreadPct,2)}%)</span>` :
           `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold text-[11px]">${it.spreadPct===0?'متساوٍ ضمن الرصد':fmtNum(it.spreadPct,2)+'%'}</span>`;
         return `
           <tr>
@@ -3685,7 +3694,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const submittedMap = new Map();
       reports.forEach(r => submittedMap.set(r.directorate, r));
       const missingDirs = ADEN_8_DIRS.filter(d => !submittedMap.has(d));
-      document.getElementById('aggCompliancePctPill').textContent = `${8 - missingDirs.length} / 8 مديريات (${Math.round(((8 - missingDirs.length) / 8) * 100)}%)`;
+      document.getElementById('aggCompliancePctPill').textContent = `${8 - missingDirs.length} من 8 مديريات (${Math.round(((8 - missingDirs.length) / 8) * 100)}%)`;
 
       const remBtn = document.getElementById('aggCopyReminderBtn');
       remBtn.classList.toggle('hidden', missingDirs.length === 0);
@@ -3705,7 +3714,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         }
         return `<div class="rounded-xl bg-rose-50 border border-rose-200 p-2 flex items-center justify-between">
           <div><div class="font-black text-rose-900">⏳ ${escHtml(d)}</div><div class="text-[10px] text-rose-700">بانتظار الرفع</div></div>
-          <span class="rounded-md bg-rose-600 text-white px-1.5 py-0.5 text-[9px] font-bold">متأخرة</span>
+          <span class="rounded-md bg-rose-600 text-white px-1.5 py-0.5 text-[9px] font-bold">بانتظار الرفع</span>
         </div>`;
       }).join('');
 
@@ -3732,11 +3741,11 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const incSummary = increased.length > 0
         ? `سُجّل ارتفاع سعري في ${increased.length} صنف أبرزها: ${increased.slice(0, 3).map(x => `${x.item.name} (${fmtNum(x.avgVal)} ريال)`).join('، ')}.`
         : totalPriced?'لم تظهر زيادة بين الأصناف القابلة للمقارنة؛ لا يُعمم على السوق.':'لا توجد بيانات زمنية متجانسة كافية للحكم على استقرار الأسعار.';
-      const plainBrief = `مذكرة تنفيذية يومية — غرفة العمليات (مكتب وزارة الصناعة والتجارة / العاصمة عدن)\nالتاريخ: ${dtLabel} | تغطية المديريات: ${reports.length} من 8 مديريات\n• الميدان والمنشآت: شمل النزول ${fmtNum(sumFirms)} منشأة تجارية، وأسفر عن ضبط ${fmtNum(sumViol)} مخالفة واتخاذ ${fmtNum(sumAct)} إجراءً قانونياً (أعلاها في مديرية ${topViolDir?.directorate || '-'} بـ ${fmtNum(topViolDir?.violTotal || 0)} مخالفة).\n• الغاز المنزلي: إجمالي الغاز المرصود ${fmtNum(sumGas)} أسطوانة؛ لا يعني الغياب صفر توزيع (أعلاها في ${topGasDir?.directorate || '-'} بـ ${fmtNum(topGasDir?MoitAnalytics.metric(topGasDir,'gasTotal').value:null)} أسطوانة).\n• حركة الأسعار والصرف: متوسط الصرف ($ ${avgUsd} | ر.س ${avgSar})، ومؤشر الاستقرار: ${stabPct}. ${incSummary}`;
+      const plainBrief = `مذكرة تنفيذية يومية — غرفة العمليات (مكتب وزارة الصناعة والتجارة / العاصمة عدن)\nالتاريخ: ${dtLabel} | تغطية المديريات: ${new Set(reports.map(r=>r.directorate)).size} من 8 مديريات\n• الميدان والمنشآت: شمل النزول ${fmtNum(sumFirms)} منشأة تجارية، وأسفر عن ضبط ${fmtNum(sumViol)} مخالفة واتخاذ ${fmtNum(sumAct)} إجراءً مصرحًا به (أعلاها في مديرية ${topViolDir?.directorate || '-'} بـ ${fmtNum(topViolDir?.violTotal || 0)} مخالفة).\n• الغاز المنزلي: إجمالي الغاز المرصود ${fmtNum(sumGas)} أسطوانة؛ لا يعني الغياب صفر توزيع (أعلاها في ${topGasDir?.directorate || '-'} بـ ${fmtNum(topGasDir?MoitAnalytics.metric(topGasDir,'gasTotal').value:null)} أسطوانة).\n• حركة الأسعار والصرف: متوسط الصرف ($ ${avgUsd} | ر.س ${avgSar})، ومؤشر الاستقرار: ${stabPct}. ${incSummary}`;
 
       document.getElementById('aggExecBriefBody').innerHTML = `
-        <p>📌 <b>ملخص الوضع العام (${escHtml(dtLabel)}):</b> تم استلام وتجميع تقارير <b>${reports.length} من أصل 8 مديريات</b>${missingDirs.length ? ` <span class="text-rose-700">(متبقٍ: ${escHtml(missingDirs.join('، '))})</span>` : ' <span class="text-emerald-700">(تغطية مكتملة 100%)</span>'}، بمتوسط صرف <b>دولار ${avgUsd} ريال</b> و<b>سعودي ${avgSar} ريال</b>.</p>
-        <p>⚖️ <b>الرقابة والغاز:</b> تم التفتيش على <b>${fmtNum(sumFirms)} منشأة</b>، وضبط <b>${fmtNum(sumViol)} مخالفة</b> وتنفيذ <b>${fmtNum(sumAct)} إجراءً قانونياً</b> (أعلاها في <b>${escHtml(topViolDir?.directorate || '-')}</b>)، والغاز المرصود <b>${fmtNum(sumGas)} أسطوانة</b>؛ لا يعني الغياب صفر توزيع (أعلاها في <b>${escHtml(topGasDir?.directorate || '-')}</b>).</p>
+        <p>📌 <b>ملخص الوضع العام (${escHtml(dtLabel)}):</b> تم استلام وتجميع <b>${reports.length} تقرير من ${new Set(reports.map(r=>r.directorate)).size} من أصل 8 مديريات</b>${missingDirs.length ? ` <span class="text-rose-700">(متبقٍ: ${escHtml(missingDirs.join('، '))})</span>` : ' <span class="text-emerald-700">(تغطية مكتملة 100%)</span>'}، بمتوسط صرف <b>دولار ${avgUsd} ريال</b> و<b>سعودي ${avgSar} ريال</b>.</p>
+        <p>⚖️ <b>الرقابة والغاز:</b> تم التفتيش على <b>${fmtNum(sumFirms)} منشأة</b>، وضبط <b>${fmtNum(sumViol)} مخالفة</b> وتنفيذ <b>${fmtNum(sumAct)} إجراءً مصرحًا به</b> (أعلاها في <b>${escHtml(topViolDir?.directorate || '-')}</b>)، والغاز المرصود <b>${fmtNum(sumGas)} أسطوانة</b>؛ لا يعني الغياب صفر توزيع (أعلاها في <b>${escHtml(topGasDir?.directorate || '-')}</b>).</p>
         <p>📊 <b>تحليل الأسعار:</b> مؤشر الاستقرار <b>${stabPct}</b> — ${escHtml(incSummary)}</p>`;
 
       document.getElementById('aggCopyBriefBtn').onclick = () => {
@@ -3816,7 +3825,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const ctxGas = document.getElementById('aggChartGas').getContext('2d');
       const gradGas = ctxGas.createLinearGradient(0, 0, 400, 0);
       gradGas.addColorStop(0, '#f59e0b'); gradGas.addColorStop(1, '#b45309');
-      charts.aggGas = new Chart(ctxGas, {
+      charts.aggGas = v541Chart('aggChartGas', {
         type: 'bar',
         data: { labels: sortedGas.map(r => r.directorate), datasets: [{ label: 'أسطوانات الغاز', data: sortedGas.map(r => MoitAnalytics.metric(r,"gasTotal").value), backgroundColor: gradGas, borderRadius: 6 }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
@@ -3855,7 +3864,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       destroyChart('aggFx');
       const series=computeFxBasketSeries(reports);
-      charts.aggFx = new Chart(document.getElementById('aggChartFxTrend').getContext('2d'), {
+      charts.aggFx = v541Chart('aggChartFxTrend', {
         type: 'line',data:{labels:series.map(x=>x.date),datasets:[{label:'السلة المقترحة المكتملة (ريال)',data:series.map(x=>x.basket),borderColor:'#0f2942',yAxisID:'y',spanGaps:false},{label:'دولار بيع',data:series.map(x=>x.usdAvg),borderColor:'#d97706',yAxisID:'y1',spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{type:'linear',position:'right'},y1:{type:'linear',position:'left'}}}
       });
 
@@ -3986,10 +3995,10 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const maxV = Math.max(1, ...perf.map(x => x.viols));
       const maxA = Math.max(1, ...perf.map(x => x.acts));
       const maxR = Math.max(1, ...perf.map(x => x.reports));
-      charts.repRadar = new Chart(document.getElementById('repRadarChart').getContext('2d'), {
+      charts.repRadar = v541Chart('repRadarChart', {
         type: 'radar',
         data: {
-          labels: ['المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'التزام التقارير'],
+          labels: ['المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'حجم التقارير النسبي'],
           datasets: top4.map((p, idx) => ({
             label: p.dir,
             data: [
@@ -4008,7 +4017,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       });
 
       destroyChart('repActionRate');
-      charts.repActionRate = new Chart(document.getElementById('repActionRateChart').getContext('2d'), {
+      charts.repActionRate = v541Chart('repActionRateChart', {
         type: 'bar',
         data: {
           labels: perf.map(p => p.dir),
@@ -4043,7 +4052,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       // 3. FX vs Basket Report
       const fxSeries = computeFxBasketSeries();
       destroyChart('repFxBasket');
-      charts.repFxBasket = new Chart(document.getElementById('repFxBasketChart').getContext('2d'), {
+      charts.repFxBasket = v541Chart('repFxBasketChart', {
         type: 'line',
         data: {
           labels: fxSeries.length ? fxSeries.map(x => x.date) : ['لا توجد بيانات'],
@@ -4089,7 +4098,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       const totalGasAll = perf.reduce((s,p)=>s+(p.gas??0),0);
       destroyChart('repGasBar');
-      charts.repGasBar = new Chart(document.getElementById('repGasBarChart').getContext('2d'), {
+      charts.repGasBar = v541Chart('repGasBarChart', {
         type: 'bar',
         data: {
           labels: ADEN_8_DIRS,
@@ -4406,14 +4415,14 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const activeDirs = d.byDir.filter(x => x.count > 0);
       let lines = [
         `تحية طيبة وبعد،،،`,
-        `بالإشارة إلى الموضوع أعلاه، نرفع لسيادتكم خلاصة النشاط الرقابي والميداني الموحّد لمكاتب الصناعة والتجارة بمديريات العاصمة عدن ${periodLabel}، حيث تم استلام وتحليل (${fmtNum(d.reps.length)}) تقريراً ميدانياً غطّت (${activeDirs.length}/8) مديريات، وشملت التفتيش على (${fmtNum(d.totFirms)}) منشأة تجارية، وكمية الغاز المرصودة (${fmtNum(MoitAnalytics.aggregate(d.reps,'gasTotal').value)}) أسطوانة، دون افتراض اكتمال الكشوف، وضبط (${fmtNum(d.totViols)}) مخالفة وتنفيذ (${fmtNum(d.totActs)}) إجراءً قانونياً، بمتوسط صرف (${d.avgUsd ? fmtNum(d.avgUsd) : '-'} ريال للدولار، و${d.avgSar ? fmtNum(d.avgSar) : '-'} ريال للسعودي).`,
+        `بالإشارة إلى الموضوع أعلاه، نرفع لسيادتكم خلاصة النشاط الرقابي والميداني الموحّد لمكاتب الصناعة والتجارة بمديريات العاصمة عدن ${periodLabel}، حيث تم استلام وتحليل (${fmtNum(d.reps.length)}) تقريراً ميدانياً غطّت (${activeDirs.length}/8) مديريات، وشملت التفتيش على (${fmtNum(d.totFirms)}) منشأة تجارية، وكمية الغاز المرصودة (${fmtNum(MoitAnalytics.aggregate(d.reps,'gasTotal').value)}) أسطوانة، دون افتراض اكتمال الكشوف، وضبط (${fmtNum(d.totViols)}) مخالفة وتنفيذ (${fmtNum(d.totActs)}) إجراءً مصرحًا به، بمتوسط صرف (${d.avgUsd ? fmtNum(d.avgUsd) : '-'} ريال للدولار، و${d.avgSar ? fmtNum(d.avgSar) : '-'} ريال للسعودي).`,
         ``,
         `أولاً: خلاصة النزول الميداني ومناطق الاستهداف حسب المديريات:`
       ];
       activeDirs.forEach((x, idx) => {
         const areaTxt = x.areas.length ? `شملت مناطق (${x.areas.slice(0, 8).join('، ')})` : 'لم تحدد مناطق النزول في التقرير';
         const introExcerpt = ''; // Raw field notes are not verified facts.
-        lines.push(`${idx + 1}. مديرية ${x.dir}: نفّذت (${x.count}) نزولاً ميدانياً ${areaTxt}، استهدفت (${fmtNum(x.firms)}) منشأة، وكمية الغاز المرصودة (${fmtNum(MoitAnalytics.aggregate(d.reps.filter(r=>r.directorate===x.dir),'gasTotal').value)}) أسطوانة، وضبطت (${fmtNum(x.viols)}) مخالفة مقابل (${fmtNum(x.acts)}) إجراءً قانونياً.${introExcerpt}`);
+        lines.push(`${idx + 1}. مديرية ${x.dir}: نفّذت (${x.count}) نزولاً ميدانياً ${areaTxt}، استهدفت (${fmtNum(x.firms)}) منشأة، وكمية الغاز المرصودة (${fmtNum(MoitAnalytics.aggregate(d.reps.filter(r=>r.directorate===x.dir),'gasTotal').value)}) أسطوانة، وضبطت (${fmtNum(x.viols)}) مخالفة مقابل (${fmtNum(x.acts)}) إجراءً مصرحًا به.${introExcerpt}`);
       });
       if (d.topSpread.length) {
         lines.push(``);
@@ -4689,16 +4698,16 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
 
       const observed=r=>r?MoitAnalytics.price(r,item.id,isOutlierExcluded).value:null;
       const rows = [], chartLabels = [], chartValues = [], chartValues2 = [];
-      const invalid=mode==='two_dates'&&(!MoitAnalytics.validDate(d1)||!MoitAnalytics.validDate(d2)||d1===d2)||mode==='two_dirs'&&dir1===dir2||mode==='date_range'&&(!MoitAnalytics.validDate(rFrom)||!MoitAnalytics.validDate(rTo)||rFrom>rTo)||mode==='by_date'&&selDate!=='latest'&&!MoitAnalytics.validDate(selDate);
+      const invalid=mode==='two_dates'&&(!MoitAnalytics.validDate(d1)||!MoitAnalytics.validDate(d2)||d1===d2)||mode==='two_dirs'&&dir1===dir2||mode==='date_range'&&(!MoitAnalytics.validDate(rFrom)||!MoitAnalytics.validDate(rTo)||rFrom>rTo)||mode==='by_date'&&!['latest','latest_by_dir'].includes(selDate)&&!MoitAnalytics.validDate(selDate);
       if(invalid)return {item,mode,subtitle:'حدد نطاق مقارنة صالحًا',rows,chartLabels,chartValues,chartValues2,ds1Label:'',ds2Label:'',chartType:'bar',validPoints:[],minObj:null,maxObj:null,avg:null,spread:null,spreadPct:null,invalid:true};
       let chartType = 'bar', subtitle = '', ds1Label = `${item.name} (${item.unit})`, ds2Label = '';
 
       if (mode === 'by_date') {
-        subtitle = selDate === 'latest' ? 'مقارنة المديريات الثمان — أحدث يوم مشترك '+(allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop()||'غير متوفر') : `مقارنة المديريات الثمان — بتاريخ ${selDate}`;
+        subtitle = selDate==='latest_by_dir'?'أحدث رصد لكل مديرية؛ اختلاف التواريخ يمنع التفاوت المكاني':selDate === 'latest' ? 'مقارنة المديريات الثمان — أحدث يوم مرصود في الأرشيف '+(allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop()||'غير متوفر') : `مقارنة المديريات الثمان — بتاريخ ${selDate}`;
         ADEN_8_DIRS.forEach(dir => {
-          const commonDate=selDate==='latest'?allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop():selDate;
-          const rep=allReports.find(r=>r.directorate===dir&&r.visitDate===commonDate);
-          const price = observed(rep);
+          const commonDate=selDate==='latest_by_dir'?allReports.filter(r=>r.directorate===dir&&observed(r)!==null).map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop():selDate==='latest'?allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop():selDate;
+          const matching=allReports.filter(r=>r.directorate===dir&&r.visitDate===commonDate),rep=matching[0];
+          const price = MoitAnalytics.stats(matching,item,isOutlierExcluded).avg;
           rows.push({ label: dir, date: rep?.visitDate || '-', price, inspector: rep?.inspectorName || '-' });
           chartLabels.push(dir); chartValues.push(price);
         });
@@ -4710,7 +4719,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           if (selDir === 'ALL_AVG') {
             const stat=MoitAnalytics.stats(allReports.filter(r=>r.visitDate===dt),item,isOutlierExcluded);
             const vals=stat.entries;
-            if (vals.length) {
+            {
               const avg=stat.avg;
               rows.push({ label: dt, date: dt, price: avg, count: stat.uniqueDirCount });
               chartLabels.push(dt); chartValues.push(avg);
@@ -4718,8 +4727,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           } else {
             const rep = allReports.find(r => r.directorate === selDir && r.visitDate === dt);
             const price = observed(rep);
-            if (price > 0) {
-              rows.push({ label: dt, date: dt, price, inspector: rep.inspectorName || '-' });
+            {
+              rows.push({ label: dt, date: dt, price, inspector: rep?.inspectorName || '-' });
               chartLabels.push(dt); chartValues.push(price);
             }
           }
@@ -4747,7 +4756,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           const r2 = allReports.find(r => r.directorate === dir2 && r.visitDate === dt);
           const p1 = observed(r1);
           const p2 = observed(r2);
-          if (p1 > 0 || p2 > 0) {
+          {
             const diff = (p1 > 0 && p2 > 0) ? (p2 - p1) : null;
             rows.push({ label: dt, date: dt, p1, p2, diff, price: p1 || p2 });
             chartLabels.push(dt); chartValues.push(p1 || null); chartValues2.push(p2 || null);
@@ -4800,7 +4809,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         avg = validPoints.reduce((s, x) => s + x.price, 0) / validPoints.length;
       }
       let spread=null,spreadPct=null;
-      if(mode==='by_date'||mode==='date_range'){const date=selDate==='latest'?allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop():selDate;const selected=allReports.filter(r=>mode==='by_date'?r.visitDate===date:r.visitDate>=rFrom&&r.visitDate<=rTo);const stat=MoitAnalytics.stats(selected,item,isOutlierExcluded);spread=stat.spread;spreadPct=stat.spreadPct;avg=stat.avg;}else if(validPoints.length>=2){spread=maxObj.price-minObj.price;spreadPct=spread/minObj.price*100;}
+      if(mode==='by_date'&&selDate==='latest_by_dir'){if(validPoints.length>=2&&new Set(validPoints.map(x=>x.date)).size===1){spread=maxObj.price-minObj.price;spreadPct=spread/minObj.price*100;}}else if(mode==='by_date'||mode==='date_range'){const date=selDate==='latest'?allReports.map(r=>r.visitDate).filter(MoitAnalytics.validDate).sort().pop():selDate;const selected=allReports.filter(r=>mode==='by_date'?r.visitDate===date:r.visitDate>=rFrom&&r.visitDate<=rTo);const stat=MoitAnalytics.stats(selected,item,isOutlierExcluded);spread=stat.spread;spreadPct=stat.spreadPct;avg=stat.avg;}else if(validPoints.length>=2){spread=maxObj.price-minObj.price;spreadPct=spread/minObj.price*100;}
       return { item, mode, subtitle, rows, chartLabels, chartValues, chartValues2, ds1Label, ds2Label, chartType, validPoints, minObj, maxObj, avg,spread,spreadPct,invalid:false };
     }
 
@@ -4851,7 +4860,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
           borderColor: '#c89d3c', borderWidth: 2, fill: false, tension: 0.25, borderRadius: 6, spanGaps: false
         });
       }
-      charts.cmp = new Chart(document.getElementById('cmpChartCanvas').getContext('2d'), {
+      charts.cmp = v541Chart('cmpChartCanvas', {
         type: finalType,
         data: { labels: d.chartLabels, datasets },
         options: {
@@ -4974,40 +4983,42 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const period = document.getElementById('campFilterPeriod').value || 'all';
       const dFrom = document.getElementById('campDateFrom').value;
       const dTo = document.getElementById('campDateTo').value;
-      const latestDate = allCampaignRows.map(r => r.date).filter(Boolean).sort().reverse()[0] || todayIso();
+      const latestDate = todayIso();
+      if(period==='custom'&&((dFrom&&!MoitAnalytics.validDate(dFrom))||(dTo&&!MoitAnalytics.validDate(dTo))||(dFrom&&dTo&&dFrom>dTo)))return [];
       return allCampaignRows.filter(r => {
-        if (nameVal !== 'all' && (r.campaignName || r.product || '') !== nameVal) return false;
+        if(!MoitAnalytics.validDate(r.date))return false;
+        if (nameVal !== 'all' && (r.campaignId?'id:'+r.campaignId:'legacy:'+(r.campaignName||r.product||'')) !== nameVal) return false;
         if (dirVal !== 'all' && r.directorate !== dirVal) return false;
         if (period === 'today' && r.date !== latestDate) return false;
-        if (period === 'week' && (!r.date || r.date < daysAgoIso(7))) return false;
-        if (period === 'month' && (!r.date || r.date < daysAgoIso(30))) return false;
+        if (period === 'week' && (r.date < daysAgoIso(6)||r.date>latestDate)) return false;
+        if (period === 'month' && (r.date < daysAgoIso(29)||r.date>latestDate)) return false;
         if (period === 'custom') { if (dFrom && r.date < dFrom) return false; if (dTo && r.date > dTo) return false; }
         return true;
       });
     }
 
     function computeCampaignSummary(rows) {
-      let totalKg = 0, destKg = 0, seizKg = 0, otherActionKg = 0;
-      const otherUnits = {}, byDir = {};
-      ADEN_8_DIRS.forEach(d => { byDir[d] = { count: 0, kg: 0, other: {} }; });
+      let totalKg = null, destKg = null, seizKg = null, otherActionKg = null, unknownWeightCount=0;
+      const otherUnits = Object.create(null), byDir = Object.create(null);
+      ADEN_8_DIRS.forEach(d => { byDir[d] = { count: 0, kg: null, other: Object.create(null) }; });
       rows.forEach(r => {
         // [P1 - D16/T31] حساب الوزن المعلوم فقط (طن=1000 كجم، كيلو=1 كجم) دون تحويل الوحدات المجهولة الوزن
-        const derivedKg = r.unit === 'طن' ? toNum(r.qty) * 1000 : (r.unit === 'كيلو' ? toNum(r.qty) : 0);
-        const kg = toNum(r.weightKg) > 0 ? toNum(r.weightKg) : derivedKg;
-        totalKg += kg;
+        const kg=MoitAnalytics.recallWeight(r);
+        if(kg===null)unknownWeightCount++;else totalKg=(totalKg??0)+kg;
         const actTxt = String(r.action || '').trim();
-        if (actTxt.includes('إتلاف')) destKg += kg;
-        else if (actTxt.includes('تحريز') || actTxt.includes('مصادرة') || actTxt.includes('ضبط') || actTxt.includes('سحب')) seizKg += kg;
-        else otherActionKg += kg;
-        if (!byDir[r.directorate]) byDir[r.directorate] = { count: 0, kg: 0, other: {} };
-        byDir[r.directorate].count++; byDir[r.directorate].kg += kg;
-        if (r.unit && r.unit !== 'كيلو' && r.unit !== 'طن' && toNum(r.qty) > 0) {
-          otherUnits[r.unit] = (otherUnits[r.unit] || 0) + toNum(r.qty);
-          byDir[r.directorate].other[r.unit] = (byDir[r.directorate].other[r.unit] || 0) + toNum(r.qty);
+        if(kg!==null){if (actTxt.includes('إتلاف')) destKg=(destKg??0)+kg;
+        else if (actTxt.includes('تحريز') || actTxt.includes('مصادرة') || actTxt.includes('ضبط') || actTxt.includes('سحب')) seizKg=(seizKg??0)+kg;
+        else otherActionKg=(otherActionKg??0)+kg;}
+        if (!byDir[r.directorate]) byDir[r.directorate] = { count: 0, kg: null, other: Object.create(null) };
+        byDir[r.directorate].count++; if(kg!==null)byDir[r.directorate].kg=(byDir[r.directorate].kg??0)+kg;
+        const quantity=MoitAnalytics.number(r.qty).value;
+        if (r.unit && !['كيلو','كجم','طن'].includes(r.unit) && quantity!==null && quantity>0) {
+          otherUnits[r.unit] = (otherUnits[r.unit] || 0) + quantity;
+          byDir[r.directorate].other[r.unit] = (byDir[r.directorate].other[r.unit] || 0) + quantity;
         }
       });
       return {
-        totalKg, destKg, seizKg, otherActionKg, byDir,
+        totalKg, destKg:totalKg===null?null:destKg??0, seizKg:totalKg===null?null:seizKg??0, otherActionKg:totalKg===null?null:otherActionKg??0, unknownWeightCount, byDir,
         activeDirs: Object.values(byDir).filter(x => x.count > 0).length,
         otherText: Object.entries(otherUnits).map(([u, q]) => `${fmtNum(q)} ${u}`).join(' • ') || 'لا يوجد'
       };
@@ -5016,14 +5027,15 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
     function renderCampaignAnalytics() {
       const nameSel = document.getElementById('campFilterName');
       const prevName = nameSel.value || 'all';
-      const uniqueNames = [...new Set(allCampaignRows.map(r => r.campaignName || r.product).filter(Boolean))];
-      nameSel.innerHTML = `<option value="all">جميع الحملات (${allCampaignRows.length})</option>` +
-        uniqueNames.map(n => `<option value="${escHtml(n)}" ${n === prevName ? 'selected' : ''}>${escHtml(n)}</option>`).join('');
+      const choices=new Map(managedCampaigns.filter(c=>c.id).map(c=>['id:'+c.id,c.name||'حملة مسجلة']));
+      for(const row of allCampaignRows){const k=row.campaignId?'id:'+row.campaignId:'legacy:'+(row.campaignName||row.product||'');if(!choices.has(k))choices.set(k,(row.campaignName||row.product||'حملة غير مسماة')+(row.campaignId?'':' (سجل قديم بلا معرف)'));}
+      nameSel.innerHTML = `<option value="all">جميع الحملات (${new Set(managedCampaigns.map(c=>c.id).filter(Boolean)).size} مسجلة)</option>` +
+        [...choices].map(([k,n]) => `<option value="${escHtml(k)}" ${k === prevName ? 'selected' : ''}>${escHtml(n)}</option>`).join('');
 
       const rows = getFilteredCampaignRows();
       const s = computeCampaignSummary(rows);
-      document.getElementById('campKpiTon').textContent = `${fmtNum(s.totalKg / 1000, 3)} طن`;
-      document.getElementById('campKpiKg').textContent = `${fmtNum(s.totalKg)} كجم`;
+      document.getElementById('campKpiTon').textContent = `${fmtNum(s.totalKg===null?null:s.totalKg / 1000, 3)} طن`;
+      document.getElementById('campKpiKg').textContent = (s.totalKg===null?'لا توجد أوزان مرصودة':`${fmtNum(s.totalKg)} كجم مرصود`) + (s.unknownWeightCount?`؛ ${s.unknownWeightCount} ضبطية بلا وزن`:'');
       document.getElementById('campKpiDest').textContent = `إتلاف: ${fmtNum(s.destKg)} كجم`;
       document.getElementById('campKpiSeiz').textContent = `تحريز: ${fmtNum(s.seizKg)} كجم`;
       document.getElementById('campKpiOther').textContent = s.otherText;
@@ -5031,19 +5043,19 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       document.getElementById('campKpiDirs').textContent = `${s.activeDirs} / 8 مديريات`;
 
       destroyChart('camp');
-      charts.camp = new Chart(document.getElementById('campChartCanvas').getContext('2d'), {
+      charts.camp = v541Chart('campChartCanvas', {
         type: 'bar',
-        data: { labels: ADEN_8_DIRS, datasets: [{ label: 'الوزن بالكيلو', data: ADEN_8_DIRS.map(d => s.byDir[d]?.kg || 0), backgroundColor: '#be123c', borderRadius: 5 }] },
+        data: { labels: ADEN_8_DIRS, datasets: [{ label: 'الوزن بالكيلو', data: ADEN_8_DIRS.map(d => s.byDir[d]?.kg ?? null), backgroundColor: '#be123c', borderRadius: 5 }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
       });
 
       destroyChart('campAct');
-      const hasWt = s.destKg > 0 || s.seizKg > 0;
-      charts.campAct = new Chart(document.getElementById('campActionDoughnutCanvas').getContext('2d'), {
+      const hasWt = s.totalKg > 0;
+      charts.campAct = v541Chart('campActionDoughnutCanvas', {
         type: 'doughnut',
         data: {
-          labels: hasWt ? ['إتلاف فوري (كجم)', 'تحريز / سحب (كجم)'] : ['لا توجد أوزان مسجلة'],
-          datasets: [{ data: hasWt ? [s.destKg, s.seizKg] : [1], backgroundColor: hasWt ? ['#d97706', '#be123c'] : ['#e2e8f0'] }]
+          labels: hasWt ? ['إتلاف فوري (كجم)', 'تحريز / سحب (كجم)','إجراءات أخرى (كجم)'] : [],
+          datasets: [{ data: hasWt ? [s.destKg??0, s.seizKg??0,s.otherActionKg??0] : [], backgroundColor: ['#d97706', '#be123c','#64748b'] }]
         },
         options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom' } } }
       });
@@ -5051,13 +5063,13 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const dirVal = document.getElementById('campFilterDir').value;
       const dirsToShow = dirVal === 'all' ? ADEN_8_DIRS : [dirVal];
       document.getElementById('campDirSummaryBody').innerHTML = dirsToShow.map(d => {
-        const st = s.byDir[d] || { count: 0, kg: 0, other: {} };
+        const st = s.byDir[d] || { count: 0, kg: null, other: Object.create(null) };
         const oth = Object.entries(st.other).map(([u, q]) => `${fmtNum(q)} ${u}`).join('، ') || '-';
-        return `<tr><td class="font-bold text-[#102a4e]">${escHtml(d)}</td><td class="text-center font-bold">${fmtNum(st.count)}</td><td class="text-center font-black text-rose-700">${fmtNum(st.kg)}</td><td class="text-center font-bold">${fmtNum(st.kg / 1000, 3)}</td><td class="text-center text-xs">${escHtml(oth)}</td></tr>`;
-      }).join('') + `<tr class="bg-slate-100 font-black"><td class="text-[#0b1c36] font-black">الإجمالي العام</td><td class="text-center">${fmtNum(rows.length)}</td><td class="text-center text-rose-800">${fmtNum(s.totalKg)}</td><td class="text-center">${fmtNum(s.totalKg / 1000, 3)}</td><td class="text-center text-xs">${escHtml(s.otherText)}</td></tr>`;
+        return `<tr><td class="font-bold text-[#102a4e]">${escHtml(d)}</td><td class="text-center font-bold">${fmtNum(st.count)}</td><td class="text-center font-black text-rose-700">${fmtNum(st.kg)}</td><td class="text-center font-bold">${fmtNum(st.kg===null?null:st.kg / 1000, 3)}</td><td class="text-center text-xs">${escHtml(oth)}</td></tr>`;
+      }).join('') + `<tr class="bg-slate-100 font-black"><td class="text-[#0b1c36] font-black">الإجمالي العام</td><td class="text-center">${fmtNum(rows.length)}</td><td class="text-center text-rose-800">${fmtNum(s.totalKg)}</td><td class="text-center">${fmtNum(s.totalKg===null?null:s.totalKg / 1000, 3)}</td><td class="text-center text-xs">${escHtml(s.otherText)}</td></tr>`;
 
       document.getElementById('campDetailsBody').innerHTML = rows.length ? rows.map((r, i) => `
-        <tr><td class="text-center font-bold text-slate-500">${i + 1}</td><td class="whitespace-nowrap font-semibold">${escHtml(r.date || '-')}</td><td class="font-bold text-[#102a4e]">${escHtml(r.directorate)}</td><td class="font-bold">${escHtml(r.campaignName || r.product)}</td><td class="text-xs">${escHtml(r.reason || '-')}</td><td class="font-semibold">${escHtml(r.firm || '-')}</td><td class="text-center font-bold">${fmtNum(r.qty)} ${escHtml(r.unit)}</td><td class="text-center font-black text-rose-700">${fmtNum(r.weightKg)}</td><td class="text-xs font-bold">${escHtml(r.action || '-')}</td><td class="text-xs text-slate-600">${escHtml(r.notes || '-')}</td></tr>`).join('') :
+        <tr><td class="text-center font-bold text-slate-500">${i + 1}</td><td class="whitespace-nowrap font-semibold">${escHtml(r.date || '-')}</td><td class="font-bold text-[#102a4e]">${escHtml(r.directorate)}</td><td class="font-bold">${escHtml(r.campaignName || r.product)}</td><td class="text-xs">${escHtml(r.reason || '-')}</td><td class="font-semibold">${escHtml(r.firm || '-')}</td><td class="text-center font-bold">${fmtNum(r.qty)} ${escHtml(r.unit)}</td><td class="text-center font-black text-rose-700">${fmtNum(MoitAnalytics.recallWeight(r))}</td><td class="text-xs font-bold">${escHtml(r.action || '-')}</td><td class="text-xs text-slate-600">${escHtml(r.notes || '-')}</td></tr>`).join('') :
         '<tr><td colspan="10" class="text-center py-6 text-slate-400 font-bold">لا توجد ضبطيات مطابقة.</td></tr>';
     }
 
@@ -5581,7 +5593,7 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
         ...snapshot.reports.map(r => [r.directorate, fmtDateDMY(r.visitDate), MoitAnalytics.metric(r,'firmsCovered').value, MoitAnalytics.metric(r,'gasTotal').value, MoitAnalytics.metric(r,'violTotal').value, MoitAnalytics.metric(r,'actTotal').value, MoitAnalytics.metric(r,'usdSell').value, MoitAnalytics.metric(r,'sarSell').value, r.supplyStatus, r.inspectorName]),
         ['الإجمالي العام', `${snapshot.reports.length} تقرير`, snapshot.metrics.firms.value, snapshot.metrics.gas.value, snapshot.metrics.violations.value, snapshot.metrics.actions.value, '-', '-', 'العاصمة عدن', 'غرفة العمليات']];
       const prAoa = [['#', 'المجموعة', 'السلعة', 'العبوة', 'عدد الرصد', 'أدنى سعر', 'مديرية أدنى سعر', 'أعلى سعر', 'مديرية أعلى سعر', 'المتوسط', 'الفارق السعري', 'نسبة التفاوت %'],
-        ...snapshot.prices.map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.min ? (p.minDir || '-') : '-', p.max, p.max ? (p.maxDir || '-') : '-', p.avg, p.spread, p.spreadPct!==null ? p.spreadPct + '%' : '-'])];
+        ...snapshot.prices.map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.min ? (p.minDir || '-') : '-', p.max, p.max ? (p.maxDir || '-') : '-', p.avg, p.spread, p.spreadPct!==null ? fmtNum(p.spreadPct,2) + '%' : '-'])];
       saveStyledWorkbook([
         { name: 'ملخص_المديريات', aoa: sumAoa, widths: [18, 13, 12, 12, 12, 12, 12, 12, 14, 18] },
         { name: 'متوسطات_الأسعار_81', aoa: prAoa, widths: [6, 18, 22, 13, 10, 12, 16, 12, 16, 12, 14, 12] }
@@ -5597,9 +5609,9 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       saveStyledWorkbook([
         { name: '1_تقييم_المديريات', aoa: [['المديرية', 'التقارير', 'المنشآت', 'الغاز', 'المخالفات', 'الإجراءات', 'نسبة المعالجة بين الأدلة المؤهلة المراجعة %'], ...perf.map(p => [p.dir, p.reports, p.firms, p.gas, p.viols, p.acts, p.actionRate===null?'غير قابل للاحتساب':fmtNum(p.actionRate,2)+'% ('+p.review.resolved+'/'+p.review.eligible+')'])], widths: [18, 10, 12, 12, 12, 12, 14] },
         { name: '2_متوسطات_السلع_81', aoa: [['#', 'المجموعة', 'السلعة', 'العبوة', 'الرصد', 'أدنى', 'أعلى', 'المتوسط', 'الفارق'], ...snapshot.prices.map((p, i) => [i + 1, p.groupLabel, p.name, p.unit, p.count, p.min, p.max, p.avg, p.spread])], widths: [6, 18, 22, 12, 8, 11, 11, 11, 11] },
-        { name: '3_أعلى_التفاوتات', aoa: [['السلعة', 'العبوة', 'أدنى سعر', 'أدنى مديرية', 'أعلى سعر', 'أعلى مديرية', 'الفارق', 'النسبة %'], ...disp.map(x => [x.name, x.unit, x.min, x.minDir, x.max, x.maxDir, x.spread, x.spreadPct + '%'])], widths: [20, 12, 12, 16, 12, 16, 12, 10] },
+        { name: '3_أعلى_التفاوتات', aoa: [['السلعة', 'العبوة', 'أدنى سعر', 'أدنى مديرية', 'أعلى سعر', 'أعلى مديرية', 'الفارق', 'النسبة %'], ...disp.map(x => [x.name, x.unit, x.min, x.minDir, x.max, x.maxDir, x.spread, fmtNum(x.spreadPct,2) + '%'])], widths: [20, 12, 12, 16, 12, 16, 12, 10] },
         { name: '4_مسار_الصرف_والسلة', aoa: [['التاريخ', 'عدد التقارير', 'دولار بيع', 'سعودي بيع', 'مؤشر السلة'], ...fx.map(x => [x.date, x.count, x.usdAvg, x.sarAvg, x.basket])], widths: [14, 12, 14, 14, 16] },
-        { name: '5_ملخص_الحملات', aoa: [['المديرية', 'الضبطيات', 'مجموع الوزن المتوفر (كجم)', 'مجموع الوزن المتوفر (طن)'], ...ADEN_8_DIRS.map(d => [d, snapshot.coverage.directorates.includes(d)?campS.byDir[d].count:null, campS.byDir[d]?.count?campS.byDir[d].kg:null, campS.byDir[d]?.count?Number((campS.byDir[d].kg/1000).toFixed(3)):null])], widths: [18, 12, 14, 14] },
+        { name: '5_ملخص_الحملات', aoa: [['المديرية', 'الضبطيات', 'مجموع الوزن المتوفر (كجم)', 'مجموع الوزن المتوفر (طن)'], ...ADEN_8_DIRS.map(d => [d, snapshot.coverage.directorates.includes(d)?campS.byDir[d].count:null, campS.byDir[d]?.count?campS.byDir[d].kg:null, campS.byDir[d]?.kg!=null?Number((campS.byDir[d].kg/1000).toFixed(3)):null])], widths: [18, 12, 14, 14] },
         { name: '6_سجل_المخالفات', aoa: [['التاريخ', 'المديرية', 'المنشأة', 'نوع المخالفة', 'الإجراء', 'الحالة المصرح بها','حالة المراجعة الداخلية'], ...snapshot.evidence.map(e => [e.visitDate, e.directorate, e.firm, e.type, e.proc, e.status,e.reviewState||'UNREVIEWED'])], widths: [12, 16, 22, 20, 20, 14,22] }
       ].map(sh=>({...sh,snapshotId:snapshot.snapshotId})), `الحقيبة_التنفيذية_الشاملة_عدن_${todayIso()}.xlsx`);
     }
@@ -5712,15 +5724,15 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const dirVal = document.getElementById('campFilterDir').value;
       const dirs = dirVal === 'all' ? ADEN_8_DIRS : [dirVal];
       return `${buildKpiCardsRow([
-        { label: 'إجمالي الوزن المسحوب', value: `${fmtNum(s.totalKg / 1000, 3)} طن`, tone: 'rose' },
+        { label: 'إجمالي الوزن المسحوب', value: `${fmtNum(s.totalKg===null?null:s.totalKg / 1000, 3)} طن`, tone: 'rose' },
         { label: 'الوزن بالكيلوجرام', value: `${fmtNum(s.totalKg)} كجم`, tone: 'amber' },
         { label: 'إتلاف / تحريز (كجم)', value: `${fmtNum(s.destKg)} / ${fmtNum(s.seizKg)}`, tone: 'indigo' },
         { label: 'عدد الضبطيات', value: `${fmtNum(rows.length)} ضبطية`, tone: 'emerald' }
       ])}
         ${withChart ? chartSnapshotHtml('campChartCanvas', 'الكميات المسحوبة حسب المديرية') : ''}
         ${buildSecTitle('01', 'التوزيع الإحصائي للحملة حسب المديريات')}
-        <table class="rep"><tr><th>المديرية</th><th>الضبطيات</th><th>الوزن (كجم)</th><th>بالطن</th><th>وحدات أخرى</th></tr>${dirs.map(d => { const st = s.byDir[d] || { count: 0, kg: 0, other: {} }; return `<tr><td><strong>${escHtml(d)}</strong></td><td>${fmtNum(st.count)}</td><td style="color:#be123c;font-weight:800;">${fmtNum(st.kg)}</td><td>${fmtNum(st.kg / 1000, 3)}</td><td>${escHtml(Object.entries(st.other).map(([u, q]) => `${fmtNum(q)} ${u}`).join('، ') || '-')}</td></tr>`; }).join('')}<tr class="total-row"><td>الإجمالي العام</td><td>${fmtNum(rows.length)}</td><td>${fmtNum(s.totalKg)}</td><td>${fmtNum(s.totalKg / 1000, 3)}</td><td>${escHtml(s.otherText)}</td></tr></table>
-        ${buildSecTitle('02', 'السجل التفصيلي لضبطيات الحملة')}<table class="rep"><tr><th>#</th><th>التاريخ</th><th>المديرية</th><th>الحملة</th><th>المنشأة</th><th>الكمية</th><th>الوزن</th><th>الإجراء</th></tr>${rows.map((r, i) => `<tr><td>${i + 1}</td><td>${escHtml(r.date)}</td><td>${escHtml(r.directorate)}</td><td>${escHtml(r.campaignName || r.product)}</td><td>${escHtml(r.firm)}</td><td>${fmtNum(r.qty)} ${escHtml(r.unit)}</td><td>${fmtNum(r.weightKg)}</td><td>${escHtml(r.action)}</td></tr>`).join('') || '<tr><td colspan="8">لا توجد ضبطيات</td></tr>'}</table>`;
+        <table class="rep"><tr><th>المديرية</th><th>الضبطيات</th><th>الوزن (كجم)</th><th>بالطن</th><th>وحدات أخرى</th></tr>${dirs.map(d => { const st = s.byDir[d] || { count: 0, kg: null, other: Object.create(null) }; return `<tr><td><strong>${escHtml(d)}</strong></td><td>${fmtNum(st.count)}</td><td style="color:#be123c;font-weight:800;">${fmtNum(st.kg)}</td><td>${fmtNum(st.kg===null?null:st.kg / 1000, 3)}</td><td>${escHtml(Object.entries(st.other).map(([u, q]) => `${fmtNum(q)} ${u}`).join('، ') || '-')}</td></tr>`; }).join('')}<tr class="total-row"><td>الإجمالي العام</td><td>${fmtNum(rows.length)}</td><td>${fmtNum(s.totalKg)}</td><td>${fmtNum(s.totalKg===null?null:s.totalKg / 1000, 3)}</td><td>${escHtml(s.otherText)}</td></tr></table>
+        ${buildSecTitle('02', 'السجل التفصيلي لضبطيات الحملة')}<table class="rep"><tr><th>#</th><th>التاريخ</th><th>المديرية</th><th>الحملة</th><th>المنشأة</th><th>الكمية</th><th>الوزن</th><th>الإجراء</th></tr>${rows.map((r, i) => `<tr><td>${i + 1}</td><td>${escHtml(r.date)}</td><td>${escHtml(r.directorate)}</td><td>${escHtml(r.campaignName || r.product)}</td><td>${escHtml(r.firm)}</td><td>${fmtNum(r.qty)} ${escHtml(r.unit)}</td><td>${fmtNum(MoitAnalytics.recallWeight(r))}</td><td>${escHtml(r.action)}</td></tr>`).join('') || '<tr><td colspan="8">لا توجد ضبطيات</td></tr>'}</table>`;
     }
 
     function exportCampaignExcel() {
@@ -5729,8 +5741,8 @@ function moitUUID(){const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6
       const dirs = dirVal === 'all' ? ADEN_8_DIRS : [dirVal];
       const scope = dirVal === 'all' ? 'العاصمة_عدن' : dirVal;
       saveStyledWorkbook([
-        { name: 'ملخص_الحملة', aoa: [['المديرية', 'الضبطيات', 'الوزن (كجم)', 'الوزن (طن)', 'وحدات أخرى'], ...dirs.map(d => { const st = s.byDir[d] || { count: 0, kg: 0, other: {} }; return [d, st.count, st.kg, Number((st.kg / 1000).toFixed(3)), Object.entries(st.other).map(([u, q]) => `${q} ${u}`).join('، ') || '-']; }), ['الإجمالي العام', rows.length, s.totalKg, Number((s.totalKg / 1000).toFixed(3)), s.otherText]], widths: [20, 12, 14, 14, 22] },
-        { name: 'تفاصيل_الضبطيات', aoa: [['#', 'التاريخ', 'المديرية', 'الحملة', 'المنتج', 'السبب', 'المنشأة', 'الكمية', 'الوحدة', 'الوزن (كجم)', 'الإجراء', 'ملاحظات'], ...rows.map((r, i) => [i + 1, r.date, r.directorate, r.campaignName, r.product, r.reason, r.firm, r.qty, r.unit, r.weightKg, r.action, r.notes])], widths: [6, 12, 16, 20, 18, 18, 20, 10, 10, 12, 16, 20] }
+        { name: 'ملخص_الحملة', aoa: [['المديرية', 'الضبطيات', 'الوزن (كجم)', 'الوزن (طن)', 'وحدات أخرى'], ...dirs.map(d => { const st = s.byDir[d] || { count: 0, kg: null, other: Object.create(null) }; return [d, st.count, st.kg, st.kg===null?null:Number((st.kg / 1000).toFixed(3)), Object.entries(st.other).map(([u, q]) => `${q} ${u}`).join('، ') || '-']; }), ['الإجمالي العام', rows.length, s.totalKg, s.totalKg===null?null:Number((s.totalKg / 1000).toFixed(3)), s.otherText]], widths: [20, 12, 14, 14, 22] },
+        { name: 'تفاصيل_الضبطيات', aoa: [['#', 'التاريخ', 'المديرية', 'الحملة', 'المنتج', 'السبب', 'المنشأة', 'الكمية', 'الوحدة', 'الوزن (كجم)', 'الإجراء', 'ملاحظات'], ...rows.map((r, i) => [i + 1, r.date, r.directorate, r.campaignName, r.product, r.reason, r.firm, r.qty, r.unit, MoitAnalytics.recallWeight(r), r.action, r.notes])], widths: [6, 12, 16, 20, 18, 18, 20, 10, 10, 12, 16, 20] }
       ], `تقرير_حملة_${scope}_${todayIso()}.xlsx`);
     }
 
@@ -6027,7 +6039,7 @@ ${txt}`;
       // Sub-report 2: Disparity
       document.getElementById('dispExcelBtn').addEventListener('click', () => {
         const disp = v54DisparityRows();
-        saveStyledWorkbook([{ name: 'التفاوت_السعري', aoa: [['السلعة', 'العبوة', 'أدنى سعر', 'أدنى مديرية', 'أعلى سعر', 'أعلى مديرية', 'الفارق', 'النسبة %'], ...disp.map(x => [x.name, x.unit, x.min, x.minDir, x.max, x.maxDir, x.spread, x.spreadPct + '%'])], widths: [20, 12, 12, 16, 12, 16, 12, 10] }], `التفاوت_السعري_عدن_${todayIso()}.xlsx`);
+        saveStyledWorkbook([{ name: 'التفاوت_السعري', aoa: [['السلعة', 'العبوة', 'أدنى سعر', 'أدنى مديرية', 'أعلى سعر', 'أعلى مديرية', 'الفارق', 'النسبة %'], ...disp.map(x => [x.name, x.unit, x.min, x.minDir, x.max, x.maxDir, x.spread, fmtNum(x.spreadPct,2) + '%'])], widths: [20, 12, 12, 16, 12, 16, 12, 10] }], `التفاوت_السعري_عدن_${todayIso()}.xlsx`);
       });
       document.getElementById('dispWordBtn').addEventListener('click', () => downloadWordDoc('تقرير أعلى السلع تفاوتاً سعرياً — عدن', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, chartSnapshotHtml('repDisparityChart', 'أعلى 10 سلع تفاوتاً سعرياً %') + `<table class="rep">${document.getElementById('repDispTableBody').parentElement.innerHTML}</table>`, `التفاوت_السعري_عدن_${todayIso()}.doc`));
       document.getElementById('dispPdfBtn').addEventListener('click', () => openPdfPreview('تقرير مؤشر الفجوة والتفاوت السعري', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, chartSnapshotHtml('repDisparityChart', 'أعلى 10 سلع تفاوتاً سعرياً %') + `<table class="rep">${document.getElementById('repDispTableBody').parentElement.innerHTML}</table>`, `التفاوت_السعري_عدن_${todayIso()}.pdf`));
@@ -6321,9 +6333,10 @@ ${txt}`;
       const allUsd = scoped.map(r=>MoitAnalytics.metric(r,'usdSell').value).filter(v=>v!==null);
       const allSar = scoped.map(r=>MoitAnalytics.metric(r,'sarSell').value).filter(v=>v!==null);
       totalCellsChecked+=allUsd.length+allSar.length;
-      const medUsd = allUsd.length>=5?calcMedian(allUsd):0;
-      const medSar = allSar.length>=5?calcMedian(allSar):0;
+      const fxByDay=new Map(); for(const row of scoped){if(!fxByDay.has(row.visitDate))fxByDay.set(row.visitDate,[]);fxByDay.get(row.visitDate).push(row);}
+      function dayFxMedian(day,field){const groups=new Map();for(const row of fxByDay.get(day)||[]){const v=MoitAnalytics.metric(row,field).value;if(v===null)continue;if(!groups.has(row.directorate))groups.set(row.directorate,[]);groups.get(row.directorate).push(v);}return groups.size>=5?calcMedian([...groups.values()].map(v=>v.reduce((a,b)=>a+b,0)/v.length)):0;}
       periodReps.forEach(r => {
+        const medUsd=dayFxMedian(r.visitDate,"usdSell"),medSar=dayFxMedian(r.visitDate,"sarSell");
         if (dirF && r.directorate !== dirF) return;
         if (r.usdSell > 0 && medUsd > 0 && (r.usdSell >= medUsd * 2.2 || r.usdSell <= medUsd * 0.4)) {
           const sug = r.usdSell >= medUsd * 2.2 ? Math.round(r.usdSell / 10) : r.usdSell * 10;
@@ -6356,9 +6369,11 @@ ${txt}`;
         if (!periodVals.length) return;
 
         // Build full real history for this exact commodity across all stored reports
-        const refMed = periodVals.length >= 5 ? calcMedian(periodVals.map(x=>x.v)) : 0;
+        const dayGroups=new Map(); for(const x of periodVals){const day=x.r.visitDate;if(!dayGroups.has(day))dayGroups.set(day,[]);dayGroups.get(day).push(x.r);}
+        const dayMedians=new Map([...dayGroups].map(([day,rs])=>{const st=MoitAnalytics.stats(rs,item,isOutlierExcluded);return [day,st.uniqueDirCount>=5?calcMedian(st.groupStats.map(g=>g.avg)):0];}));
 
         periodVals.forEach(({ r, v }) => {
+          const refMed=dayMedians.get(r.visitDate)||0;
           if (dirF && r.directorate !== dirF) return;
           const key = getOutlierKey(r.directorate, r.visitDate, item.id);
 
@@ -6385,7 +6400,7 @@ ${txt}`;
             findings.push({
               severity: 'warning', key, dir: r.directorate, date: r.visitDate,
               itemId: item.id, itemName: item.name, unit: item.unit,
-              val: v, ref: refMed, reason: sug ? `احتمال خطأ صفر زائد/ناقص عن السجل (${fmtNum(refMed)}) — ربما ${fmtNum(sug)}؟` : `انحراف كبير عن السجل التاريخي للصنف (${fmtNum(refMed)})`,
+              val: v, ref: refMed, reason: sug ? `احتمال خطأ صفر زائد/ناقص عن السجل (${fmtNum(refMed)}) — ربما ${fmtNum(sug)}؟` : `انحراف كبير عن رصد الصنف في التاريخ نفسه (${fmtNum(refMed)})`,
               suggest: sug, excludable: true
             });
             return;
@@ -6414,7 +6429,7 @@ ${txt}`;
       const numericStates={observed:0,observedZero:0,invalid:0,missing:0,legacyUnknown:0,excluded:0};
       for(const r of scoped)for(const z of [...ALL_ITEMS.map(i=>MoitAnalytics.price(r,i.id)),MoitAnalytics.metric(r,'usdSell'),MoitAnalytics.metric(r,'sarSell')])numericStates[z.state]=(numericStates[z.state]||0)+1;
       // Keep legacy excludable candidate rows for manual review. Other central findings are non-excludable.
-      for(const flag of central){const report=scoped.find(r=>flag.refs.includes(r.reportId)||flag.refs.includes(r.directorate+' '+r.visitDate));findings.push({severity:['invalid_numeric','invalid_price','duplicate_evidence'].includes(flag.code)?'critical':'warning',key:'central:'+flag.code+':'+flag.refs.join('|')+':'+flag.text,dir:report?.directorate||'النطاق المحدد',date:report?.visitDate||'',itemId:flag.code,itemName:flag.code,unit:'',val:null,ref:null,reason:flag.text,suggest:null,excludable:false,source:'central'});}
+      for(const flag of central){const report=scoped.find(r=>flag.refs.includes(r.reportId)||flag.refs.includes(r.directorate+' '+r.visitDate));findings.push({severity:['invalid_numeric','invalid_price','duplicate_evidence'].includes(flag.code)?'critical':'warning',key:'central:'+flag.code+':'+flag.refs.join('|')+':'+flag.text,dir:report?.directorate||'النطاق المحدد',date:report?.visitDate||'',itemId:flag.code,itemName:MoitAnalytics.auditLabel(flag.code),category:MoitAnalytics.auditCategory(flag.code),unit:'',val:null,ref:null,reason:flag.text,suggest:null,excludable:false,source:'central'});}
       const filtered = sevF ? findings.filter(x => x.severity === sevF) : findings;
       const exclSet = getExcludedOutliersSet();
       const critCnt = new Set(findings.filter(x => x.severity === 'critical').map(x=>x.key)).size;
@@ -6424,14 +6439,10 @@ ${txt}`;
     }
 
     // [P1 - D15/T27/T47] تركيبة سلة اقتصادية ثابتة بدون استبدال أصناف مختلفة الأوزان أو الأحجام
-    const ADEN_BASKET_SPECS = [
-      { label: 'دقيق أبيض (50 كجم)', ids: ['f2'] },
-      { label: 'أرز بسمتي (20 كجم)', ids: ['r1'] },
-      { label: 'سكر أبيض (50 كجم)', ids: ['s1'] },
-      { label: 'زيت طبخ (8 لتر)', ids: ['o1'] },
-      { label: 'حليب مجفف (2.5 كجم)', ids: ['m1'] },
-      { label: 'دجاج حي (جامبو)', ids: ['p1'] }
-    ];
+    const ADEN_BASKET_SPECS = MoitAnalytics.BASKET.items.map(x=>{
+      const item=ALL_ITEMS.find(i=>i.id===x.id);
+      return {label:item.name+' ('+item.unit+')',ids:[x.id],quantity:x.quantity};
+    });
 
     function computeAdenBasketVsFx(customReps) {
       const f = document.getElementById('auditFrom')?.value || '';
@@ -6467,21 +6478,16 @@ ${txt}`;
       const dates = Array.from(byDate.keys()).sort();
       const series = dates.map(dt => {
         const dReps = byDate.get(dt);
-        const basket=MoitAnalytics.basket(computeConsolidatedPrices(dReps));
+        const prices=computeConsolidatedPrices(dReps),basket=MoitAnalytics.basket(prices);
         const usdAvg=MoitAnalytics.aggregate(dReps,'usdSell',true).value;
-        return {date:dt,basket:basket.cost,partialSum:basket.partial,usd:usdAvg,covered:basket.coveredCount,complete:basket.complete};
+        const basketBasis=MoitAnalytics.canonical(MoitAnalytics.BASKET.items.map(x=>[x.id,prices.find(p=>p.id===x.id).allDirs.slice().sort()]));
+        const fxBasis=MoitAnalytics.canonical([...new Set(dReps.filter(r=>MoitAnalytics.metric(r,'usdSell').value!==null).map(r=>r.directorate))].sort());
+        return {date:dt,basket:basket.cost,partialSum:basket.partial,usd:usdAvg,covered:basket.coveredCount,complete:basket.complete,basketBasis,fxBasis};
       }).filter(x => x.covered > 0 || x.usd > 0);
 
       // [P1 - T47] مقارنة التغير النسبي على التواريخ المشتركة المكتملة فقط (السلة المكتملة + الصرف معاً)
-      const aligned = series.filter(x => x.complete && x.basket > 0 && x.usd > 0);
-      let basketPct = null, fxPct = null, gapPct = null;
-      if (aligned.length >= 2) {
-        const firstA = aligned[0], lastA = aligned[aligned.length - 1];
-        basketPct = Math.round(((lastA.basket - firstA.basket) / firstA.basket) * 1000) / 10;
-        fxPct = Math.round(((lastA.usd - firstA.usd) / firstA.usd) * 1000) / 10;
-        gapPct = Math.round((basketPct - fxPct) * 10) / 10;
-      }
-      return { components, currentCost, complete, coveredCount, missingCount: ADEN_BASKET_SPECS.length - coveredCount, series, alignedCount: aligned.length, basketPct, fxPct, gapPct };
+      const temporal=MoitAnalytics.temporalBasketFx(series);
+      return { components, currentCost, complete, coveredCount, missingCount: ADEN_BASKET_SPECS.length - coveredCount, series, ...temporal };
     }
 
     function renderDataAuditorAndBasket() {
@@ -6504,9 +6510,9 @@ ${txt}`;
           return `
             <tr class="${excl ? 'bg-slate-100 opacity-70' : x.severity === 'critical' ? 'bg-rose-50/60' : 'bg-amber-50/40'}">
               <td class="p-2 text-center font-bold">${i + 1}</td>
-              <td class="p-2">${sevBadge}</td>
+              <td class="p-2">${sevBadge}<div class="text-[10px]">${escHtml(x.category||"مراجعة سعرية")}</div></td>
               <td class="p-2 font-extrabold text-[#102a4e]">${escHtml(x.dir)}<div class="text-[10px] text-slate-500">${escHtml(fmtDateDMY(x.date))}</div></td>
-              <td class="p-2 font-bold">${escHtml(x.itemName)} <span class="text-[10px] text-slate-500">(${escHtml(x.unit)})</span></td>
+              <td class="p-2 font-bold">${escHtml(x.itemName)} <span class="text-[10px] text-slate-500">${x.unit ? `(${escHtml(x.unit)})` : ''}</span></td>
               <td class="p-2 text-center font-black ${x.severity === 'critical' ? 'text-rose-700' : 'text-amber-800'}">${fmtNum(x.val)}</td>
               <td class="p-2 text-center font-bold text-slate-600">${x.ref ? fmtNum(x.ref) : '-'}</td>
               <td class="p-2 text-[11px] font-bold">${escHtml(x.reason)}</td>
@@ -6535,25 +6541,25 @@ ${txt}`;
 
       // Render Aden Family Food Basket vs FX
       const b = computeAdenBasketVsFx();
-      setTxt('basketKpiCurrent', b.currentCost > 0 ? fmtNum(b.currentCost) + ' ر.ي' : '-');
-      setTxt('basketKpiChange', b.alignedCount >= 2 && b.basketPct!==null ? `${b.basketPct > 0 ? '+' : ''}${b.basketPct}%` : 'تحتاج يومين+');
-      setTxt('basketKpiFxChange', b.alignedCount >= 2 && b.fxPct!==null ? `${b.fxPct > 0 ? '+' : ''}${b.fxPct}%` : 'تحتاج يومين+');
-      setTxt('basketKpiGap', b.alignedCount >= 2 && b.gapPct!==null ? `${b.gapPct > 0 ? '+' : ''}${b.gapPct}%` : '-');
+      setTxt('basketKpiCurrent', b.currentCost > 0 ? fmtNum(b.currentCost) + ' ر.ي' : `غير مكتملة (${b.coveredCount} من ${ADEN_BASKET_SPECS.length})`);
+      setTxt('basketKpiChange', b.basketPct!==null ? `${b.basketPct > 0 ? '+' : ''}${fmtNum(b.basketPct,2)}%` : b.basketCount===0?'لا توجد سلة مكتملة':b.basketCount<2?'يلزم تاريخان لسلة مكتملة':'اختلاف تغطية السلة بين التاريخين');
+      setTxt('basketKpiFxChange', b.fxPct!==null ? `${b.fxPct > 0 ? '+' : ''}${fmtNum(b.fxPct,2)}%` : b.fxCount===0?'الدولار غير مرصود':b.fxCount<2?'يلزم تاريخان برصد الدولار':'اختلاف مصادر الصرف بين التاريخين');
+      setTxt('basketKpiGap', b.alignedCount >= 2 && b.gapPct!==null ? `${b.gapPct > 0 ? '+' : ''}${fmtNum(b.gapPct,2)} نقطة مئوية` : '-');
 
       const vBadge = document.getElementById('basketFxVerdictBadge');
       if (vBadge) {
         if (b.alignedCount < 2 || b.gapPct===null) {
           vBadge.className = 'rounded-full bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1 text-xs font-black';
-          vBadge.textContent = '📊 لا تتوفر نقطتان زمنيتان بسلة مكتملة وصرف مرصود معاً';
+          vBadge.textContent = '📊 لا تتوفر نقطتان زمنيتان متجانستان بسلة مكتملة وصرف مرصود معاً';
         } else if (b.gapPct >= 4) {
           vBadge.className = 'rounded-full bg-rose-100 text-rose-900 border border-rose-300 px-3 py-1 text-xs font-black';
-          vBadge.textContent = `🔴 ارتفاع السلة يتجاوز الصرف بفارق (+${b.gapPct}%) — يستدعي مراجعة عوامل التكلفة؛ لا يثبت مخالفة`;
+          vBadge.textContent = `🔴 ارتفاع السلة يتجاوز الصرف بفارق (+${fmtNum(b.gapPct,2)} نقطة مئوية) — يستدعي مراجعة عوامل التكلفة؛ لا يثبت مخالفة`;
         } else if (b.gapPct >= 1.5) {
           vBadge.className = 'rounded-full bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 text-xs font-black';
-          vBadge.textContent = `🟡 السلة أعلى قليلاً من حركة الصرف (+${b.gapPct}%)`;
+          vBadge.textContent = `🟡 السلة أعلى قليلاً من حركة الصرف (+${fmtNum(b.gapPct,2)} نقطة مئوية)`;
         } else {
           vBadge.className = 'rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1 text-xs font-black';
-          vBadge.textContent = `فرق التغير المرصود بين السلة والصرف (${b.gapPct} نقطة مئوية)؛ لا يثبت علاقة سببية`;
+          vBadge.textContent = `فرق التغير المرصود بين السلة والصرف (${fmtNum(b.gapPct,2)} نقطة مئوية)؛ لا يثبت علاقة سببية`;
         }
       }
 
@@ -6571,7 +6577,7 @@ ${txt}`;
       const cv = document.getElementById('adenBasketVsFxChart');
       if (cv && typeof Chart !== 'undefined') {
         destroyChart('adenBasketVsFx');
-        charts.adenBasketVsFx = new Chart(cv.getContext('2d'), {
+        charts.adenBasketVsFx = v541Chart('adenBasketVsFxChart', {
           type: 'line',
           data: {
             labels: b.series.map(x => fmtDateDMY(x.date)),
@@ -6597,7 +6603,7 @@ ${txt}`;
       return `
         ${buildKpiCardsRow([
           { label: 'أخطاء رقمية حرجة', value: fmtNum(a.critCnt), tone: 'rose' },
-          { label: 'تفاوتات حادة', value: fmtNum(a.warnCnt), tone: 'amber' },
+          { label: 'ملاحظات تحتاج مراجعة', value: fmtNum(a.warnCnt), tone: 'amber' },
           { label: 'نتيجة فحص القيم المرصودة', value: a.health===null?'غير قابل للتقييم':a.health+'%', tone: 'indigo' },
           { label: 'كلفة السلة الغذائية', value: b.currentCost ? fmtNum(b.currentCost) : '-', tone: 'indigo' }
         ])}
@@ -6844,7 +6850,7 @@ ${txt}`;
       let input=rep;if(metric==='evidence')input=evidence.filter(r=>filtered(r));if(metric==='recalls'||metric==='recallKg')input=recalls.filter(r=>filtered(r,'date'));
       const dateKey=metric.startsWith('recall')?'date':'visitDate';const isAvg=metric==='price'||/^(usd|sar)/.test(metric);
       const missingKey=({violTotal:'violationsTotal',actTotal:'actionsTotal'})[field]||field;
-      const obs=input.map(r=>{let value;if(metric==='reports'||metric==='evidence'||metric==='recalls')value=1;else if(metric==='price'){value=toNumStrict(r.prices?.[cat.id],{nonNegative:true}).value;if(value!==null&&value<=0)value=null;if(typeof isOutlierExcluded==='function'&&isOutlierExcluded(r.directorate,r.visitDate,cat.id))value=null;}else if(metric==='recallKg'){const w=toNumStrict(r.weightKg,{nonNegative:true}).value;const q=toNumStrict(r.qty,{nonNegative:true}).value;value=w!==null&&w>0?w:r.unit==='طن'&&q!==null?q*1000:r.unit==='كيلو'&&q!==null?q:null;}else value=MoitAnalytics.metric(r,field).value;if(isAvg&&value===0)value=null;return {r,value};});
+      const obs=input.map(r=>{let value;if(metric==='reports'||metric==='evidence'||metric==='recalls')value=1;else if(metric==='price'){value=toNumStrict(r.prices?.[cat.id],{nonNegative:true}).value;if(value!==null&&value<=0)value=null;if(typeof isOutlierExcluded==='function'&&isOutlierExcluded(r.directorate,r.visitDate,cat.id))value=null;}else if(metric==='recallKg'){value=MoitAnalytics.recallWeight(r);}else value=MoitAnalytics.metric(r,field).value;if(isAvg&&value===0)value=null;return {r,value};});
       function calc(a){const valid=a.filter(x=>x.value!==null);if(!valid.length)return {n:a.length,known:0,value:null};let value;if(isAvg){const groups=new Map();valid.forEach(x=>{let g=groups.get(x.r.directorate)||[];g.push(x.value);groups.set(x.r.directorate,g);});const means=[...groups.values()].map(g=>g.reduce((a,b)=>a+b,0)/g.length);value=means.reduce((a,b)=>a+b,0)/means.length;}else value=valid.reduce((s,x)=>s+x.value,0);return {n:a.length,known:valid.length,value};}
       const total=calc(obs),format=x=>x===null?'غير متوفر':x.toLocaleString('en-US',{maximumFractionDigits:4});const groups=new Map();obs.forEach(x=>{const k=by==='directorate'?x.r.directorate:by==='date'?x.r[dateKey]:'النطاق';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(x);});
       const tableRows=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([k,a])=>{const z=calc(a);return [k,format(z.value),String(z.known),String(z.n-z.known)];});
@@ -7017,8 +7023,9 @@ ${txt}`;
         if (date) rec.dates.push(cleanIsoDate(date));
       };
 
-      (allEvidence || []).forEach(e => addRec(e.directorate, e.firm || e.firmName, e.type || e.violationType, e.visitDate, e.proc || e.actionTaken));
-      (allCampaignRows || []).forEach(c => addRec(c.directorate, c.firm || c.firmName, c.campaignName || c.campaignTitle || c.reason || 'ضبط حملة', c.date, c.action));
+      const rows=(allEvidence||[]), counts=new Map();for(const e of rows)if(e.violationId)counts.set(e.violationId,(counts.get(e.violationId)||0)+1);
+      const reports=new Map((allReports||[]).filter(r=>r.reportId).map(r=>[r.reportId,r]));
+      for(const e of rows){const rep=reports.get(e.reportId);if(!rep||e.recordState!=='ACTIVE'||!e.violationId||counts.get(e.violationId)!==1||e.directorate!==rep.directorate||e.visitDate!==rep.visitDate||!e.reviewEnabled||!e.reviewReference||Number(e.reviewReportRevision)!==Number(rep.revision)||!['CONFIRMED_OPEN','CONFIRMED_RESOLVED'].includes(e.reviewState)||/إحضار|احضار/.test(String(e.type||e.violationType||'')))continue;addRec(e.directorate,e.firm||e.firmName,e.type||e.violationType,e.visitDate,e.proc||e.actionTaken);}
 
       const allFirms = Array.from(map.values()).map(x => {
         const sortedD = x.dates.filter(Boolean).sort();
@@ -7049,10 +7056,10 @@ ${txt}`;
       if (!body) return;
       body.innerHTML = d.list.length ? d.list.map((x, i) => {
         const badge = x.tier === 'urgent'
-          ? '<span class="px-2 py-0.5 rounded-full bg-rose-700 text-white font-black text-[10px]">🔴 تصعيد عاجل (إغلاق/نيابة)</span>'
+          ? '<span class="px-2 py-0.5 rounded-full bg-rose-700 text-white font-black text-[10px]">🔴 مراجعة ذات أولوية</span>'
           : x.tier === 'warning'
-            ? '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white font-black text-[10px]">🟠 تكرار (إنذار نهائي)</span>'
-            : '<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">🟡 مخالفة أولى</span>';
+            ? '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white font-black text-[10px]">🟠 مرشح تكرار</span>'
+            : '<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">🟡 دليل مؤهل واحد</span>';
         return `
           <tr class="${x.tier === 'urgent' ? 'bg-rose-50/80' : x.tier === 'warning' ? 'bg-amber-50/60' : ''}">
             <td class="p-2 text-center font-bold">${i + 1}</td>
@@ -7062,17 +7069,17 @@ ${txt}`;
             <td class="p-2 text-[11px] font-semibold text-slate-700">${escHtml(x.typesArr.join('، ') || '-')}</td>
             <td class="p-2 text-center text-[11px] font-bold">${escHtml(fmtDateDMY(x.firstDate))} ⬅ ${escHtml(fmtDateDMY(x.lastDate))}</td>
             <td class="p-2 text-center">${badge}</td>
-            <td class="p-2 text-center"><button type="button" data-repeat-wa="${i}" class="px-2 py-1 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-[10px] font-extrabold">📋 مذكرة تصعيد</button></td>
+            <td class="p-2 text-center"><button type="button" data-repeat-wa="${i}" class="px-2 py-1 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-[10px] font-extrabold">📋 مذكرة مراجعة</button></td>
           </tr>`;
-      }).join('') : '<tr><td colspan="8" class="p-4 text-center text-emerald-700 font-extrabold">✅ لا توجد منشآت متكررة المخالفة حالياً ضمن الفلتر المحدد.</td></tr>';
+      }).join('') : '<tr><td colspan="8" class="p-4 text-center text-emerald-700 font-extrabold">✅ لا توجد حالات تكرار مؤهلة ضمن السجل؛ قد تكون المراجعة غير مفعلة أو البيانات غير كافية.</td></tr>';
 
       body.querySelectorAll('[data-repeat-wa]').forEach(btn => {
         btn.addEventListener('click', () => {
           const x = d.list[Number(btn.getAttribute('data-repeat-wa'))];
           if (!x) return;
-          const msg = `🚨 *مذكرة تصعيد قانوني — غرفة العمليات (مكتب الصناعة والتجارة عدن)*\n📍 المديرية: ${x.dir}\n🏪 المنشأة: ${x.firm}\n⚠️ عدد المخالفات المرصودة: (${x.count}) مخالفات\n📋 الأنواع: ${x.typesArr.join('، ')}\n📅 الفترة: من ${fmtDateDMY(x.firstDate)} إلى ${fmtDateDMY(x.lastDate)}\n⚖️ التوصية: ${x.count >= 3 ? 'تصعيد فوري بالإغلاق والإحالة للنيابة المختصة لتكرار المخالفة.' : 'توجيه إنذار نهائي ومتابعة ميدانية مشددة.'}`;
+          const msg = `🚨 *مذكرة مراجعة رقابية — غرفة العمليات (مكتب الصناعة والتجارة عدن)*\n📍 المديرية: ${x.dir}\n🏪 المنشأة: ${x.firm}\n⚠️ عدد الأدلة المؤهلة: (${x.count}) سجلات للمراجعة\n📋 الأنواع: ${x.typesArr.join('، ')}\n📅 الفترة: من ${fmtDateDMY(x.firstDate)} إلى ${fmtDateDMY(x.lastDate)}\n⚖️ التوصية: ${'التحقق من هوية المنشأة واستقلال الوقائع والمراجعة القانونية قبل أي إجراء.'}`;
           navigator.clipboard?.writeText(msg);
-          showToast('تم نسخ مذكرة التصعيد جاهزة للواتساب', '📋');
+          showToast('تم نسخ مذكرة المراجعة جاهزة للواتساب', '📋');
         });
       });
     }
@@ -7176,21 +7183,21 @@ ${txt}`;
         const d = computeRepeatOffendersData();
         return `
           ${buildKpiCardsRow([
-            { label: 'تصعيد عاجل (3+)', value: fmtNum(d.urgentCnt), tone: 'rose' },
+            { label: 'مراجعة ذات أولوية (3+)', value: fmtNum(d.urgentCnt), tone: 'rose' },
             { label: 'تكرار (مخالفتان)', value: fmtNum(d.warningCnt), tone: 'amber' },
             { label: 'المنشآت المرصودة', value: fmtNum(d.allFirms.length), tone: 'indigo' }
           ])}
-          ${buildSecTitle('01', 'كشف المنشآت والتجار المتكرري المخالفة')}
+          ${buildSecTitle('01', 'كشف مرشحي التكرار للمراجعة')}
           <table class="rep">
-            <tr><th>#</th><th>المنشأة</th><th>المديرية</th><th>المخالفات</th><th>الأنواع</th><th>أول / آخر رصد</th><th>التصنيف</th></tr>
-            ${d.list.map((x, i) => `<tr><td>${i + 1}</td><td><strong>${escHtml(x.firm)}</strong></td><td>${escHtml(x.dir)}</td><td><strong>${fmtNum(x.count)}</strong></td><td>${escHtml(x.typesArr.join('، '))}</td><td>${escHtml(fmtDateDMY(x.firstDate))} - ${escHtml(fmtDateDMY(x.lastDate))}</td><td>${x.tier === 'urgent' ? 'تصعيد عاجل' : x.tier === 'warning' ? 'إنذار نهائي' : 'مخالفة أولى'}</td></tr>`).join('') || '<tr><td colspan="7">لا توجد حالات متكررة</td></tr>'}
+            <tr><th>#</th><th>المنشأة</th><th>المديرية</th><th>الأدلة المؤهلة</th><th>الأنواع</th><th>أول / آخر رصد</th><th>أولوية المراجعة</th></tr>
+            ${d.list.map((x, i) => `<tr><td>${i + 1}</td><td><strong>${escHtml(x.firm)}</strong></td><td>${escHtml(x.dir)}</td><td><strong>${fmtNum(x.count)}</strong></td><td>${escHtml(x.typesArr.join('، '))}</td><td>${escHtml(fmtDateDMY(x.firstDate))} - ${escHtml(fmtDateDMY(x.lastDate))}</td><td>${x.tier === 'urgent' ? 'مراجعة ذات أولوية' : x.tier === 'warning' ? 'مرشح تكرار' : 'دليل مؤهل واحد'}</td></tr>`).join('') || '<tr><td colspan="7">لا توجد حالات مؤهلة للمراجعة؛ قد لا تكون المراجعة مفعلة</td></tr>'}
           </table>`;
       };
-      document.getElementById('repeatWordBtn')?.addEventListener('click', () => downloadWordDoc('تقرير المنشآت المتكررة المخالفة — عدن', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildRepeatDocHtml(), `رادار_المخالفين_المتكررين_${todayIso()}.doc`));
-      document.getElementById('repeatPdfBtn')?.addEventListener('click', () => openPdfPreview('تقرير المنشآت المتكررة المخالفة — عدن', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildRepeatDocHtml(), `رادار_المخالفين_المتكررين_${todayIso()}.pdf`));
+      document.getElementById('repeatWordBtn')?.addEventListener('click', () => downloadWordDoc('تقرير مرشحي تكرار المخالفات — عدن', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildRepeatDocHtml(), `رادار_المخالفين_المتكررين_${todayIso()}.doc`));
+      document.getElementById('repeatPdfBtn')?.addEventListener('click', () => openPdfPreview('تقرير مرشحي تكرار المخالفات — عدن', `تاريخ الإصدار: ${fmtDateDMY(todayIso())}`, buildRepeatDocHtml(), `رادار_المخالفين_المتكررين_${todayIso()}.pdf`));
       document.getElementById('repeatExcelBtn')?.addEventListener('click', () => {
         const d = computeRepeatOffendersData();
-        saveStyledWorkbook([{ name: 'المخالفين_المتكررين', aoa: [['#', 'المنشأة', 'المديرية', 'عدد المخالفات', 'الأنواع', 'أول رصد', 'آخر رصد', 'التصنيف'], ...d.list.map((x, i) => [i + 1, x.firm, x.dir, x.count, x.typesArr.join('، '), fmtDateDMY(x.firstDate), fmtDateDMY(x.lastDate), x.tier === 'urgent' ? 'تصعيد عاجل (إغلاق/نيابة)' : x.tier === 'warning' ? 'إنذار نهائي' : 'مخالفة أولى'])], widths: [6, 26, 16, 14, 34, 14, 14, 24] }], `رادار_المخالفين_المتكررين_${todayIso()}.xlsx`);
+        saveStyledWorkbook([{ name: 'المخالفين_المتكررين', aoa: [['#', 'المنشأة', 'المديرية', 'عدد الأدلة المؤهلة', 'الأنواع', 'أول رصد', 'آخر رصد', 'أولوية المراجعة'], ...d.list.map((x, i) => [i + 1, x.firm, x.dir, x.count, x.typesArr.join('، '), fmtDateDMY(x.firstDate), fmtDateDMY(x.lastDate), x.tier === 'urgent' ? 'مراجعة ذات أولوية' : x.tier === 'warning' ? 'مرشح تكرار' : 'دليل مؤهل واحد'])], widths: [6, 26, 16, 14, 34, 14, 14, 24] }], `رادار_المخالفين_المتكررين_${todayIso()}.xlsx`);
       });
 
       // Gas Photo AI OCR Modal wiring
@@ -7471,7 +7478,7 @@ ${txt}`;
         setTxt('mapCardViols', `${fmtNum(cur.viols)} / ${fmtNum(cur.acts)}`);
         const pill = document.getElementById('mapCardStatusPill');
         if (pill) {
-          pill.textContent = cur.count > 0 ? (cur.latest?.supplyStatus || 'نشط') : 'بانتظار الرفع';
+          pill.textContent = cur.count > 0 ? (cur.latest?.supplyStatus ? 'وصف المديرية: '+cur.latest.supplyStatus : 'الوضع غير مرصود') : 'بانتظار الرفع';
           pill.className = `rounded-full px-2.5 py-0.5 text-[11px] font-black ${cur.count > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}`;
         }
         const meta = document.getElementById('mapCardMetaInfo');
@@ -7562,7 +7569,7 @@ ${txt}`;
         const repOff = computeRepeatOffendersData();
         const topOff = repOff.allFirms.filter(x => x.count >= 2).slice(0, 2);
         topOff.forEach(x => {
-          urgentItems.push(`🏪 تصعيد منشأة «${escHtml(x.firm)}» (${escHtml(x.dir)}): ${fmtNum(x.count)} مخالفات متكررة — تحتاج مراجعة الأدلة وحالة المتابعة.`);
+          urgentItems.push(`🏪 مراجعة اسم منشأة «${escHtml(x.firm)}» (${escHtml(x.dir)}): ${fmtNum(x.count)} أدلة مؤهلة — يلزم تحقق الهوية واستقلال الوقائع.`);
         });
       }
 
@@ -7599,14 +7606,14 @@ ${txt}`;
 
       // 5) 48-Hour Risks: Basket-FX Gap + High Price Spread + Pending Violations
       if (typeof computeAdenBasketVsFx === 'function') {
-        const b = computeAdenBasketVsFx(activeReps);
+        const b = computeAdenBasketVsFx(reps.filter(r=>MoitAnalytics.validDate(r.visitDate)&&r.visitDate<=(activeReps[0]?.visitDate||today)));
         if (b.alignedCount >= 2 && b.gapPct!==null && b.gapPct >= 2.5) {
-          riskItems.push(`🧺 فرق بين مؤشري السلة والصرف: ارتفاع السلة الغذائية يتجاوز تغيّر الصرف بفارق (+${b.gapPct}%) — يستدعي مراجعة عوامل التكلفة؛ ليس إثباتاً لمخالفة.`);
+          riskItems.push(`🧺 فرق بين مؤشري السلة والصرف: ارتفاع السلة الغذائية يتجاوز تغيّر الصرف بفارق (+${fmtNum(b.gapPct,2)} نقطة مئوية) — الفترة ${b.alignedFrom} إلى ${b.alignedTo}؛ يستدعي مراجعة عوامل التكلفة؛ ليس إثباتاً لمخالفة.`);
         }
       }
       const cons = computeConsolidatedPrices(activeReps).filter(p => p.uniqueDirCount >= 2 && p.spread > 0).sort((a, b) => b.spreadPct - a.spreadPct);
       if (cons.length > 0 && cons[0].spreadPct >= 12) {
-        riskItems.push(`📊 تفاوت سعري حاد في «${escHtml(cons[0].name)}»: فارق ${cons[0].spreadPct}% بين ${escHtml(cons[0].minDir)} (${fmtNum(cons[0].min)}) و${escHtml(cons[0].maxDir)} (${fmtNum(cons[0].max)}).`);
+        riskItems.push(`📊 تفاوت سعري حاد في «${escHtml(cons[0].name)}»: فارق ${fmtNum(cons[0].spreadPct,2)}% بين ${escHtml(cons[0].minDir)} (${fmtNum(cons[0].min)}) و${escHtml(cons[0].maxDir)} (${fmtNum(cons[0].max)}).`);
       }
       const pendingEv = (allEvidence || []).filter(e => activeReps.some(r=>r.directorate===e.directorate&&r.visitDate===e.visitDate)&&(!e.recordState||e.recordState==='ACTIVE')&&String(e.status || '').includes('متابعة')).length;
       if (pendingEv > 0) {
@@ -7617,7 +7624,7 @@ ${txt}`;
         urgentItems.push(reps.length ? '✅ لم تظهر مؤشرات تدخل طارئ ضمن البيانات المتاحة؛ لا يمكن تعميم الاستقرار.' : '📥 بانتظار رفع أول تقارير اليوم لتفعيل توصيات التدخل العاجل تلقائياً.');
       }
       if (!riskItems.length) {
-        riskItems.push(reps.length ? '🟢 لا تكفي البيانات المتاحة لإصدار توقع موثوق للـ 48 ساعة القادمة.' : '📊 ستظهر تنبيهات المخاطر الاستباقية تلقائياً بمجرد تراكم التقارير.');
+        riskItems.push(reps.length ? '🟢 لا توجد مؤشرات متابعة إضافية مثبتة ضمن البيانات المتاحة؛ لا يمكن التنبؤ بالمخاطر.' : '📊 ستظهر مؤشرات المتابعة عند توفر بيانات صالحة.');
       }
 
       const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -7636,7 +7643,7 @@ ${txt}`;
       const usds = activeReps.map(r => r.usdSell).filter(v => v > 0);
       const avgUsd=MoitAnalytics.aggregate(activeReps,'usdSell',true).value;
       const dirsCovered = new Set(activeReps.map(r => r.directorate)).size;
-      const topSpreadLine = cons[0] ? `أعلى تفاوت سعري في (${cons[0].name}: ${cons[0].spreadPct}%).` : 'لا تتوفر مقارنة سعرية كافية لإثبات الاستقرار.';
+      const topSpreadLine = cons[0] ? `أعلى تفاوت سعري في (${cons[0].name}: ${fmtNum(cons[0].spreadPct,2)}%).` : 'لا تتوفر مقارنة سعرية كافية لإثبات الاستقرار.';
 
       _lastDecisionBriefText = [
         `1) تاريخ النزول (${activeReps[0]?.visitDate||"غير متوفر"}) — الإصدار (${fmtDateDMY(today)}): استلام (${activeReps.length}) تقرير من (${dirsCovered}/8) مديريات، بمتوسط صرف دولار (${avgUsd ? fmtNum(avgUsd) : '-'} ريال).`,
@@ -8319,7 +8326,7 @@ ${txt}`;
         const v=MoitAnalytics.aggregate(dr,'violTotal').value,a=MoitAnalytics.aggregate(dr,'actTotal').value;const violActs=v===null||a===null?null:v+a;
         const avgPricedPct = dr.length
           ? Math.round(dr.reduce((s, r) => s + (ALL_ITEMS.filter(i=>MoitAnalytics.price(r,i.id,isOutlierExcluded).value!==null).length / ALL_ITEMS.length) * 100, 0) / dr.length)
-          : 0;
+          : null;
         return { dir, days, firms, gas, violActs, avgPricedPct, reportCount: dr.length };
       });
 
@@ -8341,7 +8348,7 @@ ${txt}`;
           <td class="p-2 text-center font-black">—</td>
           <td class="p-2 font-black text-[#102a4e]">${escHtml(x.dir)}</td>
           <td class="p-2 text-center font-bold">${x.days}</td>
-          <td class="p-2 text-center font-bold">${x.avgPricedPct}%</td>
+          <td class="p-2 text-center font-bold">${x.avgPricedPct===null?"غير متاح":x.avgPricedPct+"%"}</td>
           <td class="p-2 text-center font-bold">${fmtNum(x.firms)}</td>
           <td class="p-2 text-center font-bold">${fmtNum(x.gas)} / ${fmtNum(x.violActs)}</td>
           <td class="p-2 text-center">
@@ -8439,7 +8446,7 @@ ${txt}`;
       document.getElementById('scorecardWordBtn')?.addEventListener('click', () => {
         const { period, scored } = computeDirectorateExcellenceScores();
         const pLabel = period === '7' ? 'الأسبوعي (آخر 7 أيام)' : (period === '30' ? 'الشهري (آخر 30 يوماً)' : 'الشامل');
-        const rowsHtml = scored.map((x, i) => `<tr><td style="text-align:center;font-weight:bold;">—</td><td style="font-weight:bold;">${escHtml(x.dir)}</td><td style="text-align:center;">${x.days}</td><td style="text-align:center;">${x.avgPricedPct}%</td><td style="text-align:center;">${fmtNum(x.firms)}</td><td style="text-align:center;">${fmtNum(x.gas)}</td><td style="text-align:center;font-weight:bold;">${x.total===null?"غير مقيم":x.total+" / 100"}</td><td style="text-align:center;font-weight:bold;">${x.tier}</td></tr>`).join('');
+        const rowsHtml = scored.map((x, i) => `<tr><td style="text-align:center;font-weight:bold;">—</td><td style="font-weight:bold;">${escHtml(x.dir)}</td><td style="text-align:center;">${x.days}</td><td style="text-align:center;">${x.avgPricedPct===null?"غير متاح":x.avgPricedPct+"%"}</td><td style="text-align:center;">${fmtNum(x.firms)}</td><td style="text-align:center;">${fmtNum(x.gas)}</td><td style="text-align:center;font-weight:bold;">${x.total===null?"غير مقيم":x.total+" / 100"}</td><td style="text-align:center;font-weight:bold;">${x.tier}</td></tr>`).join('');
         const body = `<p style="font-weight:bold;">تقرير مؤشرات الأداء الرقابي لمديريات العاصمة عدن الثمان (دون درجة معتمدة) — النطاق: ${pLabel}</p>
           <table border="1" cellspacing="0" cellpadding="6" style="width:100%;border-collapse:collapse;direction:rtl;text-align:right;">
             <thead><tr style="background:#0f2942;color:#fff;"><th>المركز</th><th>المديرية</th><th>أيام الرفع</th><th>اكتمال السلع</th><th>المنشآت</th><th>الغاز</th><th>الدرجة</th><th>التقدير</th></tr></thead>
@@ -9606,7 +9613,7 @@ ${txt}`;
       const reportedSet = new Set((filteredOvReports || []).map(r => r.directorate));
       const missing = (ADEN_8_DIRS || []).filter(d => !reportedSet.has(d));
       if (!missing.length) {
-        showToast('🎉 جميع مديريات العاصمة عدن الثمان أتمّت الرفع — لا توجد مديريات متأخرة!', '✅');
+        showToast('🎉 جميع مديريات العاصمة عدن الثمان أتمّت الرفع — لا توجد مديريات غير مرسلة!', '✅');
         return;
       }
       const nowTime = new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
@@ -9626,7 +9633,7 @@ ${txt}`;
       ].join('\n');
       try {
         await navigator.clipboard.writeText(msg);
-        showToast(`📲 تم نسخ رسالة تذكير لـ (${missing.length}) مديريات متأخرة — جاهزة للصق في الواتساب!`, '✅');
+        showToast(`📲 تم نسخ رسالة تذكير لـ (${missing.length}) مديريات غير مرسلة — جاهزة للصق في الواتساب!`, '✅');
       } catch (_e) {
         prompt('انسخ رسالة التذكير للواتساب:', msg);
       }
