@@ -1,6 +1,6 @@
 // v54 RC: static assets only. Do not cache requests to Apps Script or credential-bearing responses.
 const CACHE_PREFIX='moit-aden-gh-';
-const CACHE_NAME=CACHE_PREFIX+'v54-rc-freeze';
+const CACHE_NAME=CACHE_PREFIX+'v54.1-repair-phase1';
 const CORE=['./','./index.html','./ops.html','./analytics-v54.js','./hybrid-v54.js','./closure-v54.js','./manifest.json','./manifest-ops.json','./icon-192.png','./icon-512.png'];
 const allowed=new Set(CORE.map(x=>new URL(x,self.registration.scope).pathname));
 // Let older controlled pages close before activating; avoid forcing a mid-session upgrade.
